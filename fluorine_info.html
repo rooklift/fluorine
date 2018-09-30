@@ -50,22 +50,6 @@
 		return false;
 	};
 
-	let select_ship = (id) => {
-		ipcRenderer.send("relay", {
-			receiver: "renderer",
-			channel: "select_ship",
-			content: id,
-		});
-	}
-
-	let select_planet = (id) => {
-		ipcRenderer.send("relay", {
-			receiver: "renderer",
-			channel: "select_planet",
-			content: id,
-		});
-	}
-
 </script>
 
 </body>
