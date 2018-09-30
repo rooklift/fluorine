@@ -175,18 +175,6 @@ function make_main_menu() {
 			]
 		},
 		{
-			label: "View",
-			submenu: [
-				{
-					label: "Reset Zoom / Scroll",
-					accelerator: "F1",
-					click: () => {
-						windows.send("renderer", "reset_zoom", null);
-					}
-				},
-			]
-		},
-		{
 			label: "Windows",
 			submenu: [
 				{
