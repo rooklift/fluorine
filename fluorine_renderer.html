@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fluorine</title>
+	<style>
+		body {
+			margin: 0;
+			border: 0;
+			padding: 0;
+			background-color: black;
+			color: white;
+			user-select: none;
+			cursor: default;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+
+<canvas id="canvas" width="0" height="0"></canvas>
+
+<script>
+
+	"use strict";
+
+	const alert = require("./modules/alert");
+	const fs = require("fs");
+	const ipcRenderer = require("electron").ipcRenderer;
+	const path = require("path");
+	const stream = require("stream");
+	const zstd = require("node-zstandard");
+
+	const canvas = document.getElementById("canvas");
+	const context = canvas.getContext("2d");
+
+	function make_renderer() {
+
+		let renderer = Object.create(null);
+
+		renderer.filename = "";
+		renderer.game = null;
+		renderer.turn = 0;
+
+		renderer.open = (filename) => {
+
+			console.log(`Trying to load ${filename}`);
+
+			let ok = renderer.open_simple(filename);
+
+			if (!ok) {
+				renderer.open_zstd(filename);
+			}
+		}
+
+		renderer.open_simple = (filename) => {
+
+			// Returns false if it wasn't plain JSON.
+			// Blocks while reading.
+
+			try {
+				let contents = fs.readFileSync(filename);
+				renderer.game = JSON.parse(contents);
+				renderer.finish_load(filename);
+			} catch (err) {
+				return false;
+			}
+
+			return true;
+		}
+
+		renderer.open_zstd = (filename) => {
+
+			let warned = false;
+			let all_chunks = [];
+			let loading_stream = new stream.Writable();
+
+			loading_stream._write = (chunk, encoding, done) => {
+				all_chunks.push(chunk.toString());
+				done();
+			};
+
+			// I believe the following is async (event loopy)...
+
+			zstd.decompressFileToStream(filename, loading_stream, (err, result) => {
+				if (err) {
+					if (!warned) {
+						console.log("Loading failed.");
+						alert("Couldn't open this file.");
+						warned = true;
+					}
+				}
+				result.on("error", (err) => {
+					if (!warned) {
+						console.log("Loading failed.");
+						alert("Couldn't open this file.");
+						warned = true;
+					}
+				});
+				result.on("finish", () => {
+					try {
+						renderer.game = JSON.parse(all_chunks.join(""));
+					} catch(err) {
+						if (!warned) {
+							console.log("Loading failed.");
+							alert("Couldn't open this file.");
+							warned = true;
+						}
+						return;		// So finish_load() isn't called.
+					}
+					renderer.finish_load(filename);
+				});
+			});
+		};
+
+		renderer.finish_load = (filename) => {
+			console.log("Loading seemed OK.")
+			renderer.filename = filename;
+			renderer.turn = 0;
+			renderer.draw();
+		};
+
+		renderer.save = (filename) => {
+			alert("Not implemented.")
+		};
+
+		renderer.save_frame = (filename) => {
+			alert("Not implemented.")
+		};
+
+		renderer.save_moves = (filename) => {
+			alert("Not implemented.")
+		};
+
+		renderer.forward = (n) => {		// Negative arguments are allowed (go back).
+
+			if (!renderer.game) {
+				return;
+			}
+
+			renderer.turn += n;
+
+			if (renderer.turn < 0) {
+				renderer.turn = 0;
+			}
+
+			if (renderer.turn >= renderer.game.frames.length) {
+				renderer.turn = renderer.game.frames.length - 1;
+			}
+
+			renderer.draw();
+		};
+
+		renderer.toggle = (varname) => {
+			renderer[varname] = !renderer[varname];
+			renderer.draw();
+		};
+
+		renderer.draw = () => {
+
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+
+			if (!renderer.game) {
+				return;
+			}
+
+			context.clearRect(0, 0, canvas.width, canvas.height);
+
+			renderer.send_info();
+			renderer.send_events();
+		};
+
+		renderer.click = (event) => {
+			if (!renderer.game) {
+				return;
+			}
+		}
+
+		renderer.send_info = () => {
+
+			let frame = renderer.game.frames[renderer.turn];
+
+			let lines = [];
+
+			lines.push(`<p>${renderer.filename}</p>`);
+
+			// FIXME: add more info...
+
+			ipcRenderer.send("relay", {
+				receiver: "info",
+				channel: "update",
+				content: lines.join(""),
+			});
+		};
+
+		renderer.send_events = () => {
+
+			let frame = renderer.game.frames[renderer.turn];
+
+			let lines = [];
+
+			lines.push(`<p>${renderer.filename}</p>`);
+
+			// FIXME: add more info...
+
+			ipcRenderer.send("relay", {
+				receiver: "events",
+				channel: "update",
+				content: lines.join(""),
+			});
+		};
+
+		renderer.events_map = (turn) => {
+
+			let frame = renderer.game.frames[turn];
+			let events = frame.events;
+
+			if (events === undefined) {
+				events = [];
+			}
+
+			let map = Object.create(null);
+
+			for (let n = 0; n < events.length; n++) {
+				let event = events[n];
+				if (map[event.event] === undefined) {
+					map[event.event] = [];
+				}
+				map[event.event].push(event);
+			}
+
+			return map;
+		};
+
+		return renderer;
+	}
+
+	let renderer = make_renderer();
+
+	ipcRenderer.on("open", (event, filename) => {
+		renderer.open(filename);
+	});
+
+	ipcRenderer.on("save", (event, filename) => {
+		renderer.save(filename);
+	});
+
+	ipcRenderer.on("save_frame", (event, filename) => {
+		renderer.save_frame(filename);
+	});
+
+	ipcRenderer.on("save_moves", (event, filename) => {
+		renderer.save_moves(filename);
+	});
+
+	ipcRenderer.on("forward", (event, n) => {
+		renderer.forward(n);
+	});
+
+	ipcRenderer.on("toggle", (event, varname) => {
+		renderer.toggle(varname);
+	});
+
+	ipcRenderer.on("log", (event, msg) => {
+		console.log(msg);
+	});
+
+	window.addEventListener("resize", () => renderer.draw());
+
+	canvas.addEventListener("mousedown", (event) => renderer.click(event));
+
+	// Setup drag-and-drop...
+
+	window.ondragover = () => false;
+	window.ondragleave = () => false;
+	window.ondragend = () => false;
+	window.ondrop = (event) => {
+		event.preventDefault();
+		renderer.open(event.dataTransfer.files[0].path);
+		return false;
+	};
+
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+
+	// Give the window and canvas a little time to settle... (may prevent sudden jerk during load).
+
+	setTimeout(() => {
+		ipcRenderer.send("renderer_ready", null);
+	}, 200);
+
+</script>
+</body>
+</html>

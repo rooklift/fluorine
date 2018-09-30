@@ -1,0 +1,16 @@
+{
+	"name": "Fluorine",
+	"description": "Replay viewer for Halite 3",
+	"version": "0.1.0",
+	"author": "Fohristiwhirl",
+	"main": "main.js",
+	"dependencies": {
+		"node-zstandard": "1.2.4"
+	},
+	"scripts": {
+		"pack": "electron-builder --dir"
+	},
+	"build": {
+		"asar": false
+	}
+}
