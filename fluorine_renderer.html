@@ -233,28 +233,6 @@
 			});
 		};
 
-		renderer.events_map = (turn) => {
-
-			let frame = renderer.game.frames[turn];
-			let events = frame.events;
-
-			if (events === undefined) {
-				events = [];
-			}
-
-			let map = Object.create(null);
-
-			for (let n = 0; n < events.length; n++) {
-				let event = events[n];
-				if (map[event.event] === undefined) {
-					map[event.event] = [];
-				}
-				map[event.event].push(event);
-			}
-
-			return map;
-		};
-
 		return renderer;
 	}
 
