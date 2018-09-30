@@ -1,6 +1,6 @@
 # Fluorine
 
-This will hopefully be a replay viewer for Halite 3, when Halite 3 exists.
+This will hopefully be a replay viewer for [Halite 3](https://halite.io/), when Halite 3 exists.
 
 # Installation
 
