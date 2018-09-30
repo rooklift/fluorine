@@ -14,6 +14,8 @@ let about_message = `Fluorine: Replay viewer for Halite 3\n` +
 
 // -------------------------------------------------------
 
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;		// FIXME: this is lame. What's the correct way to prevent the console warning?
+
 electron.app.on("ready", () => {
 
 	windows.new("renderer", {
@@ -76,6 +78,9 @@ function make_main_menu() {
 					click: () => {
 						alert(about_message);
 					}
+				},
+				{
+					type: "separator"
 				},
 				{
 					role: "toggledevtools"
@@ -165,16 +170,6 @@ function make_main_menu() {
 					accelerator: "End",
 					click: () => {
 						windows.send("renderer", "forward", 99999);
-					}
-				},
-				{
-					type: "separator"
-				},
-				{
-					label: "Go To Next Event",
-					accelerator: "Enter",
-					click: () => {
-						windows.send("renderer", "go_to_next_event", null);
 					}
 				},
 			]
