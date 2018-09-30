@@ -137,7 +137,8 @@
 		};
 
 		renderer.save = (filename) => {
-			alert("Not implemented.")
+			if (!filename || !renderer.game) return;
+			fs.writeFileSync(filename, JSON.stringify(renderer.game, null, "\t"));
 		};
 
 		renderer.save_frame = (filename) => {
@@ -160,8 +161,8 @@
 				renderer.turn = 0;
 			}
 
-			if (renderer.turn >= renderer.game.frames.length) {
-				renderer.turn = renderer.game.frames.length - 1;
+			if (renderer.turn >= renderer.game.full_frames.length) {
+				renderer.turn = renderer.game.full_frames.length - 1;
 			}
 
 			renderer.draw();
@@ -189,7 +190,7 @@
 				// FIXME
 			}
 
-			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.frames.length - 1}`;
+			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.full_frames.length - 1}`;
 
 			renderer.send_info();
 			renderer.send_events();
@@ -206,7 +207,7 @@
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game.frames.length - 1}</p>`);
+			lines.push(`<p>${renderer.turn} / ${renderer.game.full_frames.length - 1}</p>`);
 
 			// FIXME: add more info...
 
@@ -222,7 +223,7 @@
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game.frames.length - 1}</p>`);
+			lines.push(`<p>${renderer.turn} / ${renderer.game.full_frames.length - 1}</p>`);
 
 			// FIXME: add more info...
 
