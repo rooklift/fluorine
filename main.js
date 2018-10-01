@@ -19,7 +19,7 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;		// FIXME: this is lame. 
 electron.app.on("ready", () => {
 
 	windows.new("renderer", {
-		title: "Fluorine", show: true, width: 1200, height: 800, resizable: true, page: path.join(__dirname, "fluorine_renderer.html")
+		title: "Fluorine", show: true, width: 800, height: 800, resizable: true, page: path.join(__dirname, "fluorine_renderer.html")
 	});
 
 	windows.new("info", {

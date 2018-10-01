@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<title>Fluorine</title>
@@ -18,15 +19,25 @@
 			padding: 0;
 			overflow: hidden;
 		}
+		#canvas {
+		    padding-left: 0;
+		    padding-right: 0;
+		    margin-left: auto;
+		    margin-right: auto;
+		    display: block;
+		}
 	</style>
 </head>
 <body>
 
-<table style="width: calc(100% - 20px);" id="info_line"><tr>
-	<td style="width: 80%" id="unitbox">&nbsp;</td>				<!-- Needs some content so it has its real size -->
-	<td align="right" id="turnbox"></td>
-</tr></table>
-<canvas id="canvas" width="0" height="0"></canvas>
+<div>
+	<table style="width: calc(100% - 20px);" id="info_line"><tr>
+		<td style="width: 80%" id="unitbox">&nbsp;</td>				<!-- Needs some content so it has its real size -->
+		<td align="right" id="turnbox"></td>
+	</tr></table>
+</div>
+
+<canvas id="canvas" width="100" height="100"></canvas>
 
 <script>
 
@@ -38,6 +49,8 @@
 	const path = require("path");
 	const stream = require("stream");
 	const zstd = require("node-zstandard");
+
+	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
 
 	const canvas = document.getElementById("canvas");
 	const context = canvas.getContext("2d");
@@ -192,16 +205,42 @@
 			renderer.draw();
 		};
 
-		renderer.draw = () => {
+		renderer.clear = () => {
 
-			canvas.width = window.innerWidth;
-			canvas.height = window.innerHeight - info_line_height;
+			let available_width = window.innerWidth;
+			let available_height = window.innerHeight - info_line_height;
+
+			if (renderer.width <= 0 || renderer.height <= 0) {
+				canvas.width = 100;
+				canvas.height = 100;
+			} else {
+				canvas.width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
+				canvas.height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
+		}
+
+		renderer.draw = () => {
+
+			renderer.clear();
 
 			if (!renderer.game) {
 				return;
 			}
+
+			renderer.draw_grid();
+			renderer.draw_factories();
+			renderer.draw_entities();
+
+			renderer.draw_info_line();
+
+			renderer.send_info();
+			renderer.send_events();
+
+		};
+
+		renderer.draw_info_line = () => {
 
 			if (!renderer.selection) {
 				unitbox.innerHTML = "no selection";
@@ -210,46 +249,84 @@
 			}
 
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.full_frames.length - 1}`;
-
-			renderer.send_info();
-			renderer.send_events();
-
-			renderer.draw_grid();
-
 		};
 
-		renderer.cell_size = () => {
+		renderer.draw_factories = () => {
 
-			let cell_size;
+			let cell_width = renderer.cell_width();
+			let cell_height = renderer.cell_height();
 
-			if (canvas.width / renderer.width < canvas.height / renderer.height) {
-				cell_size = canvas.width / renderer.width;
-			} else {
-				cell_size = canvas.height / renderer.height;
+			let players = renderer.game.players;
+
+			for (let n = 0; n < players.length; n++) {
+
+				let player = players[n];
+				let colour = colours[n];
+				let x = player.factory_location.x;
+				let y = player.factory_location.y;
+
+				context.fillStyle = colour;
+				context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
 			}
+		};
 
-			return Math.floor(cell_size);
-		}
+		renderer.draw_entities = () => {
+
+			let cell_width = renderer.cell_width();
+			let cell_height = renderer.cell_height();
+			let players = renderer.game.players;					// For length
+			let frame = renderer.game.full_frames[renderer.turn];
+
+			for (let n = 0; n < players.length; n++) {
+
+				let colour = colours[n];
+
+				let entities = frame.entities[n.toString()];
+
+				for (let e in entities) {
+
+					if (entities.hasOwnProperty(e) === false) {
+						continue;
+					}
+
+					let entity = entities[e];
+
+					let x = entity.x;
+					let y = entity.y;
+
+					context.fillStyle = colour;
+					context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
+				}
+			}
+		};
+
+		renderer.cell_width = () => {
+			return canvas.width / renderer.width;		// Elsewhere we ensure canvas size is a multiple of game width
+		};
+
+		renderer.cell_height = () => {
+			return canvas.height / renderer.height;		// Elsewhere we ensure canvas size is a multiple of game height
+		};
 
 		renderer.draw_grid = () => {
 
-			let cell_size = renderer.cell_size();
+			let cell_width = renderer.cell_width();
+			let cell_height = renderer.cell_height();
 
 			for (let x = 0; x < renderer.width; x++) {
 				for (let y = 0; y < renderer.height; y++) {
-					let val = renderer.game.production_map.grid[x][y].energy;
+					let val = Math.floor(renderer.game.production_map.grid[x][y].energy / 4);
 					context.fillStyle = `rgb(${val},${val},${val})`;
-					context.fillRect(x * cell_size, y * cell_size, cell_size, cell_size);
-					context.fill();
+					context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
 				}
 			}
-		}
+		};
 
 		renderer.click = (event) => {
 			if (!renderer.game) {
 				return;
 			}
-		}
+		};
 
 		renderer.send_info = () => {
 
@@ -331,8 +408,7 @@
 		return false;
 	};
 
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight - info_line_height;
+	renderer.clear();
 
 	// Give the window and canvas a little time to settle... (may prevent sudden jerk during load).
 
