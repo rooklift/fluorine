@@ -298,12 +298,55 @@
 
 			if (!renderer.selection) {
 				unitbox.innerHTML = "no selection";
-			} else {
+			} else if (renderer.selection.type === "box") {
 				let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-				unitbox.innerHTML = `${renderer.selection.x}, ${renderer.selection.y} -- ${val}`;
+				unitbox.innerHTML = `Box ${renderer.selection.x}, ${renderer.selection.y} &mdash; ${val}`;
+			} else if (renderer.selection.type === "ship") {
+
+				let info = renderer.ship_info(renderer.selection.id);
+
+				if (info === null && renderer.turn < renderer.selection.turn) {
+					unitbox.innerHTML =
+						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (not yet present)`;
+				} else if (info === null) {
+					unitbox.innerHTML =
+						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (no longer present)`;
+				} else {
+					unitbox.innerHTML =
+						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
+						+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+				}
 			}
 
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
+		};
+
+		renderer.ship_info = (id) => {
+
+			// Returns null if the ship can't be found...
+
+			for (let p = 0; p < renderer.game.players.length; p++) {
+
+				let entities = renderer.current_frame().entities[p.toString()];
+
+				if (entities === undefined) {
+					continue;
+				}
+
+				if (entities[id.toString()] !== undefined) {
+
+					let ret = Object.create(null);
+
+					ret.x = entities[id.toString()].x;
+					ret.y = entities[id.toString()].y;
+					ret.energy = entities[id.toString()].energy;
+					ret.is_inspired = entities[id.toString()].is_inspired;
+
+					return ret;
+				}
+			}
+
+			return null;
 		};
 
 		renderer.draw_grid = () => {
@@ -348,14 +391,17 @@
 
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
-			let players = renderer.game.players;					// For length
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < players.length; n++) {
+			for (let n = 0; n < renderer.game.players.length; n++) {
 
 				let colour = colours[n];
 
 				let entities = frame.entities[n.toString()];
+
+				if (entities === undefined) {
+					continue;
+				}
 
 				for (let e in entities) {
 
@@ -448,7 +494,7 @@
 
 		renderer.click = (event) => {
 
-			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
+			if (!renderer.game) {
 				return;
 			}
 
@@ -460,13 +506,51 @@
 			if (x >= renderer.width) x = renderer.width - 1;
 			if (y >= renderer.height) y = renderer.height - 1;
 
-			renderer.selection = Object.create(null);
-			renderer.selection.type = "box";
-			renderer.selection.x = x;
-			renderer.selection.y = y;
+			renderer.selection = renderer.selection_at(x, y);
 
 			renderer.draw();
 		};
+
+		renderer.selection_at = (x, y) => {
+
+			let s = Object.create(null);
+
+			let frame = renderer.current_frame();
+
+			for (let n = 0; n < renderer.game.players.length; n++) {
+
+				let colour = colours[n];
+
+				let entities = frame.entities[n.toString()];
+
+				if (entities === undefined) {
+					continue;
+				}
+
+				for (let e in entities) {
+
+					if (entities.hasOwnProperty(e) === false) {
+						continue;
+					}
+
+					let entity = entities[e];
+
+					if (x === entity.x && y === entity.y) {
+						s.type = "ship";
+						s.turn = renderer.turn;
+						s.id = parseInt(e, 10);
+						s.owner = n;
+						return s;
+					}
+				}
+			}
+
+			s.type = "box";
+			s.x = x;
+			s.y = y;
+
+			return s;
+		}
 
 		renderer.send_info = () => {
 
