@@ -207,11 +207,11 @@
 
 				// And now adjust for mining...
 
-				let frame = renderer.game.full_frames[n];
+				let prior_frame = renderer.game.full_frames[n - 1];
 
-				for (let c = 0; c < frame.cells.length; c++) {
+				for (let c = 0; c < prior_frame.cells.length; c++) {
 
-					let cell = frame.cells[c];
+					let cell = prior_frame.cells[c];
 
 					let x = cell.x;
 					let y = cell.y;
@@ -361,10 +361,12 @@
 
 		renderer.draw_mining = () => {
 
+			if (renderer.turn <= 0) return;
+
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
-			let spots = renderer.game.full_frames[renderer.turn].cells;
+			let spots = renderer.game.full_frames[renderer.turn - 1].cells;
 
 			for (let n = 0; n < spots.length; n++) {
 
