@@ -112,11 +112,20 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Save current entities...",
+					label: "Save current frame...",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_frame", outfilename);
+						}
+					}
+				},
+				{
+					label: "Save current entities...",
+					click: () => {
+						let outfilename = electron.dialog.showSaveDialog();
+						if (outfilename) {
+							windows.send("renderer", "save_entities", outfilename);
 						}
 					}
 				},

@@ -226,11 +226,18 @@
 		};
 
 		renderer.save_frame = (filename) => {
-			alert("Not implemented.")
+			if (!filename || !renderer.game) return;
+			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame(), null, "\t"));
+		};
+
+		renderer.save_entities = (filename) => {
+			if (!filename || !renderer.game) return;
+			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame().entities, null, "\t"));
 		};
 
 		renderer.save_moves = (filename) => {
-			alert("Not implemented.")
+			if (!filename || !renderer.game) return;
+			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame().moves, null, "\t"));
 		};
 
 		renderer.forward = (n) => {		// Negative arguments are allowed (go back).
@@ -527,6 +534,7 @@
 		};
 
 		renderer.game_length = () => {
+			if (!renderer.game) return 0;
 			return renderer.game.full_frames.length;
 		}
 
@@ -654,6 +662,10 @@
 
 	ipcRenderer.on("save_frame", (event, filename) => {
 		renderer.save_frame(filename);
+	});
+
+	ipcRenderer.on("save_entities", (event, filename) => {
+		renderer.save_entities(filename);
 	});
 
 	ipcRenderer.on("save_moves", (event, filename) => {
