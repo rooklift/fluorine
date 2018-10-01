@@ -82,7 +82,7 @@
 			if (!ok && filename.endsWith() !== ".json") {
 				renderer.open_zstd(filename);
 			}
-		}
+		};
 
 		renderer.open_simple = (filename) => {
 
@@ -98,7 +98,7 @@
 
 			renderer.finish_load(filename);
 			return true;
-		}
+		};
 
 		renderer.open_zstd = (filename) => {
 
@@ -169,7 +169,7 @@
 
 			for (let n = 0; n < renderer.players(); n++) {
 				let player = renderer.game.players[n];
-				player_names.push(player.name)
+				player_names.push(player.name);
 			}
 
 			document.title = player_names.join(" - ");
@@ -278,7 +278,7 @@
 			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
-		}
+		};
 
 		renderer.draw = () => {
 
@@ -635,7 +635,7 @@
 			s.y = y;
 
 			return s;
-		}
+		};
 
 		renderer.send_info = () => {
 
