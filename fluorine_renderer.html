@@ -285,6 +285,7 @@
 			renderer.draw_factories();
 			renderer.draw_entities();
 			renderer.draw_mining();
+			renderer.draw_collisions();
 
 			renderer.draw_info_line();
 
@@ -305,6 +306,20 @@
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
 		};
 
+		renderer.draw_grid = () => {
+
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
+
+			for (let x = 0; x < renderer.width; x++) {
+				for (let y = 0; y < renderer.height; y++) {
+					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
+					context.fillStyle = `rgb(${val},${val},${val})`;
+					context.fillRect(x * box_width, y * box_height, box_width, box_height);
+				}
+			}
+		};
+
 		renderer.draw_factories = () => {
 
 			let box_width = renderer.box_width();
@@ -320,7 +335,12 @@
 				let y = player.factory_location.y;
 
 				context.fillStyle = colour;
-				context.fillRect(x * box_width, y * box_height, box_width, box_height);
+				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
+
+				// Circle...
+				// context.beginPath();
+				// context.arc(x * box_width + box_width / 2, y * box_height + box_height / 2, box_width / 2, 0, Math.PI * 2, true);
+				// context.fill();
 			}
 		};
 
@@ -375,6 +395,28 @@
 			}
 		};
 
+		renderer.draw_collisions = () => {
+
+			if (renderer.turn <= 0) return;
+
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
+
+			let events = renderer.previous_frame().events;
+
+			for (let n = 0; n < events.length; n++) {
+
+				if (events[n].type === "shipwreck") {
+
+					let x = events[n].location.x;
+					let y = events[n].location.y;
+
+					context.fillStyle = "#ff0000";
+					context.fillRect(x * box_width, y * box_height, box_width, box_height);
+				}
+			}
+		};
+
 		renderer.box_width = () => {
 			return canvas.width / renderer.width;		// Elsewhere we ensure canvas size is a multiple of game width
 		};
@@ -403,20 +445,6 @@
 			if (renderer.turn <= 0) return null;
 			return renderer.frame(renderer.turn - 1);
 		}
-
-		renderer.draw_grid = () => {
-
-			let box_width = renderer.box_width();
-			let box_height = renderer.box_height();
-
-			for (let x = 0; x < renderer.width; x++) {
-				for (let y = 0; y < renderer.height; y++) {
-					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
-					context.fillStyle = `rgb(${val},${val},${val})`;
-					context.fillRect(x * box_width, y * box_height, box_width, box_height);
-				}
-			}
-		};
 
 		renderer.click = (event) => {
 
