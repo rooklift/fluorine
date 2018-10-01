@@ -167,7 +167,7 @@
 
 			let player_names = [];
 
-			for (let n = 0; n < renderer.game.players.length; n++) {
+			for (let n = 0; n < renderer.players(); n++) {
 				let player = renderer.game.players[n];
 				player_names.push(player.name)
 			}
@@ -333,7 +333,7 @@
 
 			// Returns null if the ship can't be found...
 
-			for (let p = 0; p < renderer.game.players.length; p++) {
+			for (let p = 0; p < renderer.players(); p++) {
 
 				let pents = renderer.current_frame().entities[p.toString()];
 
@@ -380,7 +380,7 @@
 
 			let players = renderer.game.players;
 
-			for (let n = 0; n < players.length; n++) {
+			for (let n = 0; n < renderer.players(); n++) {
 
 				let player = players[n];
 				let colour = colours[n];
@@ -403,7 +403,7 @@
 			let box_height = renderer.box_height();
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.game.players.length; n++) {
+			for (let n = 0; n < renderer.players(); n++) {
 
 				let colour = colours[n];
 
@@ -439,7 +439,7 @@
 
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.game.players.length; n++) {
+			for (let n = 0; n < renderer.players(); n++) {
 
 				let pents = frame.entities[n.toString()];
 
@@ -553,24 +553,29 @@
 		renderer.game_length = () => {
 			if (!renderer.game) return 0;
 			return renderer.game.full_frames.length;
-		}
+		};
 
 		renderer.frame = (n) => {
 			if (!renderer.game) return null;
 			if (n < 0 || n >= renderer.game_length()) return null;
 			return renderer.game.full_frames[n];
-		}
+		};
 
 		renderer.current_frame = () => {
 			if (!renderer.game) return null;
 			return renderer.frame(renderer.turn);
-		}
+		};
 
 		renderer.previous_frame = () => {
 			if (!renderer.game) return null;
 			if (renderer.turn <= 0) return null;
 			return renderer.frame(renderer.turn - 1);
-		}
+		};
+
+		renderer.players = () => {
+			if (!renderer.game) return 0;
+			return renderer.game.players.length;
+		};
 
 		renderer.click = (event) => {
 
@@ -597,7 +602,7 @@
 
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.game.players.length; n++) {
+			for (let n = 0; n < renderer.players(); n++) {
 
 				let colour = colours[n];
 
