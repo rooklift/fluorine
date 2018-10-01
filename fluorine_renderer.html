@@ -67,6 +67,7 @@
 
 		renderer.game = null;
 		renderer.production_maps = null;
+		renderer.dropoff_list = null;
 		renderer.filename = "";
 		renderer.turn = 0;
 		renderer.selection = null;
@@ -156,6 +157,7 @@
 			renderer.height = renderer.game.production_map.height;
 
 			renderer.make_production_maps();
+			renderer.make_dropoff_list();
 
 			renderer.draw_title();
 			renderer.draw();
@@ -216,6 +218,30 @@
 					let val = cell.production;
 
 					renderer.production_maps[n][x][y] = val;
+				}
+			}
+		};
+
+		renderer.make_dropoff_list = () => {
+
+			renderer.dropoff_list = [];
+
+			for (let n = 0; n < renderer.game_length(); n++) {
+
+				for (let e = 0; e < renderer.frame(n).events.length; e++) {
+
+					let event = renderer.frame(n).events[e];
+
+					if (event.type === "construct") {
+
+						let d = Object.create(null);
+						d.x = event.location.x;
+						d.y = event.location.y;
+						d.owner = event.owner_id;
+						d.turn = n;
+
+						renderer.dropoff_list.push(d);
+					}
 				}
 			}
 		};
@@ -289,7 +315,7 @@
 			}
 
 			renderer.draw_grid();
-			renderer.draw_factories();
+			renderer.draw_structures();
 			renderer.draw_entities();
 			renderer.draw_mining();
 			renderer.draw_collisions();
@@ -373,7 +399,7 @@
 			}
 		};
 
-		renderer.draw_factories = () => {
+		renderer.draw_structures = () => {
 
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
@@ -394,6 +420,21 @@
 				// context.beginPath();
 				// context.arc(x * box_width + box_width / 2, y * box_height + box_height / 2, box_width / 2, 0, Math.PI * 2, true);
 				// context.fill();
+			}
+
+			for (let n = 0; n < renderer.dropoff_list.length; n++) {
+
+				if (renderer.dropoff_list[n].turn >= renderer.turn) {
+					continue;
+				}
+
+				let x = renderer.dropoff_list[n].x;
+				let y = renderer.dropoff_list[n].y;
+				let pid = renderer.dropoff_list[n].owner;
+				let colour = colours[pid];
+
+				context.fillStyle = colour;
+				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 		};
 
