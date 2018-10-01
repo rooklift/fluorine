@@ -61,8 +61,6 @@
 
 	const info_line_height = info_line.offsetHeight + 20;		// relies on #info_line having margin of 10
 
-	console.log(`info_line_height == ${info_line_height}`);
-
 	function make_renderer() {
 
 		let renderer = Object.create(null);
@@ -193,7 +191,7 @@
 
 			// Make the rest...
 
-			for (let n = 1; n < renderer.game.full_frames.length; n++) {
+			for (let n = 1; n < renderer.game_length(); n++) {
 
 				// Make this frame identical to the one before...
 
@@ -207,7 +205,7 @@
 
 				// And now adjust for mining...
 
-				let prior_frame = renderer.game.full_frames[n - 1];
+				let prior_frame = renderer.frame(n - 1);		// Can't use renderer.previous_frame() since turn isn't set
 
 				for (let c = 0; c < prior_frame.cells.length; c++) {
 
@@ -220,9 +218,6 @@
 					renderer.production_maps[n][x][y] = val;
 				}
 			}
-
-			console.log(renderer.production_maps[0][5][5]);
-			console.log(renderer.production_maps[100][5][5]);
 		};
 
 		renderer.save = (filename) => {
@@ -250,8 +245,8 @@
 				renderer.turn = 0;
 			}
 
-			if (renderer.turn >= renderer.game.full_frames.length) {
-				renderer.turn = renderer.game.full_frames.length - 1;
+			if (renderer.turn >= renderer.game_length()) {
+				renderer.turn = renderer.game_length() - 1;
 			}
 
 			renderer.draw();
@@ -307,7 +302,7 @@
 				unitbox.innerHTML = `${renderer.selection.x}, ${renderer.selection.y} -- ${val}`;
 			}
 
-			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.full_frames.length - 1}`;
+			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
 		};
 
 		renderer.draw_factories = () => {
@@ -334,7 +329,7 @@
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 			let players = renderer.game.players;					// For length
-			let frame = renderer.game.full_frames[renderer.turn];
+			let frame = renderer.current_frame();
 
 			for (let n = 0; n < players.length; n++) {
 
@@ -366,7 +361,7 @@
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
-			let spots = renderer.game.full_frames[renderer.turn - 1].cells;
+			let spots = renderer.previous_frame().cells;
 
 			for (let n = 0; n < spots.length; n++) {
 
@@ -387,6 +382,27 @@
 		renderer.box_height = () => {
 			return canvas.height / renderer.height;		// Elsewhere we ensure canvas size is a multiple of game height
 		};
+
+		renderer.game_length = () => {
+			return renderer.game.full_frames.length;
+		}
+
+		renderer.frame = (n) => {
+			if (!renderer.game) return null;
+			if (n < 0 || n >= renderer.game_length()) return null;
+			return renderer.game.full_frames[n];
+		}
+
+		renderer.current_frame = () => {
+			if (!renderer.game) return null;
+			return renderer.frame(renderer.turn);
+		}
+
+		renderer.previous_frame = () => {
+			if (!renderer.game) return null;
+			if (renderer.turn <= 0) return null;
+			return renderer.frame(renderer.turn - 1);
+		}
 
 		renderer.draw_grid = () => {
 
@@ -429,7 +445,7 @@
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game.full_frames.length - 1}</p>`);
+			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
 
 			// FIXME: add more info...
 
@@ -445,7 +461,7 @@
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game.full_frames.length - 1}</p>`);
+			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
 
 			// FIXME: add more info...
 
