@@ -68,6 +68,7 @@
 		let renderer = Object.create(null);
 
 		renderer.game = null;
+		renderer.production_maps = null;
 		renderer.filename = "";
 		renderer.turn = 0;
 		renderer.selection = null;
@@ -156,6 +157,8 @@
 			renderer.width = renderer.game.production_map.width;
 			renderer.height = renderer.game.production_map.height;
 
+			renderer.make_production_maps();
+
 			renderer.draw_title();
 			renderer.draw();
 		};
@@ -178,7 +181,9 @@
 
 			renderer.production_maps = [];
 
-			renderer.production_maps.push([]);					// Frame 0 map
+			// Make frame 0 map...
+
+			renderer.production_maps.push([]);
 			for (let x = 0; x < renderer.width; x++) {
 				renderer.production_maps[0].push([]);
 				for (let y = 0; y < renderer.height; y++) {
@@ -186,9 +191,39 @@
 				}
 			}
 
-			for (let n = 1; n
-		}
+			// Make the rest...
 
+			for (let n = 1; n < renderer.game.full_frames.length; n++) {
+
+				// Make this frame identical to the one before...
+
+				renderer.production_maps.push([]);
+				for (let x = 0; x < renderer.width; x++) {
+					renderer.production_maps[n].push([]);
+					for (let y = 0; y < renderer.height; y++) {
+						renderer.production_maps[n][x].push(renderer.production_maps[n - 1][x][y]);
+					}
+				}
+
+				// And now adjust for mining...
+
+				let prior_frame = renderer.game.full_frames[n - 1];
+
+				for (let c = 0; c < prior_frame.cells.length; c++) {
+
+					let cell = prior_frame.cells[c];
+
+					let x = cell.x;
+					let y = cell.y;
+					let val = cell.production;
+
+					renderer.production_maps[n][x][y] -= val;
+				}
+			}
+
+			console.log(renderer.production_maps[0][5][5]);
+			console.log(renderer.production_maps[100][5][5]);
+		};
 
 		renderer.save = (filename) => {
 			if (!filename || !renderer.game) return;
@@ -351,24 +386,18 @@
 		};
 
 		renderer.draw_grid = () => {
-			return;										// FIXME
-		}
-
-/*
-		renderer.draw_grid = () => {
 
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
 			for (let x = 0; x < renderer.width; x++) {
 				for (let y = 0; y < renderer.height; y++) {
-					let val = Math.floor(renderer.game.production_map.grid[x][y].energy / 4);
+					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
 					context.fillStyle = `rgb(${val},${val},${val})`;
 					context.fillRect(x * box_width, y * box_height, box_width, box_height);
 				}
 			}
 		};
-*/
 
 		renderer.click = (event) => {
 
