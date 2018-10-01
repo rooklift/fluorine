@@ -156,6 +156,14 @@
 			renderer.width = renderer.game.production_map.width;
 			renderer.height = renderer.game.production_map.height;
 
+			renderer.draw_title();
+			renderer.draw();
+		};
+
+		renderer.draw_title = () => {
+
+			if (!renderer.game) return;
+
 			let player_names = [];
 
 			for (let n = 0; n < renderer.game.players.length; n++) {
@@ -164,9 +172,23 @@
 			}
 
 			document.title = player_names.join(" - ");
-
-			renderer.draw();
 		};
+
+		renderer.make_production_maps = () => {
+
+			renderer.production_maps = [];
+
+			renderer.production_maps.push([]);					// Frame 0 map
+			for (let x = 0; x < renderer.width; x++) {
+				renderer.production_maps[0].push([]);
+				for (let y = 0; y < renderer.height; y++) {
+					renderer.production_maps[0][x].push(renderer.game.production_map.grid[x][y].energy);
+				}
+			}
+
+			for (let n = 1; n
+		}
+
 
 		renderer.save = (filename) => {
 			if (!filename || !renderer.game) return;
@@ -232,6 +254,7 @@
 			renderer.draw_grid();
 			renderer.draw_factories();
 			renderer.draw_entities();
+			renderer.draw_mining();
 
 			renderer.draw_info_line();
 
@@ -245,7 +268,7 @@
 			if (!renderer.selection) {
 				unitbox.innerHTML = "no selection";
 			} else {
-				// FIXME
+				unitbox.innerHTML = renderer.selection.x.toString();
 			}
 
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.full_frames.length - 1}`;
@@ -253,8 +276,8 @@
 
 		renderer.draw_factories = () => {
 
-			let cell_width = renderer.cell_width();
-			let cell_height = renderer.cell_height();
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
 
 			let players = renderer.game.players;
 
@@ -266,14 +289,14 @@
 				let y = player.factory_location.y;
 
 				context.fillStyle = colour;
-				context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
+				context.fillRect(x * box_width, y * box_height, box_width, box_height);
 			}
 		};
 
 		renderer.draw_entities = () => {
 
-			let cell_width = renderer.cell_width();
-			let cell_height = renderer.cell_height();
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
 			let players = renderer.game.players;					// For length
 			let frame = renderer.game.full_frames[renderer.turn];
 
@@ -295,37 +318,78 @@
 					let y = entity.y;
 
 					context.fillStyle = colour;
-					context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
+					context.fillRect(x * box_width, y * box_height, box_width, box_height);
 				}
 			}
 		};
 
-		renderer.cell_width = () => {
+		renderer.draw_mining = () => {
+
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
+
+			let spots = renderer.game.full_frames[renderer.turn].cells;
+
+			for (let n = 0; n < spots.length; n++) {
+
+				let spot = spots[n];
+
+				let x = spot.x;
+				let y = spot.y;
+
+				context.fillStyle = "#000000";
+				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
+			}
+		};
+
+		renderer.box_width = () => {
 			return canvas.width / renderer.width;		// Elsewhere we ensure canvas size is a multiple of game width
 		};
 
-		renderer.cell_height = () => {
+		renderer.box_height = () => {
 			return canvas.height / renderer.height;		// Elsewhere we ensure canvas size is a multiple of game height
 		};
 
 		renderer.draw_grid = () => {
+			return;										// FIXME
+		}
 
-			let cell_width = renderer.cell_width();
-			let cell_height = renderer.cell_height();
+/*
+		renderer.draw_grid = () => {
+
+			let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
 
 			for (let x = 0; x < renderer.width; x++) {
 				for (let y = 0; y < renderer.height; y++) {
 					let val = Math.floor(renderer.game.production_map.grid[x][y].energy / 4);
 					context.fillStyle = `rgb(${val},${val},${val})`;
-					context.fillRect(x * cell_width, y * cell_height, cell_width, cell_height);
+					context.fillRect(x * box_width, y * box_height, box_width, box_height);
 				}
 			}
 		};
+*/
 
 		renderer.click = (event) => {
-			if (!renderer.game) {
+
+			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
 				return;
 			}
+
+			let x = Math.floor(event.offsetX / renderer.box_width);
+			let y = Math.floor(event.offsetY / renderer.box_height);
+
+			if (x < 0) x = 0;
+			if (y < 0) y = 0;
+			if (x >= renderer.width) x = renderer.width - 1;
+			if (y >= renderer.height) y = renderer.height - 1;
+
+			renderer.selection = Object.create(null);
+			renderer.selection.type = "box";
+			renderer.selection.x = x;
+			renderer.selection.y = y;
+
+			renderer.draw();
 		};
 
 		renderer.send_info = () => {
