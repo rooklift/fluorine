@@ -179,7 +179,7 @@
 
 		renderer.make_production_maps = () => {
 
-			renderer.production_maps = [];
+			renderer.production_maps = [];			// Format is [turn][x][y]
 
 			// Make frame 0 map...
 
@@ -187,7 +187,7 @@
 			for (let x = 0; x < renderer.width; x++) {
 				renderer.production_maps[0].push([]);
 				for (let y = 0; y < renderer.height; y++) {
-					renderer.production_maps[0][x].push(renderer.game.production_map.grid[x][y].energy);
+					renderer.production_maps[0][x].push(renderer.game.production_map.grid[y][x].energy);	// Note reversed coords in JSON
 				}
 			}
 
@@ -303,7 +303,8 @@
 			if (!renderer.selection) {
 				unitbox.innerHTML = "no selection";
 			} else {
-				unitbox.innerHTML = renderer.selection.x.toString();
+				let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
+				unitbox.innerHTML = `${renderer.selection.x}, ${renderer.selection.y} -- ${val}`;
 			}
 
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game.full_frames.length - 1}`;
@@ -405,8 +406,8 @@
 				return;
 			}
 
-			let x = Math.floor(event.offsetX / renderer.box_width);
-			let y = Math.floor(event.offsetY / renderer.box_height);
+			let x = Math.floor(event.offsetX / renderer.box_width());
+			let y = Math.floor(event.offsetY / renderer.box_height());
 
 			if (x < 0) x = 0;
 			if (y < 0) y = 0;
