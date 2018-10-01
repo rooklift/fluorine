@@ -23,7 +23,7 @@
 <body>
 
 <table style="width: calc(100% - 20px);" id="info_line"><tr>
-	<td style="width: 80%" id="unitbox"></td>
+	<td style="width: 80%" id="unitbox">&nbsp;</td>				<!-- Needs some content so it has its real size -->
 	<td align="right" id="turnbox"></td>
 </tr></table>
 <canvas id="canvas" width="0" height="0"></canvas>
@@ -47,6 +47,8 @@
 	const turnbox = document.getElementById("turnbox");
 
 	const info_line_height = info_line.offsetHeight + 20;		// relies on #info_line having margin of 10
+
+	console.log(`info_line_height == ${info_line_height}`);
 
 	function make_renderer() {
 
