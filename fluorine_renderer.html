@@ -286,6 +286,7 @@
 			renderer.draw_entities();
 			renderer.draw_mining();
 			renderer.draw_collisions();
+			renderer.draw_selection_crosshairs();
 
 			renderer.draw_info_line();
 
@@ -463,6 +464,58 @@
 					context.fillRect(x * box_width, y * box_height, box_width, box_height);
 				}
 			}
+		};
+
+		renderer.draw_selection_crosshairs = () => {
+
+			let x;
+			let y;
+
+			if (!renderer.selection) {
+				return;
+			} else if (renderer.selection.type === "box") {
+				x = renderer.selection.x;
+				y = renderer.selection.y;
+			} else if (renderer.selection.type === "ship") {
+				let info = renderer.ship_info(renderer.selection.id);
+				if (!info) {
+					return;
+				}
+				x = info.x;
+				y = info.y;
+			} else {
+				return;
+			}
+
+			x = x * renderer.box_width() + renderer.box_width() / 2;
+			y = y * renderer.box_height() + renderer.box_height() / 2;
+
+			context.setLineDash([5, 15]);
+
+			context.lineWidth = 1;
+			context.strokeStyle = "gray";
+
+			context.beginPath();
+			context.moveTo(x, y);
+			context.lineTo(x, 0);
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo(x, y);
+			context.lineTo(x, canvas.height);
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo(x, y);
+			context.lineTo(0, y);
+			context.stroke();
+
+			context.beginPath();
+			context.moveTo(x, y);
+			context.lineTo(canvas.width, y);
+			context.stroke();
+
+			context.setLineDash([]);
 		};
 
 		renderer.box_width = () => {
