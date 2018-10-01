@@ -207,17 +207,17 @@
 
 				// And now adjust for mining...
 
-				let prior_frame = renderer.game.full_frames[n - 1];
+				let frame = renderer.game.full_frames[n];
 
-				for (let c = 0; c < prior_frame.cells.length; c++) {
+				for (let c = 0; c < frame.cells.length; c++) {
 
-					let cell = prior_frame.cells[c];
+					let cell = frame.cells[c];
 
 					let x = cell.x;
 					let y = cell.y;
 					let val = cell.production;
 
-					renderer.production_maps[n][x][y] -= val;
+					renderer.production_maps[n][x][y] = val;
 				}
 			}
 
