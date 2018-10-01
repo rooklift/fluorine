@@ -327,20 +327,22 @@
 
 			for (let p = 0; p < renderer.game.players.length; p++) {
 
-				let entities = renderer.current_frame().entities[p.toString()];
+				let pents = renderer.current_frame().entities[p.toString()];
 
-				if (entities === undefined) {
+				if (pents === undefined) {
 					continue;
 				}
 
-				if (entities[id.toString()] !== undefined) {
+				let hit = pents[id.toString()];
+
+				if (hit) {
 
 					let ret = Object.create(null);
 
-					ret.x = entities[id.toString()].x;
-					ret.y = entities[id.toString()].y;
-					ret.energy = entities[id.toString()].energy;
-					ret.is_inspired = entities[id.toString()].is_inspired;
+					ret.x = hit.x;
+					ret.y = hit.y;
+					ret.energy = hit.energy;
+					ret.is_inspired = hit.is_inspired;
 
 					return ret;
 				}
@@ -397,19 +399,19 @@
 
 				let colour = colours[n];
 
-				let entities = frame.entities[n.toString()];
+				let pents = frame.entities[n.toString()];
 
-				if (entities === undefined) {
+				if (pents === undefined) {
 					continue;
 				}
 
-				for (let e in entities) {
+				for (let e in pents) {
 
-					if (entities.hasOwnProperty(e) === false) {
+					if (pents.hasOwnProperty(e) === false) {
 						continue;
 					}
 
-					let entity = entities[e];
+					let entity = pents[e];
 
 					let x = entity.x;
 					let y = entity.y;
@@ -521,19 +523,19 @@
 
 				let colour = colours[n];
 
-				let entities = frame.entities[n.toString()];
+				let pents = frame.entities[n.toString()];
 
-				if (entities === undefined) {
+				if (pents === undefined) {
 					continue;
 				}
 
-				for (let e in entities) {
+				for (let e in pents) {
 
-					if (entities.hasOwnProperty(e) === false) {
+					if (pents.hasOwnProperty(e) === false) {
 						continue;
 					}
 
-					let entity = entities[e];
+					let entity = pents[e];
 
 					if (x === entity.x && y === entity.y) {
 						s.type = "ship";
