@@ -178,8 +178,7 @@
 			let player_names = [];
 
 			for (let n = 0; n < renderer.players(); n++) {
-				let player = renderer.game.players[n];
-				player_names.push(player.name);
+				player_names.push(renderer.game.players[n].name);
 			}
 
 			document.title = player_names.join(" - ");
@@ -624,13 +623,59 @@
 
 		renderer.previous_frame = () => {
 			if (!renderer.game) return null;
-			if (renderer.turn <= 0) return null;
+			if (renderer.turn <= 0) return renderer.frame(0);	// Return the zeroth frame if we're there, this is OK in all cases
 			return renderer.frame(renderer.turn - 1);
 		};
 
 		renderer.players = () => {
 			if (!renderer.game) return 0;
 			return renderer.game.players.length;
+		};
+
+		renderer.ship_count = (pid) => {
+
+			if (!renderer.game) return 0;
+
+			let frame = renderer.current_frame();
+			let pents = frame.entities[pid.toString()];
+
+			if (pents === undefined) return 0;
+
+			let count = 0;
+
+			for (let e in pents) {
+
+				if (pents.hasOwnProperty(e) === false) {
+					continue;
+				}
+
+				count++;
+			}
+
+			return count;
+		};
+
+		renderer.transit_count = (pid) => {
+
+			if (!renderer.game) return 0;
+
+			let frame = renderer.current_frame();
+			let pents = frame.entities[pid.toString()];
+
+			if (pents === undefined) return 0;
+
+			let count = 0;
+
+			for (let e in pents) {
+
+				if (pents.hasOwnProperty(e) === false) {
+					continue;
+				}
+
+				count += pents[e].energy;
+			}
+
+			return count;
 		};
 
 		renderer.click = (event) => {
@@ -699,6 +744,17 @@
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
 			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
+
+			for (let n = 0; n < renderer.players(); n++) {
+				let colour = colours[n];
+				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[n].name}</h2>`);
+				lines.push(`<ul>`);
+				lines.push(`<li>Ships: ${renderer.ship_count(n)}</li>`);
+				lines.push(`<li>In transit: ${renderer.transit_count(n)}</li>`);
+				lines.push(`<li>Deposited: ${renderer.previous_frame().deposited[n.toString()]}</li>`);
+				lines.push(`<li>Energy: <span style="color: ${colour}">${renderer.previous_frame().energy[n.toString()]}</span></li>`);
+				lines.push(`</ul>`);
+			}
 
 			// FIXME: add more info...
 
