@@ -382,8 +382,6 @@
 			// string for the info line. The ships are presumed to have
 			// existed in turn - 1.
 
-			list.sort((a, b) => {a - b});
-
 			if (turn === undefined) {
 				return "Bad call of collision_list_helper()";
 			}
@@ -424,7 +422,22 @@
 
 			console.log(ret_list.join(", "));
 			return ret_list.join(", ");
-		}
+		};
+
+		renderer.collision_info_string = (event, turn) => {
+
+			let sids = [];
+
+			for (let s = 0; s < event.ships.length; s++) {
+				sids.push(event.ships[s]);
+			}
+
+			sids.sort((a, b) => {
+				return a - b;
+			});
+
+			return `<span style="color: #ff0000">Collision:</span> ${renderer.collision_list_helper(sids, turn)}`;
+		};
 
 		renderer.draw_info_line = () => {
 
@@ -449,13 +462,7 @@
 
 						if (x === renderer.selection.x && y === renderer.selection.y) {
 
-							let sids = [];
-
-							for (let s = 0; s < events[n].ships.length; s++) {
-								sids.push(events[n].ships[s]);
-							}
-
-							unitbox.innerHTML = `<span style="color: #ff0000">Collision:</span> ${renderer.collision_list_helper(sids, renderer.turn)}`;
+							unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
 							showed_collision = true;
 							break;
 						}
@@ -471,16 +478,48 @@
 
 				let info = renderer.ship_info(renderer.selection.id);
 
-				if (info === null && renderer.turn < renderer.selection.turn) {
-					unitbox.innerHTML =
-						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (not yet present)`;
-				} else if (info === null) {
-					unitbox.innerHTML =
-						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (no longer present)`;
-				} else {
-					unitbox.innerHTML =
-						`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
-						+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+				// Firstly, if the ship was just destroyed, show the collision info instead...
+
+				let showed_collision = false;
+
+				if (info === null) {
+
+					let events = renderer.previous_frame().events;
+
+					for (let n = 0; n < events.length; n++) {
+
+						if (events[n].type === "shipwreck") {
+
+							for (let s = 0; s < events[n].ships.length; s++) {
+
+								let sid = events[n].ships[s];
+
+								if (sid === renderer.selection.id) {
+
+									unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
+									showed_collision = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				// Otherwise, show ship info if possible...
+
+				if (showed_collision === false) {
+
+					if (info === null && renderer.turn < renderer.selection.turn) {
+						unitbox.innerHTML =
+							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (not yet present)`;
+					} else if (info === null) {
+						unitbox.innerHTML =
+							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (no longer present)`;
+					} else {
+						unitbox.innerHTML =
+							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
+							+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+					}
 				}
 			}
 
