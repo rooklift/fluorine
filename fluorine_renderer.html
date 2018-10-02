@@ -448,7 +448,7 @@
 
 				// Write info about collisions if needed...
 
-				let showed_collision = false;
+				let showing_collision = false;
 
 				let events = renderer.previous_frame().events;
 
@@ -458,13 +458,13 @@
 						let y = events[n].location.y;
 						if (x === renderer.selection.x && y === renderer.selection.y) {
 							unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
-							showed_collision = true;
+							showing_collision = true;
 							break;
 						}
 					}
 				}
 
-				if (showed_collision === false) {
+				if (showing_collision === false) {
 					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
 					unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
 				}
@@ -475,7 +475,7 @@
 
 				// Firstly, if the ship was just destroyed, show the collision info instead...
 
-				let showed_collision = false;
+				let showing_collision = false;
 
 				if (info === null) {
 
@@ -486,7 +486,7 @@
 							for (let s = 0; s < events[n].ships.length; s++) {
 								if (events[n].ships[s] === renderer.selection.id) {
 									unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
-									showed_collision = true;
+									showing_collision = true;
 									break;
 								}
 							}
@@ -496,7 +496,7 @@
 
 				// Otherwise, show ship info if possible...
 
-				if (showed_collision === false) {
+				if (showing_collision === false) {
 
 					if (info === null && renderer.turn < renderer.selection.turn) {
 						unitbox.innerHTML =
@@ -720,17 +720,51 @@
 			let y;
 
 			if (!renderer.selection) {
+
 				return;
+
 			} else if (renderer.selection.type === "box") {
+
 				x = renderer.selection.x;
 				y = renderer.selection.y;
+
 			} else if (renderer.selection.type === "ship") {
+
 				let info = renderer.ship_info(renderer.selection.id);
-				if (!info) {
-					return;
+
+				if (info) {
+
+					x = info.x;
+					y = info.y;
+
+				} else {
+
+					// If the ship was just destroyed, show the collision info instead...
+
+					let showing_collision = false;
+
+					if (info === null) {
+
+						let events = renderer.previous_frame().events;
+
+						for (let n = 0; n < events.length; n++) {
+							if (events[n].type === "shipwreck") {
+								for (let s = 0; s < events[n].ships.length; s++) {
+									if (events[n].ships[s] === renderer.selection.id) {
+										x = events[n].location.x;
+										y = events[n].location.y;
+										showing_collision = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+
+					if (showing_collision === false) {
+						return;
+					}
 				}
-				x = info.x;
-				y = info.y;
 			} else {
 				return;
 			}
