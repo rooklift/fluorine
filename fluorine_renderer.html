@@ -66,13 +66,13 @@
 		let renderer = Object.create(null);
 
 		renderer.game = null;
-		renderer.production_maps = null;
-		renderer.dropoff_list = null;
 		renderer.filename = "";
 		renderer.turn = 0;
 		renderer.selection = null;
-		renderer.width = 0;				// Grid width
-		renderer.height = 0;			// Grid height
+		renderer.width = 0;
+		renderer.height = 0;
+		renderer.production_maps = null;
+		renderer.dropoff_list = null;
 
 		renderer.open = (filename) => {
 
@@ -80,8 +80,13 @@
 
 			let ok = renderer.open_simple(filename);
 
-			if (!ok && filename.endsWith() !== ".json") {
-				renderer.open_zstd(filename);
+			if (!ok) {
+				if (filename.endsWith(".json") === false) {
+					renderer.open_zstd(filename);
+				} else {
+					console.log("Loading failed (simple JSON).");
+					alert("Couldn't open this file.");
+				}
 			}
 		};
 
@@ -149,10 +154,10 @@
 		renderer.finish_load = (filename) => {
 
 			console.log("Loading seemed OK.");
+
 			renderer.filename = filename;
 			renderer.turn = 0;
 			renderer.selection = null;
-
 			renderer.width = renderer.game.production_map.width;
 			renderer.height = renderer.game.production_map.height;
 
@@ -165,7 +170,10 @@
 
 		renderer.draw_title = () => {
 
-			if (!renderer.game) return;
+			if (!renderer.game) {
+				document.title = "Fluorine";
+				return;
+			}
 
 			let player_names = [];
 
@@ -178,6 +186,11 @@
 		};
 
 		renderer.make_production_maps = () => {
+
+			if (!renderer.game) {
+				renderer.production_maps = null;
+				return;
+			}
 
 			renderer.production_maps = [];			// Format is [turn][x][y]
 
@@ -224,6 +237,11 @@
 
 		renderer.make_dropoff_list = () => {
 
+			if (!renderer.game) {
+				renderer.dropoff_list = null;
+				return;
+			}
+
 			renderer.dropoff_list = [];
 
 			for (let n = 0; n < renderer.game_length(); n++) {
@@ -268,9 +286,7 @@
 
 		renderer.forward = (n) => {		// Negative arguments are allowed (go back).
 
-			if (!renderer.game) {
-				return;
-			}
+			if (!renderer.game) return;
 
 			renderer.turn += n;
 
@@ -295,7 +311,7 @@
 			let available_width = window.innerWidth;
 			let available_height = window.innerHeight - info_line_height;
 
-			if (renderer.width <= 0 || renderer.height <= 0) {
+			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
 				canvas.width = 100;
 				canvas.height = 100;
 			} else {
@@ -310,9 +326,7 @@
 
 			renderer.clear();
 
-			if (!renderer.game) {
-				return;
-			}
+			if (!renderer.game) return;
 
 			renderer.draw_grid();
 			renderer.draw_structures();
@@ -324,8 +338,6 @@
 			renderer.draw_info_line();
 
 			renderer.send_info();
-			renderer.send_events();
-
 		};
 
 		renderer.draw_info_line = () => {
@@ -585,10 +597,12 @@
 		};
 
 		renderer.box_width = () => {
+			if (renderer.width <= 0) return 1;
 			return canvas.width / renderer.width;		// Elsewhere we ensure canvas size is a multiple of game width
 		};
 
 		renderer.box_height = () => {
+			if (renderer.height <= 0) return 1;
 			return canvas.height / renderer.height;		// Elsewhere we ensure canvas size is a multiple of game height
 		};
 
@@ -679,6 +693,8 @@
 
 		renderer.send_info = () => {
 
+			if (!renderer.game) return;
+
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
@@ -688,22 +704,6 @@
 
 			ipcRenderer.send("relay", {
 				receiver: "info",
-				channel: "update",
-				content: lines.join(""),
-			});
-		};
-
-		renderer.send_events = () => {
-
-			let lines = [];
-
-			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
-
-			// FIXME: add more info...
-
-			ipcRenderer.send("relay", {
-				receiver: "events",
 				channel: "update",
 				content: lines.join(""),
 			});

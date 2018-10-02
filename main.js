@@ -26,10 +26,6 @@ electron.app.on("ready", () => {
 		title: "Info", show: false, width: 400, height: 800, resizable: true, page: path.join(__dirname, "fluorine_info.html")
 	});
 
-	windows.new("events", {
-		title: "Events", show: false, width: 400, height: 800, resizable: true, page: path.join(__dirname, "fluorine_info.html")
-	});
-
 	electron.Menu.setApplicationMenu(make_main_menu());
 });
 
@@ -196,12 +192,6 @@ function make_main_menu() {
 					label: "Info",
 					click: () => {
 						windows.show("info");
-					}
-				},
-				{
-					label: "Events",
-					click: () => {
-						windows.show("events");
 					}
 				},
 			]
