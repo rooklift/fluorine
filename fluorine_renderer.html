@@ -810,7 +810,7 @@
 			let lines = [];
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
+			lines.push(`<p>${renderer.width} x ${renderer.height}</p>`);
 
 			for (let n = 0; n < renderer.players(); n++) {
 
