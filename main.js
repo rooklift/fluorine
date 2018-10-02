@@ -193,6 +193,37 @@ function make_main_menu() {
 						}
 					}
 				},
+				{
+					type: "separator"
+				},
+				{
+					label: "Up",
+					accelerator: "W",
+					click: () => {
+						windows.send("renderer", "down", -1);
+					}
+				},
+				{
+					label: "Left",
+					accelerator: "A",
+					click: () => {
+						windows.send("renderer", "right", -1);
+					}
+				},
+				{
+					label: "Down",
+					accelerator: "S",
+					click: () => {
+						windows.send("renderer", "down", 1);
+					}
+				},
+				{
+					label: "Right",
+					accelerator: "D",
+					click: () => {
+						windows.send("renderer", "right", 1);
+					}
+				},
 			]
 		},
 		{

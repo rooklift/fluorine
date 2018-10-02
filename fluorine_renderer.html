@@ -77,6 +77,8 @@
 		renderer.dropoff_list = null;
 
 		renderer.integer_box_sizes = false;
+		renderer.offset_x = 0;
+		renderer.offset_y = 0;
 
 		renderer.open = (filename) => {
 
@@ -164,6 +166,9 @@
 			renderer.selection = null;
 			renderer.width = renderer.game.production_map.width;
 			renderer.height = renderer.game.production_map.height;
+
+			renderer.offset_x = 0;
+			renderer.offset_y = 0;
 
 			renderer.make_production_maps();
 			renderer.make_dropoff_list();
@@ -304,6 +309,16 @@
 			renderer.draw();
 		};
 
+		renderer.right = (n) => {
+			renderer.offset_x += n;
+			renderer.draw();
+		}
+
+		renderer.down = (n) => {
+			renderer.offset_y += n;
+			renderer.draw();
+		}
+
 		renderer.toggle = (varname) => {
 			renderer[varname] = !renderer[varname];
 			renderer.draw();
@@ -393,6 +408,29 @@
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
 		};
 
+		renderer.offset_adjust = (x, y, undo_flag) => {
+
+			// Given coords x, y, return x, y adjusted by current offset.
+
+			if (!renderer.game) return [x, y];
+
+			if (!undo_flag) {
+				x += renderer.offset_x;
+				y += renderer.offset_y;
+			} else {
+				x -= renderer.offset_x;
+				y -= renderer.offset_y;
+			}
+
+			// Sneaky modulo method which works for negative numbers too...
+			// https://dev.to/maurobringolf/a-neat-trick-to-compute-modulo-of-negative-numbers-111e
+
+			x = (x % renderer.width + renderer.width) % renderer.width;
+			y = (y % renderer.height + renderer.height) % renderer.height;
+
+			return [x, y];
+		};
+
 		renderer.ship_info = (id) => {
 
 			// Returns null if the ship can't be found...
@@ -429,11 +467,15 @@
 			let box_height = renderer.box_height();
 
 			for (let x = 0; x < renderer.width; x++) {
+
 				for (let y = 0; y < renderer.height; y++) {
+
 					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
 					val = Math.min(255, val);
+
 					context.fillStyle = `rgb(${val},${val},${val})`;
-					context.fillRect(x * box_width, y * box_height, box_width, box_height);
+					let [i, j] = renderer.offset_adjust(x, y);
+					context.fillRect(i * box_width, j * box_height, box_width, box_height);
 				}
 			}
 		};
@@ -449,7 +491,8 @@
 				let y = renderer.game.players[n].factory_location.y;
 
 				context.fillStyle = colours[n];
-				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
+				let [i, j] = renderer.offset_adjust(x, y);
+				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 
 			for (let n = 0; n < renderer.dropoff_list.length; n++) {
@@ -463,7 +506,8 @@
 				let pid = renderer.dropoff_list[n].owner;
 
 				context.fillStyle = colours[pid];
-				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
+				let [i, j] = renderer.offset_adjust(x, y);
+				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 		};
 
@@ -495,7 +539,8 @@
 					let y = entity.y;
 
 					context.fillStyle = colour;
-					context.fillRect(x * box_width, y * box_height, box_width, box_height);
+					let [i, j] = renderer.offset_adjust(x, y);
+					context.fillRect(i * box_width, j * box_height, box_width, box_height);
 				}
 			}
 		};
@@ -533,7 +578,8 @@
 					}
 
 					context.fillStyle = "#000000";
-					context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
+					let [i, j] = renderer.offset_adjust(x, y);
+					context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 				}
 			}
 		};
@@ -555,7 +601,8 @@
 					let y = events[n].location.y;
 
 					context.fillStyle = "#ff0000";
-					context.fillRect(x * box_width, y * box_height, box_width, box_height);
+					let [i, j] = renderer.offset_adjust(x, y);
+					context.fillRect(i * box_width, j * box_height, box_width, box_height);
 				}
 			}
 		};
@@ -581,8 +628,10 @@
 				return;
 			}
 
-			x = x * renderer.box_width() + renderer.box_width() / 2;
-			y = y * renderer.box_height() + renderer.box_height() / 2;
+			let [i, j] = renderer.offset_adjust(x, y);
+
+			i = i * renderer.box_width() + renderer.box_width() / 2;
+			j = j * renderer.box_height() + renderer.box_height() / 2;
 
 			context.setLineDash([5, 15]);
 
@@ -590,23 +639,23 @@
 			context.strokeStyle = "gray";
 
 			context.beginPath();
-			context.moveTo(x, y);
-			context.lineTo(x, 0);
+			context.moveTo(i, j);
+			context.lineTo(i, 0);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(x, y);
-			context.lineTo(x, canvas.height);
+			context.moveTo(i, j);
+			context.lineTo(i, canvas.height);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(x, y);
-			context.lineTo(0, y);
+			context.moveTo(i, j);
+			context.lineTo(0, j);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(x, y);
-			context.lineTo(canvas.width, y);
+			context.moveTo(i, j);
+			context.lineTo(canvas.width, j);
 			context.stroke();
 
 			context.setLineDash([]);
@@ -708,6 +757,8 @@
 			if (y < 0) y = 0;
 			if (x >= renderer.width) x = renderer.width - 1;
 			if (y >= renderer.height) y = renderer.height - 1;
+
+			[x, y] = renderer.offset_adjust(x, y, true);
 
 			renderer.selection = renderer.selection_at(x, y, renderer.selection);
 
@@ -817,6 +868,14 @@
 
 	ipcRenderer.on("forward", (event, n) => {
 		renderer.forward(n);
+	});
+
+	ipcRenderer.on("right", (event, n) => {
+		renderer.right(n);
+	});
+
+	ipcRenderer.on("down", (event, n) => {
+		renderer.down(n);
 	});
 
 	ipcRenderer.on("toggle", (event, varname) => {
