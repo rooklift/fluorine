@@ -312,12 +312,12 @@
 		renderer.right = (n) => {
 			renderer.offset_x += n;
 			renderer.draw();
-		}
+		};
 
 		renderer.down = (n) => {
 			renderer.offset_y += n;
 			renderer.draw();
-		}
+		};
 
 		renderer.toggle = (varname) => {
 			renderer[varname] = !renderer[varname];
