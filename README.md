@@ -21,7 +21,7 @@ npm install electron --save-dev --save-exact
 
 # Building
 
-It should be possible to build a standalone application with `npm run pack`.
+Once the dependencies are installed, it should be possible to build a standalone application with `npm run pack`
 
 # Other dependencies
 
