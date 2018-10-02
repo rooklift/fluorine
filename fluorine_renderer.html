@@ -746,13 +746,22 @@
 			lines.push(`<p>${renderer.turn} / ${renderer.game_length() - 1}</p>`);
 
 			for (let n = 0; n < renderer.players(); n++) {
+
+				let deposited = renderer.previous_frame().deposited[n.toString()];
+				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
+				let current = renderer.previous_frame().energy[n.toString()];
+				let spent = deposited + initial - current;
+
 				let colour = colours[n];
 				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[n].name}</h2>`);
 				lines.push(`<ul>`);
-				lines.push(`<li>Ships: ${renderer.ship_count(n)}</li>`);
-				lines.push(`<li>In transit: ${renderer.transit_count(n)}</li>`);
-				lines.push(`<li>Deposited: ${renderer.previous_frame().deposited[n.toString()]}</li>`);
-				lines.push(`<li>Energy: <span style="color: ${colour}">${renderer.previous_frame().energy[n.toString()]}</span></li>`);
+				lines.push(`<li>Ships: ${renderer.ship_count(n)} &mdash; carrying ${renderer.transit_count(n)}</li>`);
+				lines.push(`<li>Energy:`);
+				lines.push(`	<ul>`);
+				lines.push(`		<li>Deposits: ${deposited + initial}</li>`);
+				lines.push(`		<li>Spent: ${spent > 0 ? "-" : ""}${spent}</li>`);
+				lines.push(`		<li>Net: <span style="color: ${colour}">${current}</span></li>`);
+				lines.push(`	</ul>`);
 				lines.push(`</ul>`);
 			}
 
