@@ -19,6 +19,10 @@ npm install electron --save-dev --save-exact
 ./node_modules/.bin/electron .
 ```
 
+# Building
+
+Once the dependencies are installed, it should be possible to build a standalone application with `npm run pack`
+
 # Other dependencies
 
 * [node-zstandard](https://www.npmjs.com/package/node-zstandard) (gets installed by `npm install`)
