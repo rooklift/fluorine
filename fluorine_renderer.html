@@ -59,7 +59,9 @@
 	const unitbox = document.getElementById("unitbox");
 	const turnbox = document.getElementById("turnbox");
 
-	const info_line_height = info_line.offsetHeight + 20;		// relies on #info_line having margin of 10
+	function info_line_height() {
+		return info_line.offsetHeight + 20;		// relies on #info_line having margin of 10
+	}
 
 	function make_renderer() {
 
@@ -326,7 +328,7 @@
 			}
 
 			let available_width = window.innerWidth;
-			let available_height = window.innerHeight - info_line_height;
+			let available_height = window.innerHeight - info_line_height();
 
 			if (renderer.integer_box_sizes === false) {
 				canvas.width = Math.max(100, available_width);
@@ -347,6 +349,7 @@
 
 		renderer.draw = () => {
 
+			renderer.draw_info_line();		// Done first since in rare cases the info_line size can change, affecting view space.
 			renderer.clear();
 
 			if (!renderer.game) {
@@ -359,8 +362,6 @@
 			renderer.draw_mining();
 			renderer.draw_collisions();
 			renderer.draw_selection_crosshairs();
-
-			renderer.draw_info_line();
 
 			renderer.send_info();
 		};
