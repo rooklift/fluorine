@@ -692,14 +692,12 @@
 			if (x >= renderer.width) x = renderer.width - 1;
 			if (y >= renderer.height) y = renderer.height - 1;
 
-			renderer.selection = renderer.selection_at(x, y);
+			renderer.selection = renderer.selection_at(x, y, renderer.selection);
 
 			renderer.draw();
 		};
 
-		renderer.selection_at = (x, y) => {
-
-			let s = Object.create(null);
+		renderer.selection_at = (x, y, current) => {
 
 			let frame = renderer.current_frame();
 
@@ -720,20 +718,21 @@
 					let entity = pents[e];
 
 					if (x === entity.x && y === entity.y) {
-						s.type = "ship";
-						s.turn = renderer.turn;
-						s.id = parseInt(e, 10);
-						s.owner = n;
-						return s;
+
+						if (current && current.type === "ship" && current.id === parseInt(e, 10)) {
+
+							// In the event that we've already selected the ship,
+							// select the box underneath it instead.
+
+							return {type: "box", x: x, y: y};
+						}
+
+						return {type: "ship", turn: renderer.turn, id: parseInt(e, 10), owner: n};
 					}
 				}
 			}
 
-			s.type = "box";
-			s.x = x;
-			s.y = y;
-
-			return s;
+			return {type: "box", x: x, y: y};
 		};
 
 		renderer.send_info = () => {
