@@ -310,12 +310,20 @@
 			let available_width = window.innerWidth;
 			let available_height = window.innerHeight - info_line_height;
 
+			let desired_width;
+			let desired_height;
+
 			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
-				canvas.width = 100;
-				canvas.height = 100;
+				desired_width = 100;
+				desired_height = 100;
 			} else {
-				canvas.width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
-				canvas.height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+				desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
+				desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+			}
+
+			if (desired_width !== canvas.width || desired_height !== canvas.height) {
+				canvas.width = desired_width;
+				canvas.height = desired_height;
 			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
@@ -325,7 +333,9 @@
 
 			renderer.clear();
 
-			if (!renderer.game) return;
+			if (!renderer.game) {
+				return;
+			}
 
 			renderer.draw_grid();
 			renderer.draw_structures();
@@ -416,22 +426,13 @@
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
-			let players = renderer.game.players;
-
 			for (let n = 0; n < renderer.players(); n++) {
 
-				let player = players[n];
-				let colour = colours[n];
-				let x = player.factory_location.x;
-				let y = player.factory_location.y;
+				let x = renderer.game.players[n].factory_location.x;
+				let y = renderer.game.players[n].factory_location.y;
 
-				context.fillStyle = colour;
+				context.fillStyle = colours[n];
 				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
-
-				// Circle...
-				// context.beginPath();
-				// context.arc(x * box_width + box_width / 2, y * box_height + box_height / 2, box_width / 2, 0, Math.PI * 2, true);
-				// context.fill();
 			}
 
 			for (let n = 0; n < renderer.dropoff_list.length; n++) {
@@ -443,9 +444,8 @@
 				let x = renderer.dropoff_list[n].x;
 				let y = renderer.dropoff_list[n].y;
 				let pid = renderer.dropoff_list[n].owner;
-				let colour = colours[pid];
 
-				context.fillStyle = colour;
+				context.fillStyle = colours[pid];
 				context.fillRect(x * box_width + box_width / 4, y * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 		};
