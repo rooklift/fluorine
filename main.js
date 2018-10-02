@@ -200,28 +200,28 @@ function make_main_menu() {
 					label: "Up",
 					accelerator: "W",
 					click: () => {
-						windows.send("renderer", "down", -1);
+						windows.send("renderer", "down", 1);
 					}
 				},
 				{
 					label: "Left",
 					accelerator: "A",
 					click: () => {
-						windows.send("renderer", "right", -1);
+						windows.send("renderer", "right", 1);
 					}
 				},
 				{
 					label: "Down",
 					accelerator: "S",
 					click: () => {
-						windows.send("renderer", "down", 1);
+						windows.send("renderer", "down", -1);
 					}
 				},
 				{
 					label: "Right",
 					accelerator: "D",
 					click: () => {
-						windows.send("renderer", "right", 1);
+						windows.send("renderer", "right", -1);
 					}
 				},
 			]
