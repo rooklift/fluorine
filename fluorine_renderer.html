@@ -331,8 +331,8 @@
 			let available_height = window.innerHeight - info_line_height();
 
 			if (renderer.integer_box_sizes === false) {
-				canvas.width = Math.max(100, available_width);
-				canvas.height = Math.max(100, available_height);
+				canvas.width = Math.max(renderer.width, available_width);
+				canvas.height = Math.max(renderer.height, available_height);
 				return;
 			}
 
@@ -340,8 +340,8 @@
 			let desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
 
 			if (desired_width !== canvas.width || desired_height !== canvas.height) {
-				canvas.width = Math.max(100, desired_width);
-				canvas.height = Math.max(100, desired_height);
+				canvas.width = desired_width;
+				canvas.height = desired_height;
 			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
