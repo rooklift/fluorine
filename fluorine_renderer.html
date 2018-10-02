@@ -394,11 +394,11 @@
 				colour_map[list[n]] = "#ffffff";
 			}
 
-			let frame = renderer.frame(turn - 1);
+			let previous_frame = renderer.frame(turn - 1);
 
 			for (let n = 0; n < renderer.players(); n++) {
 
-				let pents = frame.entities[n.toString()];
+				let pents = previous_frame.entities[n.toString()];
 
 				if (pents === undefined) {
 					continue;
