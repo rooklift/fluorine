@@ -376,13 +376,97 @@
 			renderer.send_info();
 		};
 
+		renderer.collision_list_helper = (list, turn) => {
+
+			// Given a list of ship ids colliding, construct a collision
+			// string for the info line. The ships are presumed to have
+			// existed in turn - 1.
+
+			list.sort((a, b) => {a - b});
+
+			if (turn === undefined) {
+				return "Bad call of collision_list_helper()";
+			}
+
+			if (turn <= 0) turn = 1;
+
+			let colour_map = Object.create(null);
+
+			for (let n = 0; n < list.length; n++) {
+				colour_map[list[n]] = "#ffffff";
+			}
+
+			let frame = renderer.frame(turn - 1);
+
+			for (let n = 0; n < renderer.players(); n++) {
+
+				let pents = frame.entities[n.toString()];
+
+				if (pents === undefined) {
+					continue;
+				}
+
+				for (let i = 0; i < list.length; i++) {
+
+					let sid = list[i];
+
+					if (pents[sid.toString()] !== undefined) {
+						colour_map[sid] = colours[n];
+					}
+				}
+			}
+
+			let ret_list = [];
+
+			for (let n = 0; n < list.length; n++) {
+				ret_list.push(`<span style="color: ${colour_map[list[n]]}">${list[n]}</span>`);
+			}
+
+			console.log(ret_list.join(", "));
+			return ret_list.join(", ");
+		}
+
 		renderer.draw_info_line = () => {
 
 			if (!renderer.selection) {
+
 				unitbox.innerHTML = "no selection";
+
 			} else if (renderer.selection.type === "box") {
-				let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-				unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
+
+				// Write info about collisions if needed...
+
+				let showed_collision = false;
+
+				let events = renderer.previous_frame().events;
+
+				for (let n = 0; n < events.length; n++) {
+
+					if (events[n].type === "shipwreck") {
+
+						let x = events[n].location.x;
+						let y = events[n].location.y;
+
+						if (x === renderer.selection.x && y === renderer.selection.y) {
+
+							let sids = [];
+
+							for (let s = 0; s < events[n].ships.length; s++) {
+								sids.push(events[n].ships[s]);
+							}
+
+							unitbox.innerHTML = `<span style="color: #ff0000">Collision:</span> ${renderer.collision_list_helper(sids, renderer.turn)}`;
+							showed_collision = true;
+							break;
+						}
+					}
+				}
+
+				if (showed_collision === false) {
+					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
+					unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
+				}
+
 			} else if (renderer.selection.type === "ship") {
 
 				let info = renderer.ship_info(renderer.selection.id);
@@ -826,8 +910,6 @@
 				lines.push(`	</ul>`);
 				lines.push(`</ul>`);
 			}
-
-			// FIXME: add more info...
 
 			ipcRenderer.send("relay", {
 				receiver: "info",
