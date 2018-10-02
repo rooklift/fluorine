@@ -164,17 +164,33 @@ function make_main_menu() {
 					type: "separator"
 				},
 				{
-					label: "Move to Start",
+					label: "Move to start",
 					accelerator: "Home",
 					click: () => {
 						windows.send("renderer", "forward", -99999);
 					}
 				},
 				{
-					label: "Move to End",
+					label: "Move to end",
 					accelerator: "End",
 					click: () => {
 						windows.send("renderer", "forward", 99999);
+					}
+				},
+			]
+		},
+		{
+			label: "View",
+			submenu: [
+				{
+					label: "Integer box sizes",
+					type: "checkbox",
+					click: (menuItem) => {
+						if (menuItem.checked) {
+							windows.send("renderer", "set", "integer_box_sizes");
+						} else {
+							windows.send("renderer", "unset", "integer_box_sizes");
+						}
 					}
 				},
 			]

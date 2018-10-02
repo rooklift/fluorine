@@ -74,6 +74,8 @@
 		renderer.production_maps = null;
 		renderer.dropoff_list = null;
 
+		renderer.integer_box_sizes = false;
+
 		renderer.open = (filename) => {
 
 			console.log(`Trying to load ${filename}`);
@@ -305,25 +307,39 @@
 			renderer.draw();
 		};
 
+		renderer.set = (varname) => {
+			renderer[varname] = true;
+			renderer.draw();
+		};
+
+		renderer.unset = (varname) => {
+			renderer[varname] = false;
+			renderer.draw();
+		};
+
 		renderer.clear = () => {
+
+			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
+				canvas.width = 100;
+				canvas.height = 100;
+				return;
+			}
 
 			let available_width = window.innerWidth;
 			let available_height = window.innerHeight - info_line_height;
 
-			let desired_width;
-			let desired_height;
-
-			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
-				desired_width = 100;
-				desired_height = 100;
-			} else {
-				desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
-				desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+			if (renderer.integer_box_sizes === false) {
+				canvas.width = Math.max(100, available_width);
+				canvas.height = Math.max(100, available_height);
+				return;
 			}
 
+			let desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
+			let desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+
 			if (desired_width !== canvas.width || desired_height !== canvas.height) {
-				canvas.width = desired_width;
-				canvas.height = desired_height;
+				canvas.width = Math.max(100, desired_width);
+				canvas.height = Math.max(100, desired_height);
 			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
@@ -597,12 +613,12 @@
 
 		renderer.box_width = () => {
 			if (renderer.width <= 0) return 1;
-			return canvas.width / renderer.width;		// Elsewhere we ensure canvas size is a multiple of game width
+			return Math.max(1, canvas.width / renderer.width);
 		};
 
 		renderer.box_height = () => {
 			if (renderer.height <= 0) return 1;
-			return canvas.height / renderer.height;		// Elsewhere we ensure canvas size is a multiple of game height
+			return Math.max(1, canvas.height / renderer.height);
 		};
 
 		renderer.game_length = () => {
@@ -804,6 +820,14 @@
 
 	ipcRenderer.on("toggle", (event, varname) => {
 		renderer.toggle(varname);
+	});
+
+	ipcRenderer.on("set", (event, varname) => {
+		renderer.set(varname);
+	});
+
+	ipcRenderer.on("unset", (event, varname) => {
+		renderer.unset(varname);
 	});
 
 	ipcRenderer.on("log", (event, msg) => {
