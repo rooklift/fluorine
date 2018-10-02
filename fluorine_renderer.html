@@ -324,13 +324,8 @@
 			renderer.draw();
 		};
 
-		renderer.set = (varname) => {
-			renderer[varname] = true;
-			renderer.draw();
-		};
-
-		renderer.unset = (varname) => {
-			renderer[varname] = false;
+		renderer.set = (varname, value) => {
+			renderer[varname] = value;
 			renderer.draw();
 		};
 
@@ -882,12 +877,8 @@
 		renderer.toggle(varname);
 	});
 
-	ipcRenderer.on("set", (event, varname) => {
-		renderer.set(varname);
-	});
-
-	ipcRenderer.on("unset", (event, varname) => {
-		renderer.unset(varname);
+	ipcRenderer.on("set", (event, foo) => {
+		renderer.set(foo[0], foo[1]);			// Format is [varname, value]
 	});
 
 	ipcRenderer.on("log", (event, msg) => {

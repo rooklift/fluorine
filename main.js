@@ -187,9 +187,9 @@ function make_main_menu() {
 					type: "checkbox",
 					click: (menuItem) => {
 						if (menuItem.checked) {
-							windows.send("renderer", "set", "integer_box_sizes");
+							windows.send("renderer", "set", ["integer_box_sizes", true]);
 						} else {
-							windows.send("renderer", "unset", "integer_box_sizes");
+							windows.send("renderer", "set", ["integer_box_sizes", false]);
 						}
 					}
 				},
@@ -222,6 +222,16 @@ function make_main_menu() {
 					accelerator: "D",
 					click: () => {
 						windows.send("renderer", "right", -1);
+					}
+				},
+				{
+					type: "separator"
+				},
+				{
+					label: "Reset",
+					click: () => {
+						windows.send("renderer", "set", ["offset_x", 0]);
+						windows.send("renderer", "set", ["offset_y", 0]);
 					}
 				},
 			]
