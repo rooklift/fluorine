@@ -355,7 +355,7 @@
 				unitbox.innerHTML = "no selection";
 			} else if (renderer.selection.type === "box") {
 				let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-				unitbox.innerHTML = `Box ${renderer.selection.x}, ${renderer.selection.y} &mdash; ${val}`;
+				unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
 			} else if (renderer.selection.type === "ship") {
 
 				let info = renderer.ship_info(renderer.selection.id);
