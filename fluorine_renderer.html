@@ -454,14 +454,10 @@
 				let events = renderer.previous_frame().events;
 
 				for (let n = 0; n < events.length; n++) {
-
 					if (events[n].type === "shipwreck") {
-
 						let x = events[n].location.x;
 						let y = events[n].location.y;
-
 						if (x === renderer.selection.x && y === renderer.selection.y) {
-
 							unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
 							showed_collision = true;
 							break;
@@ -487,15 +483,9 @@
 					let events = renderer.previous_frame().events;
 
 					for (let n = 0; n < events.length; n++) {
-
 						if (events[n].type === "shipwreck") {
-
 							for (let s = 0; s < events[n].ships.length; s++) {
-
-								let sid = events[n].ships[s];
-
-								if (sid === renderer.selection.id) {
-
+								if (events[n].ships[s] === renderer.selection.id) {
 									unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
 									showed_collision = true;
 									break;
