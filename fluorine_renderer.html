@@ -456,24 +456,30 @@
 
 			if (renderer.selection.type === "ship") {
 
-				let collision = renderer.collision_involving_ship(renderer.selection.id);
-
-				if (collision) {
-					unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
-					return;
-				}
-
 				let info = renderer.ship_info(renderer.selection.id);
 
 				if (info === null) {
+
+					let collision = renderer.collision_involving_ship(renderer.selection.id);
+
+					if (collision) {
+						unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
+						return;
+					}
+
+					// So we didn't collide last turn, it's just a normal case of ship not present.
+
 					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
 					unitbox.innerHTML = `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
 					return;
 				}
 
+				let colour = colours[renderer.selection.owner];
+
 				unitbox.innerHTML =
-							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
-							+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+							`<span style="color: ${colour};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
+							+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
+							+ ` &mdash; next move: <span style="color: ${colour};">${renderer.ship_move(renderer.selection.id)}</span>`;
 			}
 		};
 
@@ -857,6 +863,31 @@
 			}
 
 			return null;
+		};
+
+		renderer.ship_move = (sid) => {
+
+			let lookups = {"n": "up", "s": "down", "e": "right", "w": "left", "o": "&mdash;"};
+
+			for (let p = 0; p < renderer.players(); p++) {
+
+				let some_moves = renderer.current_frame().moves[p.toString()];
+
+				if (some_moves === undefined) {
+					continue;
+				}
+
+				for (let n = 0; n < some_moves.length; n++) {
+
+					let move = some_moves[n];
+
+					if (move.type === "m" && move.id === sid) {
+						return lookups[move.direction];
+					}
+				}
+			}
+
+			return "?";
 		};
 
 		renderer.ship_count = (pid) => {
