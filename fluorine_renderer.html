@@ -258,9 +258,9 @@
 
 			for (let n = 0; n < renderer.game_length(); n++) {
 
-				for (let e = 0; e < renderer.frame(n).events.length; e++) {
+				for (let i = 0; i < renderer.frame(n).events.length; i++) {
 
-					let event = renderer.frame(n).events[e];
+					let event = renderer.frame(n).events[i];
 
 					if (event.type === "construct") {
 
