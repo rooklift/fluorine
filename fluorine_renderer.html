@@ -188,8 +188,8 @@
 
 			let player_names = [];
 
-			for (let n = 0; n < renderer.players(); n++) {
-				player_names.push(renderer.game.players[n].name);
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				player_names.push(renderer.game.players[pid].name);
 			}
 
 			document.title = player_names.join(" - ");
@@ -333,7 +333,7 @@
 
 		// --------------------------------------------------------------
 
-		renderer.collision_list_helper = (list, turn) => {
+		renderer.collision_list_helper = (sids, turn) => {
 
 			// Given a list of ship ids colliding, construct a collision
 			// string for the info line. The ships are presumed to have
@@ -343,29 +343,28 @@
 				return "Bad call of collision_list_helper()";
 			}
 
-			if (turn <= 0) turn = 1;
-
 			let colour_map = Object.create(null);
 
-			for (let n = 0; n < list.length; n++) {
-				colour_map[list[n]] = "#ffffff";
+			for (let n = 0; n < sids.length; n++) {
+				let sid = sids[n];
+				colour_map[sid] = "#ffffff";
 			}
 
 			let previous_frame = renderer.frame(turn - 1);
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let pents = previous_frame.entities[n.toString()];
+				let some_ships = previous_frame.entities[pid.toString()];
 
-				if (pents === undefined) {
+				if (some_ships === undefined) {
 					continue;
 				}
 
-				for (let i = 0; i < list.length; i++) {
+				for (let n = 0; n < sids.length; n++) {
 
-					let sid = list[i];
+					let sid = sids[n];
 
-					if (pents[sid.toString()] !== undefined) {
+					if (some_ships[sid.toString()] !== undefined) {
 						colour_map[sid] = colours[n];
 					}
 				}
@@ -373,8 +372,9 @@
 
 			let ret_list = [];
 
-			for (let n = 0; n < list.length; n++) {
-				ret_list.push(`<span style="color: ${colour_map[list[n]]}">${list[n]}</span>`);
+			for (let n = 0; n < sids.length; n++) {
+				let sid = sids[n];
+				ret_list.push(`<span style="color: ${colour_map[sid]}">${sid}</span>`);
 			}
 
 			return ret_list.join(", ");
@@ -384,8 +384,8 @@
 
 			let sids = [];
 
-			for (let s = 0; s < event.ships.length; s++) {
-				sids.push(event.ships[s]);
+			for (let n = 0; n < event.ships.length; n++) {
+				sids.push(event.ships[n]);
 			}
 
 			sids.sort((a, b) => {
@@ -420,8 +420,8 @@
 
 			for (let n = 0; n < events.length; n++) {
 				if (events[n].type === "shipwreck") {
-					for (let s = 0; s < events[n].ships.length; s++) {
-						if (events[n].ships[s] === sid) {
+					for (let i = 0; i < events[n].ships.length; i++) {
+						if (events[n].ships[i] === sid) {
 							return events[n];
 						}
 					}
@@ -555,7 +555,7 @@
 
 			renderer.draw_grid();
 			renderer.draw_structures();
-			renderer.draw_entities();
+			renderer.draw_ships();
 			renderer.draw_mining();
 			renderer.draw_collisions();
 			renderer.draw_selection_crosshairs();
@@ -587,12 +587,12 @@
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let x = renderer.game.players[n].factory_location.x;
-				let y = renderer.game.players[n].factory_location.y;
+				let x = renderer.game.players[pid].factory_location.x;
+				let y = renderer.game.players[pid].factory_location.y;
 
-				context.fillStyle = colours[n];
+				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
@@ -613,32 +613,32 @@
 			}
 		};
 
-		renderer.draw_entities = () => {
+		renderer.draw_ships = () => {
 
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let colour = colours[n];
+				let colour = colours[pid];
 
-				let pents = frame.entities[n.toString()];
+				let some_ships = frame.entities[pid.toString()];
 
-				if (pents === undefined) {
+				if (some_ships === undefined) {
 					continue;
 				}
 
-				for (let e in pents) {
+				for (let sid in some_ships) {
 
-					if (pents.hasOwnProperty(e) === false) {
+					if (some_ships.hasOwnProperty(sid) === false) {
 						continue;
 					}
 
-					let entity = pents[e];
+					let ship = some_ships[sid];
 
-					let x = entity.x;
-					let y = entity.y;
+					let x = ship.x;
+					let y = ship.y;
 
 					context.fillStyle = colour;
 					let [i, j] = renderer.offset_adjust(x, y);
@@ -649,31 +649,29 @@
 
 		renderer.draw_mining = () => {
 
-			if (renderer.turn <= 0) return;
-
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let pents = frame.entities[n.toString()];
+				let some_ships = frame.entities[pid.toString()];
 
-				if (pents === undefined) {
+				if (some_ships === undefined) {
 					continue;
 				}
 
-				for (let e in pents) {
+				for (let sid in some_ships) {
 
-					if (pents.hasOwnProperty(e) === false) {
+					if (some_ships.hasOwnProperty(sid) === false) {
 						continue;
 					}
 
-					let entity = pents[e];
+					let ship = some_ships[sid];
 
-					let x = entity.x;
-					let y = entity.y;
+					let x = ship.x;
+					let y = ship.y;
 
 					if (renderer.production_maps[renderer.turn][x][y] >= renderer.production_maps[renderer.turn - 1][x][y]) {
 						continue;
@@ -839,15 +837,15 @@
 
 			// Returns null if the ship can't be found...
 
-			for (let p = 0; p < renderer.players(); p++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let pents = renderer.current_frame().entities[p.toString()];
+				let some_ships = renderer.current_frame().entities[pid.toString()];
 
-				if (pents === undefined) {
+				if (some_ships === undefined) {
 					continue;
 				}
 
-				let hit = pents[sid.toString()];
+				let hit = some_ships[sid.toString()];
 
 				if (hit) {
 
@@ -869,9 +867,9 @@
 
 			let lookups = {"n": "up", "s": "down", "e": "right", "w": "left", "o": "&mdash;"};
 
-			for (let p = 0; p < renderer.players(); p++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let some_moves = renderer.current_frame().moves[p.toString()];
+				let some_moves = renderer.current_frame().moves[pid.toString()];
 
 				if (some_moves === undefined) {
 					continue;
@@ -895,15 +893,15 @@
 			if (!renderer.game) return 0;
 
 			let frame = renderer.current_frame();
-			let pents = frame.entities[pid.toString()];
+			let some_ships = frame.entities[pid.toString()];
 
-			if (pents === undefined) return 0;
+			if (some_ships === undefined) return 0;
 
 			let count = 0;
 
-			for (let e in pents) {
+			for (let sid in some_ships) {
 
-				if (pents.hasOwnProperty(e) === false) {
+				if (some_ships.hasOwnProperty(sid) === false) {
 					continue;
 				}
 
@@ -918,19 +916,19 @@
 			if (!renderer.game) return 0;
 
 			let frame = renderer.current_frame();
-			let pents = frame.entities[pid.toString()];
+			let some_ships = frame.entities[pid.toString()];
 
-			if (pents === undefined) return 0;
+			if (some_ships === undefined) return 0;
 
 			let count = 0;
 
-			for (let e in pents) {
+			for (let sid in some_ships) {
 
-				if (pents.hasOwnProperty(e) === false) {
+				if (some_ships.hasOwnProperty(sid) === false) {
 					continue;
 				}
 
-				count += pents[e].energy;
+				count += some_ships[sid].energy;
 			}
 
 			return count;
@@ -963,25 +961,25 @@
 
 			let frame = renderer.current_frame();
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let pents = frame.entities[n.toString()];
+				let some_ships = frame.entities[pid.toString()];
 
-				if (pents === undefined) {
+				if (some_ships === undefined) {
 					continue;
 				}
 
-				for (let e in pents) {
+				for (let sid in some_ships) {
 
-					if (pents.hasOwnProperty(e) === false) {
+					if (some_ships.hasOwnProperty(sid) === false) {
 						continue;
 					}
 
-					let entity = pents[e];
+					let ship = some_ships[sid];
 
-					if (x === entity.x && y === entity.y) {
+					if (x === ship.x && y === ship.y) {
 
-						if (current && current.type === "ship" && current.id === parseInt(e, 10)) {
+						if (current && current.type === "ship" && current.id === parseInt(sid, 10)) {
 
 							// In the event that we've already selected the ship,
 							// select the box underneath it instead.
@@ -989,7 +987,7 @@
 							return {type: "box", x: x, y: y};
 						}
 
-						return {type: "ship", turn: renderer.turn, id: parseInt(e, 10), owner: n};
+						return {type: "ship", turn: renderer.turn, id: parseInt(sid, 10), owner: n};
 					}
 				}
 			}
@@ -1008,17 +1006,17 @@
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
 			lines.push(`<p>${renderer.width} x ${renderer.height}</p>`);
 
-			for (let n = 0; n < renderer.players(); n++) {
+			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let deposited = renderer.previous_frame().deposited[n.toString()];
+				let deposited = renderer.previous_frame().deposited[pid.toString()];
 				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
-				let current = renderer.previous_frame().energy[n.toString()];
+				let current = renderer.previous_frame().energy[pid.toString()];
 				let spent = deposited + initial - current;
 
-				let colour = colours[n];
-				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[n].name}</h2>`);
+				let colour = colours[pid];
+				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name}</h2>`);
 				lines.push(`<ul>`);
-				lines.push(`<li>Ships: ${renderer.ship_count(n)} &mdash; carrying ${renderer.transit_count(n)}</li>`);
+				lines.push(`<li>Ships: ${renderer.ship_count(pid)} &mdash; carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Energy:`);
 				lines.push(`	<ul>`);
 				lines.push(`		<li>Deposits: ${deposited + initial}</li>`);
