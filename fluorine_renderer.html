@@ -80,6 +80,8 @@
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
 
+		// --------------------------------------------------------------
+
 		renderer.open = (filename) => {
 
 			console.log(`Trying to load ${filename}`);
@@ -173,11 +175,11 @@
 			renderer.make_production_maps();
 			renderer.make_dropoff_list();
 
-			renderer.draw_title();
+			renderer.set_title();
 			renderer.draw();
 		};
 
-		renderer.draw_title = () => {
+		renderer.set_title = () => {
 
 			if (!renderer.game) {
 				document.title = "Fluorine";
@@ -192,6 +194,8 @@
 
 			document.title = player_names.join(" - ");
 		};
+
+		// --------------------------------------------------------------
 
 		renderer.make_production_maps = () => {
 
@@ -272,6 +276,8 @@
 			}
 		};
 
+		// --------------------------------------------------------------
+
 		renderer.save = (filename) => {
 			if (!filename || !renderer.game) return;
 			fs.writeFileSync(filename, JSON.stringify(renderer.game, null, "\t"));
@@ -292,19 +298,15 @@
 			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame().moves, null, "\t"));
 		};
 
+		// --------------------------------------------------------------
+
 		renderer.forward = (n) => {		// Negative arguments are allowed (go back).
 
 			if (!renderer.game) return;
 
 			renderer.turn += n;
-
-			if (renderer.turn < 0) {
-				renderer.turn = 0;
-			}
-
-			if (renderer.turn >= renderer.game_length()) {
-				renderer.turn = renderer.game_length() - 1;
-			}
+			if (renderer.turn < 0) renderer.turn = 0;
+			if (renderer.turn >= renderer.game_length()) renderer.turn = renderer.game_length() - 1;
 
 			renderer.draw();
 		};
@@ -329,54 +331,7 @@
 			renderer.draw();
 		};
 
-		renderer.clear = () => {
-
-			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
-				canvas.width = 100;
-				canvas.height = 100;
-				return;
-			}
-
-			let available_width = window.innerWidth;
-			let available_height = window.innerHeight - info_line_height();
-
-			if (renderer.integer_box_sizes === false) {
-				canvas.width = Math.max(renderer.width, available_width);
-				canvas.height = Math.max(renderer.height, available_height);
-				return;
-			}
-
-			let desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
-			let desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
-
-			if (desired_width !== canvas.width || desired_height !== canvas.height) {
-				canvas.width = desired_width;
-				canvas.height = desired_height;
-			}
-
-			context.clearRect(0, 0, canvas.width, canvas.height);
-		};
-
-		renderer.draw = () => {
-
-			renderer.show_selection_info();		// Done first since in rare cases the info_line size can change, affecting view space.
-			renderer.show_turn();				// Likewise.
-
-			renderer.clear();
-
-			if (!renderer.game) {
-				return;
-			}
-
-			renderer.draw_grid();
-			renderer.draw_structures();
-			renderer.draw_entities();
-			renderer.draw_mining();
-			renderer.draw_collisions();
-			renderer.draw_selection_crosshairs();
-
-			renderer.send_info();
-		};
+		// --------------------------------------------------------------
 
 		renderer.collision_list_helper = (list, turn) => {
 
@@ -476,6 +431,8 @@
 			return null;
 		}
 
+		// --------------------------------------------------------------
+
 		renderer.show_selection_info = () => {
 
 			if (!renderer.selection) {
@@ -524,6 +481,8 @@
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
 		};
 
+		// --------------------------------------------------------------
+
 		renderer.offset_adjust = (x, y, undo_flag) => {
 
 			// Given coords x, y, return x, y adjusted by current offset.
@@ -547,34 +506,55 @@
 			return [x, y];
 		};
 
-		renderer.ship_info = (id) => {
+		// --------------------------------------------------------------
 
-			// Returns null if the ship can't be found...
+		renderer.clear = () => {
 
-			for (let p = 0; p < renderer.players(); p++) {
-
-				let pents = renderer.current_frame().entities[p.toString()];
-
-				if (pents === undefined) {
-					continue;
-				}
-
-				let hit = pents[id.toString()];
-
-				if (hit) {
-
-					let ret = Object.create(null);
-
-					ret.x = hit.x;
-					ret.y = hit.y;
-					ret.energy = hit.energy;
-					ret.is_inspired = hit.is_inspired;
-
-					return ret;
-				}
+			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
+				canvas.width = 100;
+				canvas.height = 100;
+				return;
 			}
 
-			return null;
+			let available_width = window.innerWidth;
+			let available_height = window.innerHeight - info_line_height();
+
+			if (renderer.integer_box_sizes === false) {
+				canvas.width = Math.max(renderer.width, available_width);
+				canvas.height = Math.max(renderer.height, available_height);
+				return;
+			}
+
+			let desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
+			let desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
+
+			if (desired_width !== canvas.width || desired_height !== canvas.height) {
+				canvas.width = desired_width;
+				canvas.height = desired_height;
+			}
+
+			context.clearRect(0, 0, canvas.width, canvas.height);
+		};
+
+		renderer.draw = () => {
+
+			renderer.show_selection_info();		// Done first since in rare cases the info_line size can change, affecting view space.
+			renderer.show_turn();				// Likewise.
+
+			renderer.clear();
+
+			if (!renderer.game) {
+				return;
+			}
+
+			renderer.draw_grid();
+			renderer.draw_structures();
+			renderer.draw_entities();
+			renderer.draw_mining();
+			renderer.draw_collisions();
+			renderer.draw_selection_crosshairs();
+
+			renderer.send_info();
 		};
 
 		renderer.draw_grid = () => {
@@ -813,10 +793,19 @@
 			return Math.max(1, canvas.height / renderer.height);
 		};
 
+		// --------------------------------------------------------------
+
 		renderer.game_length = () => {
 			if (!renderer.game) return 0;
 			return renderer.game.full_frames.length;
 		};
+
+		renderer.players = () => {
+			if (!renderer.game) return 0;
+			return renderer.game.players.length;
+		};
+
+		// --------------------------------------------------------------
 
 		renderer.frame = (n) => {
 
@@ -838,9 +827,36 @@
 			return renderer.frame(renderer.turn - 1);
 		};
 
-		renderer.players = () => {
-			if (!renderer.game) return 0;
-			return renderer.game.players.length;
+		// --------------------------------------------------------------
+
+		renderer.ship_info = (sid) => {
+
+			// Returns null if the ship can't be found...
+
+			for (let p = 0; p < renderer.players(); p++) {
+
+				let pents = renderer.current_frame().entities[p.toString()];
+
+				if (pents === undefined) {
+					continue;
+				}
+
+				let hit = pents[sid.toString()];
+
+				if (hit) {
+
+					let ret = Object.create(null);
+
+					ret.x = hit.x;
+					ret.y = hit.y;
+					ret.energy = hit.energy;
+					ret.is_inspired = hit.is_inspired;
+
+					return ret;
+				}
+			}
+
+			return null;
 		};
 
 		renderer.ship_count = (pid) => {
@@ -888,6 +904,8 @@
 
 			return count;
 		};
+
+		// --------------------------------------------------------------
 
 		renderer.click = (event) => {
 
@@ -947,6 +965,8 @@
 
 			return {type: "box", x: x, y: y};
 		};
+
+		// --------------------------------------------------------------
 
 		renderer.send_info = () => {
 
