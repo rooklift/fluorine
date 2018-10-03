@@ -30,3 +30,7 @@ Once the dependencies are installed, it should be possible to build a standalone
 # Usage
 
 Open a file from the menu, or via command line with `electron . -o filename.hlt`. Drag-and-dropping a file onto the window may also work. Once a file is opened, navigate with left and right arrow keys.
+
+# Thanks
+
+Thanks to Snaar, Shummie, Ewirkerman, and Lidavidm for helpful discussions. *Fluorine* was developed during the beta phase of Halite 3 despite me not actually being in the beta, so I relied on them for information (with permission of the organisers, of course).
