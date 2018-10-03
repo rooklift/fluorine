@@ -228,10 +228,17 @@ function make_main_menu() {
 					type: "separator"
 				},
 				{
-					label: "Reset",
+					label: "Reset camera",
 					click: () => {
 						windows.send("renderer", "set", ["offset_x", 0]);
 						windows.send("renderer", "set", ["offset_y", 0]);
+					}
+				},
+				{
+					label: "Clear selection",
+					accelerator: "Escape",
+					click: () => {
+						windows.send("renderer", "set", ["selection", null]);
 					}
 				},
 			]
