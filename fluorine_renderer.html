@@ -359,7 +359,9 @@
 
 		renderer.draw = () => {
 
-			renderer.draw_info_line();		// Done first since in rare cases the info_line size can change, affecting view space.
+			renderer.show_selection_info();		// Done first since in rare cases the info_line size can change, affecting view space.
+			renderer.show_turn();				// Likewise.
+
 			renderer.clear();
 
 			if (!renderer.game) {
@@ -438,80 +440,87 @@
 			return `<span style="color: #ff0000">Collision:</span> ${renderer.collision_list_helper(sids, turn)}`;
 		};
 
-		renderer.draw_info_line = () => {
+		renderer.collision_at = (x, y) => {
 
-			if (!renderer.selection) {
+			// Returns the event from the previous frame, or null if not found...
 
-				unitbox.innerHTML = "no selection";
+			let events = renderer.previous_frame().events;
 
-			} else if (renderer.selection.type === "box") {
-
-				// Write info about collisions if needed...
-
-				let showing_collision = false;
-
-				let events = renderer.previous_frame().events;
-
-				for (let n = 0; n < events.length; n++) {
-					if (events[n].type === "shipwreck") {
-						let x = events[n].location.x;
-						let y = events[n].location.y;
-						if (x === renderer.selection.x && y === renderer.selection.y) {
-							unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
-							showing_collision = true;
-							break;
-						}
-					}
-				}
-
-				if (showing_collision === false) {
-					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-					unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
-				}
-
-			} else if (renderer.selection.type === "ship") {
-
-				let info = renderer.ship_info(renderer.selection.id);
-
-				// Firstly, if the ship was just destroyed, show the collision info instead...
-
-				let showing_collision = false;
-
-				if (info === null) {
-
-					let events = renderer.previous_frame().events;
-
-					for (let n = 0; n < events.length; n++) {
-						if (events[n].type === "shipwreck") {
-							for (let s = 0; s < events[n].ships.length; s++) {
-								if (events[n].ships[s] === renderer.selection.id) {
-									unitbox.innerHTML = renderer.collision_info_string(events[n], renderer.turn);
-									showing_collision = true;
-									break;
-								}
-							}
-						}
-					}
-				}
-
-				// Otherwise, show ship info if possible...
-
-				if (showing_collision === false) {
-
-					if (info === null && renderer.turn < renderer.selection.turn) {
-						unitbox.innerHTML =
-							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (not yet present)`;
-					} else if (info === null) {
-						unitbox.innerHTML =
-							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (no longer present)`;
-					} else {
-						unitbox.innerHTML =
-							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
-							+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+			for (let n = 0; n < events.length; n++) {
+				if (events[n].type === "shipwreck") {
+					if (x === events[n].location.x && y === events[n].location.y) {
+						return events[n];
 					}
 				}
 			}
 
+			return null;
+		};
+
+		renderer.collision_involving_ship = (sid) => {
+
+			// Returns the event from the previous frame, or null if not found...
+
+			let events = renderer.previous_frame().events;
+
+			for (let n = 0; n < events.length; n++) {
+				if (events[n].type === "shipwreck") {
+					for (let s = 0; s < events[n].ships.length; s++) {
+						if (events[n].ships[s] === sid) {
+							return events[n];
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+
+		renderer.show_selection_info = () => {
+
+			if (!renderer.selection) {
+				unitbox.innerHTML = "no selection";
+				return;
+			}
+
+			if (renderer.selection.type === "box") {
+
+				let collision = renderer.collision_at(renderer.selection.x, renderer.selection.y)
+
+				if (collision) {
+					unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
+				} else {
+					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
+					unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
+				}
+
+				return;
+			}
+
+			if (renderer.selection.type === "ship") {
+
+				let collision = renderer.collision_involving_ship(renderer.selection.id);
+
+				if (collision) {
+					unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
+					return;
+				}
+
+				let info = renderer.ship_info(renderer.selection.id);
+
+				if (info === null) {
+					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
+					unitbox.innerHTML = `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
+					return;
+				}
+
+				unitbox.innerHTML =
+							`<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${info.x}, ${info.y})`
+							+ ` &mdash; <span style="color: ${colours[renderer.selection.owner]};">${info.energy}</span>`;
+			}
+		};
+
+		renderer.show_turn = () => {
 			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
 		};
 
@@ -739,34 +748,26 @@
 
 				} else {
 
-					// If the ship was just destroyed, show the collision info instead...
+					// Ship doesn't currently exist, was it just destroyed?
 
-					let showing_collision = false;
+					let collision = renderer.collision_involving_ship(renderer.selection.id);
 
-					if (info === null) {
+					if (collision) {
 
-						let events = renderer.previous_frame().events;
+						x = collision.location.x;
+						y = collision.location.y;
 
-						for (let n = 0; n < events.length; n++) {
-							if (events[n].type === "shipwreck") {
-								for (let s = 0; s < events[n].ships.length; s++) {
-									if (events[n].ships[s] === renderer.selection.id) {
-										x = events[n].location.x;
-										y = events[n].location.y;
-										showing_collision = true;
-										break;
-									}
-								}
-							}
-						}
-					}
+					} else {
 
-					if (showing_collision === false) {
-						return;
+						return;		// Return in the normal case.
+
 					}
 				}
+
 			} else {
-				return;
+
+				return;				// Return due to unknown selection type.
+
 			}
 
 			let [i, j] = renderer.offset_adjust(x, y);
@@ -818,8 +819,12 @@
 		};
 
 		renderer.frame = (n) => {
+
+			// Returns frame n, or if out of bounds, the first or last frame.
+
 			if (!renderer.game) return null;
-			if (n < 0 || n >= renderer.game_length()) return null;
+			if (n >= renderer.game_length()) n = renderer.game_length() - 1;
+			if (n < 0) n = 0;
 			return renderer.game.full_frames[n];
 		};
 
@@ -830,7 +835,6 @@
 
 		renderer.previous_frame = () => {
 			if (!renderer.game) return null;
-			if (renderer.turn <= 0) return renderer.frame(0);	// Return the zeroth frame if we're there, this is OK in all cases
 			return renderer.frame(renderer.turn - 1);
 		};
 
