@@ -429,7 +429,7 @@
 			}
 
 			return null;
-		}
+		};
 
 		// --------------------------------------------------------------
 
@@ -442,7 +442,7 @@
 
 			if (renderer.selection.type === "box") {
 
-				let collision = renderer.collision_at(renderer.selection.x, renderer.selection.y)
+				let collision = renderer.collision_at(renderer.selection.x, renderer.selection.y);
 
 				if (collision) {
 					unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
