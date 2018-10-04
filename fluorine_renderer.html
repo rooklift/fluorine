@@ -69,6 +69,7 @@
 		renderer.height = 0;
 		renderer.production_maps = null;
 		renderer.dropoff_list = null;
+		renderer.sid_pid_map = null;
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
@@ -169,6 +170,7 @@
 
 			renderer.make_production_maps();
 			renderer.make_dropoff_list();
+			renderer.make_sid_pid_map();
 
 			renderer.set_title();
 			renderer.draw();
@@ -191,6 +193,24 @@
 		};
 
 		// --------------------------------------------------------------
+
+		renderer.make_sid_pid_map = () => {
+
+			renderer.sid_pid_map = Object.create(null);
+
+			for (let n = 0; n < renderer.game_length(); n++) {
+
+				let frame = renderer.frame(n);
+				let events = frame.events;
+
+				for (let i = 0; i < events.length; i++) {
+					let event = events[i];
+					if (event.type === "spawn") {
+						renderer.sid_pid_map[event.id] = event.owner_id;
+					}
+				}
+			}
+		};
 
 		renderer.make_production_maps = () => {
 
@@ -328,68 +348,6 @@
 
 		// --------------------------------------------------------------
 
-		renderer.collision_list_helper = (sids, turn) => {
-
-			// Given a list of ship ids colliding, construct a collision
-			// string for the info line. The ships are presumed to have
-			// existed in turn - 1.
-
-			if (turn === undefined) {
-				return "Bad call of collision_list_helper()";
-			}
-
-			let colour_map = Object.create(null);
-
-			for (let n = 0; n < sids.length; n++) {
-				let sid = sids[n];
-				colour_map[sid] = "#ffffff";
-			}
-
-			let previous_frame = renderer.frame(turn - 1);
-
-			for (let pid = 0; pid < renderer.players(); pid++) {
-
-				let some_ships = previous_frame.entities[pid];
-
-				if (some_ships === undefined) {
-					continue;
-				}
-
-				for (let n = 0; n < sids.length; n++) {
-
-					let sid = sids[n];
-
-					if (some_ships[sid] !== undefined) {
-						colour_map[sid] = colours[pid];
-					}
-				}
-			}
-
-			let ret_list = [];
-
-			for (let n = 0; n < sids.length; n++) {
-				let sid = sids[n];
-				ret_list.push(`<span style="color: ${colour_map[sid]}">${sid}</span>`);
-			}
-
-			return ret_list.join(", ");
-		};
-
-		renderer.collision_string = (event, turn) => {
-
-			let sids = [];
-
-			for (let n = 0; n < event.ships.length; n++) {
-				sids.push(event.ships[n]);
-			}
-
-			sids.sort((a, b) => {
-				return a - b;
-			});
-
-			return `<span style="color: #ff0000">Collision:</span> ${renderer.collision_list_helper(sids, turn)}`;
-		};
-
 		renderer.collision_at = (x, y) => {
 
 			// Returns the event from the previous frame, or null if not found...
@@ -465,6 +423,29 @@
 			}
 		};
 
+		renderer.collision_string = (event) => {
+
+			let sids = [];
+
+			for (let n = 0; n < event.ships.length; n++) {
+				sids.push(event.ships[n]);
+			}
+
+			sids.sort((a, b) => {
+				return a - b;
+			});
+
+			let string_list = [];
+
+			for (let n = 0; n < sids.length; n++) {
+				let sid = sids[n];
+				let pid = renderer.sid_pid_map[sid];
+				string_list.push(`<span style="color: ${colours[pid]}">${sid}</span>`);
+			}
+
+			return `<span style="color: #ff0000">Collision:</span> ${string_list.join(", ")}`;
+		};
+
 		renderer.selection_string = () => {
 
 			if (!renderer.selection) {
@@ -479,7 +460,7 @@
 				let collision = renderer.collision_at(x, y);
 
 				if (collision) {
-					return `${renderer.box_string(x, y, true)} &ndash; ${renderer.collision_string(collision, renderer.turn)}`;
+					return `${renderer.box_string(x, y, true)} &ndash; ${renderer.collision_string(collision)}`;
 				} else {
 					let ship_info = renderer.ship_at(x, y);
 					if (ship_info) {
@@ -498,7 +479,7 @@
 				if (collision) {
 					let x = collision.location.x;
 					let y = collision.location.y;
-					return `${renderer.box_string(x, y)} &ndash; ${renderer.collision_string(collision, renderer.turn)}`;
+					return `${renderer.box_string(x, y)} &ndash; ${renderer.collision_string(collision)}`;
 				}
 
 				return renderer.box_with_ship_string(sid, false);
@@ -913,57 +894,52 @@
 
 			// Returns null if the ship can't be found...
 
-			for (let pid = 0; pid < renderer.players(); pid++) {
+			let pid = renderer.sid_pid_map[sid];
+			let some_ships = renderer.current_frame().entities[pid];
 
-				let some_ships = renderer.current_frame().entities[pid];
-
-				if (some_ships === undefined) {
-					continue;
-				}
-
-				let hit = some_ships[sid];
-
-				if (hit) {
-
-					let ret = Object.create(null);
-
-					ret.sid = sid;
-					ret.pid = pid;
-					ret.x = hit.x;
-					ret.y = hit.y;
-					ret.energy = hit.energy;
-					ret.is_inspired = hit.is_inspired;
-
-					return ret;
-				}
+			if (some_ships === undefined) {
+				return null;
 			}
 
-			return null;
+			let hit = some_ships[sid];
+
+			if (!hit) {
+				return null;
+			}
+
+			let ret = Object.create(null);
+
+			ret.sid = sid;
+			ret.pid = pid;
+			ret.x = hit.x;
+			ret.y = hit.y;
+			ret.energy = hit.energy;
+			ret.is_inspired = hit.is_inspired;
+
+			return ret;
 		};
 
 		renderer.ship_move = (sid) => {
 
 			let lookups = {"n": "up", "s": "down", "e": "right", "w": "left", "o": "&ndash;"};
 
-			for (let pid = 0; pid < renderer.players(); pid++) {
+			let pid = renderer.sid_pid_map[sid];
+			let some_moves = renderer.current_frame().moves[pid];
 
-				let some_moves = renderer.current_frame().moves[pid];
+			if (some_moves === undefined) {
+				return lookups["o"];
+			}
 
-				if (some_moves === undefined) {
-					continue;
-				}
+			for (let n = 0; n < some_moves.length; n++) {
 
-				for (let n = 0; n < some_moves.length; n++) {
+				let move = some_moves[n];
 
-					let move = some_moves[n];
-
-					if (move.type === "m" && move.id === sid) {
-						return lookups[move.direction];
-					}
+				if (move.type === "m" && move.id === sid) {
+					return lookups[move.direction];
 				}
 			}
 
-			return "&ndash;";		// No move present means no move.
+			return lookups["o"];
 		};
 
 		renderer.ship_count = (pid) => {
