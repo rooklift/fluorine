@@ -36,7 +36,7 @@
 
 <div class="left" id="infobox"></div>
 
-<div class="right" id="canvas_holder"><canvas id="canvas"></canvas></div>
+<canvas class="right" id="canvas"></canvas>
 
 <script>
 
@@ -52,7 +52,6 @@
 	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
 
 	const canvas = document.getElementById("canvas");
-	const canvas_holder = document.getElementById("canvas_holder");
 	const infobox = document.getElementById("infobox");
 
 	const context = canvas.getContext("2d");
@@ -1045,8 +1044,6 @@
 
 			if (!renderer.game) return;
 			if (x < 0 || y < 0 || x >= renderer.width || y >= renderer.height) return;
-
-			let frame = renderer.current_frame();
 
 			let ship_info = renderer.ship_at(x, y);
 
