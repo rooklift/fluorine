@@ -654,9 +654,7 @@
 					continue;
 				}
 
-				for (let sid of Object.keys(some_ships)) {
-
-					let ship = some_ships[sid];
+				for (let [sid, ship] of Object.entries(some_ships)) {
 
 					let x = ship.x;
 					let y = ship.y;
@@ -862,9 +860,7 @@
 					continue;
 				}
 
-				for (let sid of Object.keys(some_ships)) {
-
-					let ship = some_ships[sid];
+				for (let [sid, ship] of Object.entries(some_ships)) {
 
 					if (ship.x === x && ship.y === y) {
 
