@@ -194,6 +194,35 @@ function make_main_menu() {
 					}
 				},
 				{
+					label: "Triangles",
+					submenu: [
+						{
+							label: "Show next move",
+							type: "radio",
+							checked: true,
+							click: (menuItem) => {
+								if (menuItem.checked) {
+									windows.send("renderer", "set", ["triangles_show_next", true]);
+								} else {
+									windows.send("renderer", "set", ["triangles_show_next", false]);
+								}
+							}
+						},
+						{
+							label: "Show previous move",
+							type: "radio",
+							checked: false,
+							click: (menuItem) => {
+								if (menuItem.checked) {
+									windows.send("renderer", "set", ["triangles_show_next", false]);
+								} else {
+									windows.send("renderer", "set", ["triangles_show_next", true]);
+								}
+							}
+						}
+					]
+				},
+				{
 					type: "separator"
 				},
 				{

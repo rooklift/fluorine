@@ -20,11 +20,11 @@
 			overflow: hidden;
 		}
 		#canvas {
-		    padding-left: 0;
-		    padding-right: 0;
-		    margin-left: auto;
-		    margin-right: auto;
-		    display: block;
+			padding-left: 0;
+			padding-right: 0;
+			margin-left: auto;
+			margin-right: auto;
+			display: block;
 		}
 	</style>
 </head>
@@ -77,6 +77,7 @@
 		renderer.dropoff_list = null;
 
 		renderer.integer_box_sizes = false;
+		renderer.triangles_show_next = true;
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
 
@@ -558,7 +559,6 @@
 			renderer.draw_grid();
 			renderer.draw_structures();
 			renderer.draw_ships();
-			renderer.draw_mining();
 			renderer.draw_collisions();
 			renderer.draw_selection_crosshairs();
 
@@ -596,6 +596,8 @@
 
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
+				context.fillRect(i * box_width, j * box_height, box_width, box_height);
+				context.fillStyle = "#000000";
 				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 
@@ -611,8 +613,36 @@
 
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
+				context.fillRect(i * box_width, j * box_height, box_width, box_height);
+				context.fillStyle = "#000000";
 				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
+		};
+
+		renderer.get_moves_map = (next_flag) => {
+
+			// All moves stored in previous/next frame, as a map of sid --> direction
+
+			let ret = Object.create(null);
+
+			let frame;
+
+			if (next_flag) {
+				frame = renderer.current_frame();
+			} else {
+				frame = renderer.previous_frame();
+			}
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				let some_moves = frame.moves[pid.toString()];
+				for (let n = 0; n < some_moves.length; n++) {
+					let move = some_moves[n];
+					if (move.type === "m") {
+						ret[move.id] = move.direction;
+					}
+				}
+			}
+			return ret;
 		};
 
 		renderer.draw_ships = () => {
@@ -620,6 +650,8 @@
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
 			let frame = renderer.current_frame();
+
+			let moves_map = renderer.get_moves_map(renderer.triangles_show_next);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -644,44 +676,39 @@
 
 					context.fillStyle = colour;
 					let [i, j] = renderer.offset_adjust(x, y);
-					context.fillRect(i * box_width, j * box_height, box_width, box_height);
-				}
-			}
-		};
 
-		renderer.draw_mining = () => {
-
-			let box_width = renderer.box_width();
-			let box_height = renderer.box_height();
-
-			let frame = renderer.current_frame();
-
-			for (let pid = 0; pid < renderer.players(); pid++) {
-
-				let some_ships = frame.entities[pid.toString()];
-
-				if (some_ships === undefined) {
-					continue;
-				}
-
-				for (let sid in some_ships) {
-
-					if (some_ships.hasOwnProperty(sid) === false) {
-						continue;
+					switch (moves_map[sid]) {
+						case "n":
+							context.beginPath();
+							context.moveTo(i * box_width, (j + 1) * box_height);
+							context.lineTo((i + 1) * box_width, (j + 1) * box_height);
+							context.lineTo((i + 0.5) * box_width, j * box_height);
+							context.fill();
+							break;
+						case "s":
+							context.beginPath();
+							context.moveTo(i * box_width, j * box_height);
+							context.lineTo((i + 1) * box_width, j * box_height);
+							context.lineTo((i + 0.5) * box_width, (j + 1) * box_height);
+							context.fill();
+							break;
+						case "e":
+							context.beginPath();
+							context.moveTo(i * box_width, j * box_height);
+							context.lineTo(i * box_width, (j + 1) * box_height);
+							context.lineTo((i + 1) * box_width, (j + 0.5) * box_height);
+							context.fill();
+							break;
+						case "w":
+							context.beginPath();
+							context.moveTo((i + 1) * box_width, j * box_height);
+							context.lineTo((i + 1) * box_width, (j + 1) * box_height);
+							context.lineTo(i * box_width, (j + 0.5) * box_height);
+							context.fill();
+							break;
+						default:
+							context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 					}
-
-					let ship = some_ships[sid];
-
-					let x = ship.x;
-					let y = ship.y;
-
-					if (renderer.production_maps[renderer.turn][x][y] >= renderer.production_maps[renderer.turn - 1][x][y]) {
-						continue;
-					}
-
-					context.fillStyle = "#000000";
-					let [i, j] = renderer.offset_adjust(x, y);
-					context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 				}
 			}
 		};
