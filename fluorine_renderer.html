@@ -262,7 +262,7 @@
 						let d = Object.create(null);
 						d.x = event.location.x;
 						d.y = event.location.y;
-						d.owner = event.owner_id;
+						d.pid = event.owner_id;
 						d.turn = n;
 
 						renderer.dropoff_list.push(d);
@@ -443,10 +443,10 @@
 
 			if (ship_info === null) {
 				let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
-				return `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
+				return `<span style="color: ${colours[renderer.selection.pid]};">Ship ${renderer.selection.sid}</span> (${cause})`;
 			}
 
-			let colour = colours[ship_info.owner];
+			let colour = colours[ship_info.pid];
 			let mark = ship_info.is_inspired ? "+" : "";
 
 			if (highlight_box) {
@@ -491,7 +491,7 @@
 
 			if (renderer.selection.type === "ship") {
 
-				let sid = renderer.selection.id;
+				let sid = renderer.selection.sid;
 
 				let collision = renderer.collision_involving_ship(sid);
 
@@ -616,7 +616,7 @@
 
 				let x = renderer.dropoff_list[n].x;
 				let y = renderer.dropoff_list[n].y;
-				let pid = renderer.dropoff_list[n].owner;
+				let pid = renderer.dropoff_list[n].pid;
 
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
@@ -762,7 +762,7 @@
 
 			} else if (renderer.selection.type === "ship") {
 
-				let info = renderer.ship_info(renderer.selection.id);
+				let info = renderer.ship_info(renderer.selection.sid);
 
 				if (info) {
 
@@ -773,7 +773,7 @@
 
 					// Ship doesn't currently exist, was it just destroyed?
 
-					let collision = renderer.collision_involving_ship(renderer.selection.id);
+					let collision = renderer.collision_involving_ship(renderer.selection.sid);
 
 					if (collision) {
 
@@ -894,8 +894,8 @@
 
 						let ret = Object.create(null);
 
-						ret.sid = parseInt(sid, 10);
-						ret.owner = pid;
+						ret.sid = parseInt(sid, 10);			// sid above will be a string
+						ret.pid = pid;
 						ret.x = ship.x;
 						ret.y = ship.y;
 						ret.energy = ship.energy;
@@ -928,7 +928,7 @@
 					let ret = Object.create(null);
 
 					ret.sid = sid;
-					ret.owner = pid;
+					ret.pid = pid;
 					ret.x = hit.x;
 					ret.y = hit.y;
 					ret.energy = hit.energy;
@@ -1058,12 +1058,12 @@
 			// User clicked a ship, but in the event that we've already
 			// selected the ship, select the box underneath it instead.
 
-			if (renderer.selection && renderer.selection.type === "ship" && renderer.selection.id === ship_info.sid) {
+			if (renderer.selection && renderer.selection.type === "ship" && renderer.selection.sid === ship_info.sid) {
 				renderer.selection = {type: "box", x: x, y: y};
 				return;
 			}
 
-			renderer.selection = {type: "ship", turn: renderer.turn, id: ship_info.sid, owner: ship_info.owner};
+			renderer.selection = {type: "ship", turn: renderer.turn, sid: ship_info.sid, pid: ship_info.pid};
 			return;
 		};
 
