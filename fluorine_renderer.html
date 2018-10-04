@@ -635,6 +635,9 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 				let some_moves = frame.moves[pid.toString()];
+				if (some_moves === undefined) {
+					continue;
+				}
 				for (let n = 0; n < some_moves.length; n++) {
 					let move = some_moves[n];
 					if (move.type === "m") {
