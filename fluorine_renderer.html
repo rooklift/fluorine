@@ -511,7 +511,7 @@
 			let desired_size;
 
 			if (!renderer.integer_box_sizes) {
-				desired_size = window.innerHeight;
+				desired_size = Math.max(1 * renderer.height, window.innerHeight);
 			} else {
 				desired_size = Math.max(1, Math.floor(window.innerHeight / renderer.height)) * renderer.height;
 			}
