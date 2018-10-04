@@ -386,16 +386,16 @@
 
 		// --------------------------------------------------------------
 
-		renderer.box_string = (x, y, highlighted) => {
+		renderer.box_string = (x, y, highlight_flag) => {
 			let val = renderer.production_maps[renderer.turn][x][y];
-			if (highlighted) {
+			if (highlight_flag) {
 				return `[${x}, ${y}] &ndash; ${val}`;
 			} else {
 				return `${x}, ${y} &ndash; ${val}`;
 			}
 		};
 
-		renderer.box_with_ship_string = (sid, highlight_box) => {
+		renderer.box_with_ship_string = (sid, highlight_box_flag) => {
 
 			let ship_info = renderer.ship_info(sid);
 
@@ -407,7 +407,7 @@
 			let colour = colours[ship_info.pid];
 			let mark = ship_info.is_inspired ? "+" : "";
 
-			if (highlight_box) {
+			if (highlight_box_flag) {
 
 				return `${renderer.box_string(ship_info.x, ship_info.y, true)}`
 						+ ` &ndash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
@@ -609,7 +609,7 @@
 
 		renderer.get_moves_map = (next_flag) => {
 
-			// All moves stored in previous/next frame, as a map of sid --> direction
+			// All moves stored in previous/current frame, as a map of sid --> direction
 
 			let ret = Object.create(null);
 
