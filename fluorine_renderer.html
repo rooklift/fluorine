@@ -430,9 +430,9 @@
 		renderer.box_string = (x, y, highlighted) => {
 			let val = renderer.production_maps[renderer.turn][x][y];
 			if (highlighted) {
-				return `[${x}, ${y}] &mdash; ${val}`;
+				return `[${x}, ${y}] &ndash; ${val}`;
 			} else {
-				return `${x}, ${y} &mdash; ${val}`;
+				return `${x}, ${y} &ndash; ${val}`;
 			}
 		};
 
@@ -451,16 +451,16 @@
 			if (highlight_box) {
 
 				return `${renderer.box_string(ship_info.x, ship_info.y, true)}`
-						+ ` &mdash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
-						+ ` &mdash; <span style="color: ${colour};">${ship_info.energy}</span>`
-						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+						+ ` &ndash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
+						+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
+						+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 
 			} else {
 
 				return `${renderer.box_string(ship_info.x, ship_info.y, false)}`
-						+ ` &mdash; <span style="color: ${colour};">[Ship ${sid}${mark}]</span>`
-						+ ` &mdash; <span style="color: ${colour};">${ship_info.energy}</span>`
-						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+						+ ` &ndash; <span style="color: ${colour};">[Ship ${sid}${mark}]</span>`
+						+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
+						+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 			}
 		};
 
@@ -478,7 +478,7 @@
 				let collision = renderer.collision_at(x, y);
 
 				if (collision) {
-					return `${renderer.box_string(x, y, true)} &mdash; ${renderer.collision_string(collision, renderer.turn)}`;
+					return `${renderer.box_string(x, y, true)} &ndash; ${renderer.collision_string(collision, renderer.turn)}`;
 				} else {
 					let ship_info = renderer.ship_at(x, y);
 					if (ship_info) {
@@ -497,7 +497,7 @@
 				if (collision) {
 					let x = collision.location.x;
 					let y = collision.location.y;
-					return `${renderer.box_string(x, y)} &mdash; ${renderer.collision_string(collision, renderer.turn)}`;
+					return `${renderer.box_string(x, y)} &ndash; ${renderer.collision_string(collision, renderer.turn)}`;
 				}
 
 				return renderer.box_with_ship_string(sid, false);
@@ -942,7 +942,7 @@
 
 		renderer.ship_move = (sid) => {
 
-			let lookups = {"n": "up", "s": "down", "e": "right", "w": "left", "o": "&mdash;"};
+			let lookups = {"n": "up", "s": "down", "e": "right", "w": "left", "o": "&ndash;"};
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -962,7 +962,7 @@
 				}
 			}
 
-			return "&mdash;";		// No move present means no move.
+			return "&ndash;";		// No move present means no move.
 		};
 
 		renderer.ship_count = (pid) => {
@@ -1076,7 +1076,7 @@
 			lines.push(`<p><br></p>`);
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.width} x ${renderer.height} &mdash; ${renderer.turn} / ${renderer.game_length() - 1}</p>`);
+			lines.push(`<p>${renderer.width} x ${renderer.height} &ndash; ${renderer.turn} / ${renderer.game_length() - 1}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -1088,7 +1088,7 @@
 				let colour = colours[pid];
 				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name}</h2>`);
 				lines.push(`<ul>`);
-				lines.push(`<li>Ships: ${renderer.ship_count(pid)} &mdash; carrying ${renderer.transit_count(pid)}</li>`);
+				lines.push(`<li>Ships: ${renderer.ship_count(pid)} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial}</li>`);
 				lines.push(`<li>Spent: ${spent > 0 ? "-" : ""}${spent}</li>`);
 				lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
