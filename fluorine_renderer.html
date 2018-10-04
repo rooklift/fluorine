@@ -349,7 +349,7 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let some_ships = previous_frame.entities[pid.toString()];
+				let some_ships = previous_frame.entities[pid];
 
 				if (some_ships === undefined) {
 					continue;
@@ -359,7 +359,7 @@
 
 					let sid = sids[n];
 
-					if (some_ships[sid.toString()] !== undefined) {
+					if (some_ships[sid] !== undefined) {
 						colour_map[sid] = colours[pid];
 					}
 				}
@@ -641,7 +641,7 @@
 			}
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
-				let some_moves = frame.moves[pid.toString()];
+				let some_moves = frame.moves[pid];
 				if (some_moves === undefined) {
 					continue;
 				}
@@ -667,7 +667,7 @@
 
 				let colour = colours[pid];
 
-				let some_ships = frame.entities[pid.toString()];
+				let some_ships = frame.entities[pid];
 
 				if (some_ships === undefined) {
 					continue;
@@ -876,7 +876,7 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let some_ships = renderer.current_frame().entities[pid.toString()];
+				let some_ships = renderer.current_frame().entities[pid];
 
 				if (some_ships === undefined) {
 					continue;
@@ -915,13 +915,13 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let some_ships = renderer.current_frame().entities[pid.toString()];
+				let some_ships = renderer.current_frame().entities[pid];
 
 				if (some_ships === undefined) {
 					continue;
 				}
 
-				let hit = some_ships[sid.toString()];
+				let hit = some_ships[sid];
 
 				if (hit) {
 
@@ -947,7 +947,7 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let some_moves = renderer.current_frame().moves[pid.toString()];
+				let some_moves = renderer.current_frame().moves[pid];
 
 				if (some_moves === undefined) {
 					continue;
@@ -972,7 +972,7 @@
 
 			let frame = renderer.current_frame();
 
-			let some_ships = frame.entities[pid.toString()];
+			let some_ships = frame.entities[pid];
 
 			if (some_ships === undefined) {
 				return 0;
@@ -998,7 +998,7 @@
 
 			let frame = renderer.current_frame();
 
-			let some_ships = frame.entities[pid.toString()];
+			let some_ships = frame.entities[pid];
 
 			if (some_ships === undefined) {
 				return 0;
@@ -1083,9 +1083,9 @@
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let deposited = renderer.previous_frame().deposited[pid.toString()];
+				let deposited = renderer.previous_frame().deposited[pid];
 				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
-				let current = renderer.previous_frame().energy[pid.toString()];
+				let current = renderer.previous_frame().energy[pid];
 				let spent = deposited + initial - current;
 
 				let colour = colours[pid];
