@@ -1,3 +1,5 @@
+![Fluorine Screenshot](https://raw.githubusercontent.com/fohristiwhirl/fluorine/master/screenshot.png)
+
 # Fluorine
 
 This is a replay viewer for [Halite 3](https://halite.io/).
