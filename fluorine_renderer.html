@@ -375,7 +375,7 @@
 			return ret_list.join(", ");
 		};
 
-		renderer.collision_info_string = (event, turn) => {
+		renderer.collision_string = (event, turn) => {
 
 			let sids = [];
 
@@ -428,7 +428,44 @@
 
 		// --------------------------------------------------------------
 
-		renderer.selection_info = () => {
+		renderer.box_string = (x, y, highlighted) => {
+			let val = renderer.production_maps[renderer.turn][x][y];
+			if (highlighted) {
+				return `[${x}, ${y}] &mdash; ${val}`;
+			} else {
+				return `${x}, ${y} &mdash; ${val}`;
+			}
+		};
+
+		renderer.box_with_ship_string = (sid, highlight_box) => {
+
+			let info = renderer.ship_info(sid);
+
+			if (info === null) {
+				let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
+				return `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
+			}
+
+			let colour = colours[info.owner];
+			let mark = info.is_inspired ? "+" : "";
+
+			if (highlight_box) {
+
+				return `${renderer.box_string(info.x, info.y, true)}`
+						+ ` &mdash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
+						+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
+						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+
+			} else {
+
+				return `${renderer.box_string(info.x, info.y, false)}`
+						+ ` &mdash; <span style="color: ${colour};">[Ship ${sid}${mark}]</span>`
+						+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
+						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+			}
+		};
+
+		renderer.selection_string = () => {
 
 			if (!renderer.selection) {
 				return "no selection";
@@ -436,41 +473,35 @@
 
 			if (renderer.selection.type === "box") {
 
-				let collision = renderer.collision_at(renderer.selection.x, renderer.selection.y);
+				let x = renderer.selection.x;
+				let y = renderer.selection.y;
+
+				let collision = renderer.collision_at(x, y);
 
 				if (collision) {
-					return renderer.collision_info_string(collision, renderer.turn);
+					return `${renderer.box_string(x, y, true)} &mdash; ${renderer.collision_string(collision, renderer.turn)}`;
 				} else {
-					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-					return `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
+					let ship_info = renderer.ship_at(x, y);
+					if (ship_info) {
+						return renderer.box_with_ship_string(ship_info.sid, true);
+					}
+					return `${renderer.box_string(x, y, true)}`;
 				}
 			}
 
 			if (renderer.selection.type === "ship") {
 
-				let info = renderer.ship_info(renderer.selection.id);
+				let sid = renderer.selection.id;
 
-				if (info === null) {
+				let collision = renderer.collision_involving_ship(sid);
 
-					let collision = renderer.collision_involving_ship(renderer.selection.id);
-
-					if (collision) {
-						return renderer.collision_info_string(collision, renderer.turn);
-					}
-
-					// So we didn't collide last turn, it's just a normal case of ship not present.
-
-					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
-					return `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
+				if (collision) {
+					let x = collision.location.x;
+					let y = collision.location.y;
+					return `${renderer.box_string(x, y)} &mdash; ${renderer.collision_string(collision, renderer.turn)}`;
 				}
 
-				let colour = colours[renderer.selection.owner];
-
-				let mark = info.is_inspired ? "+" : "";
-
-				return `<span style="color: ${colour};">Ship ${renderer.selection.id}${mark}</span> (${info.x}, ${info.y})`
-							+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
-							+ ` &mdash; next move <span style="color: ${colour};">${renderer.ship_move(renderer.selection.id)}</span>`;
+				return renderer.box_with_ship_string(sid, false);
 			}
 		};
 
@@ -841,6 +872,43 @@
 
 		// --------------------------------------------------------------
 
+		renderer.ship_at = (x, y) => {
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+
+				let some_ships = renderer.current_frame().entities[pid.toString()];
+
+				if (some_ships === undefined) {
+					continue;
+				}
+
+				for (let sid in some_ships) {
+
+					if (some_ships.hasOwnProperty(sid) === false) {
+						continue;
+					}
+
+					let ship = some_ships[sid];
+
+					if (ship.x === x && ship.y === y) {
+
+						let ret = Object.create(null);
+
+						ret.sid = parseInt(sid, 10);
+						ret.owner = pid;
+						ret.x = ship.x;
+						ret.y = ship.y;
+						ret.energy = ship.energy;
+						ret.is_inspired = ship.is_inspired;
+
+						return ret;
+					}
+				}
+			}
+
+			return null;
+		};
+
 		renderer.ship_info = (sid) => {
 
 			// Returns null if the ship can't be found...
@@ -859,6 +927,8 @@
 
 					let ret = Object.create(null);
 
+					ret.sid = sid;
+					ret.owner = pid;
 					ret.x = hit.x;
 					ret.y = hit.y;
 					ret.energy = hit.energy;
@@ -1023,7 +1093,7 @@
 
 			let lines = [];
 
-			lines.push(`<p>${renderer.selection_info()}</p>`);
+			lines.push(`<p>${renderer.selection_string()}</p>`);
 			lines.push(`<p><br></p>`);
 
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
@@ -1040,12 +1110,9 @@
 				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name}</h2>`);
 				lines.push(`<ul>`);
 				lines.push(`<li>Ships: ${renderer.ship_count(pid)} &mdash; carrying ${renderer.transit_count(pid)}</li>`);
-				lines.push(`<li>Energy:`);
-				lines.push(`	<ul>`);
-				lines.push(`		<li>Deposits: ${deposited + initial}</li>`);
-				lines.push(`		<li>Spent: ${spent > 0 ? "-" : ""}${spent}</li>`);
-				lines.push(`		<li>Net: <span style="color: ${colour}">${current}</span></li>`);
-				lines.push(`	</ul>`);
+				lines.push(`<li>Deposits: ${deposited + initial}</li>`);
+				lines.push(`<li>Spent: ${spent > 0 ? "-" : ""}${spent}</li>`);
+				lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
 				lines.push(`</ul>`);
 			}
 
