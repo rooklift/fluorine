@@ -1036,12 +1036,12 @@
 
 			[x, y] = renderer.offset_adjust(x, y, true);
 
-			renderer.select_at(x, y, renderer.selection);
+			renderer.select_at(x, y);
 
 			renderer.draw();
 		};
 
-		renderer.select_at = (x, y, current) => {
+		renderer.select_at = (x, y) => {
 
 			if (!renderer.game) return;
 			if (x < 0 || y < 0 || x >= renderer.width || y >= renderer.height) return;
@@ -1066,7 +1066,7 @@
 
 					if (x === ship.x && y === ship.y) {
 
-						if (current && current.type === "ship" && current.id === parseInt(sid, 10)) {
+						if (renderer.selection && renderer.selection.type === "ship" && renderer.selection.id === parseInt(sid, 10)) {
 
 							// In the event that we've already selected the ship,
 							// select the box underneath it instead.
