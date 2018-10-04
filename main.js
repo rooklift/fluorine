@@ -58,6 +58,10 @@ ipcMain.on("relay", (event, msg) => {
 	windows.send(msg.receiver, msg.channel, msg.content);		// Messages from one browser window to another...
 });
 
+ipcMain.on("show_window", (event, window_token) => {
+	windows.show(window_token);
+});
+
 // -------------------------------------------------------
 
 function make_main_menu() {
