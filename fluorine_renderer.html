@@ -50,6 +50,7 @@
 	const zstd = require("node-zstandard");
 
 	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
+	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
 
 	const canvas = document.getElementById("canvas");
 	const infobox = document.getElementById("infobox");
@@ -1085,8 +1086,11 @@
 				let current = renderer.previous_frame().energy[pid];
 				let spent = deposited + initial - current;
 
+				let rank = renderer.game.game_statistics.player_statistics[pid].rank;
+				let rank_nice = `(${ranks[rank]})`;
+
 				let colour = colours[pid];
-				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name}</h2>`);
+				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} ${rank_nice}</h2>`);
 				lines.push(`<ul>`);
 				lines.push(`<li>Ships: ${renderer.ship_count(pid)} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial}</li>`);
