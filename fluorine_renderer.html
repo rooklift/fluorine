@@ -17,20 +17,24 @@
 		.left {
 			position: absolute;
 			top: 0;
-			left: 0;
+			left: 1em;
 		}
 
 		.right {
 			position: absolute;
 			top: 0;
-			right: 0
+			right: 0;
+		}
+
+		#canvas {
+			background-color: black;
 		}
 
 	</style>
 </head>
 <body>
 
-<div class="left" id="infobox">Hi...</div>
+<div class="left" id="infobox"></div>
 
 <div class="right" id="canvas_holder"><canvas id="canvas"></canvas></div>
 
@@ -424,13 +428,10 @@
 
 		// --------------------------------------------------------------
 
-		renderer.show_selection_info = () => {
-
-			return // FIXME
+		renderer.selection_info = () => {
 
 			if (!renderer.selection) {
-				unitbox.innerHTML = "no selection";
-				return;
+				return "no selection";
 			}
 
 			if (renderer.selection.type === "box") {
@@ -438,13 +439,11 @@
 				let collision = renderer.collision_at(renderer.selection.x, renderer.selection.y);
 
 				if (collision) {
-					unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
+					return renderer.collision_info_string(collision, renderer.turn);
 				} else {
 					let val = renderer.production_maps[renderer.turn][renderer.selection.x][renderer.selection.y];
-					unitbox.innerHTML = `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
+					return `Box (${renderer.selection.x}, ${renderer.selection.y}) &mdash; ${val}`;
 				}
-
-				return;
 			}
 
 			if (renderer.selection.type === "ship") {
@@ -456,23 +455,20 @@
 					let collision = renderer.collision_involving_ship(renderer.selection.id);
 
 					if (collision) {
-						unitbox.innerHTML = renderer.collision_info_string(collision, renderer.turn);
-						return;
+						return renderer.collision_info_string(collision, renderer.turn);
 					}
 
 					// So we didn't collide last turn, it's just a normal case of ship not present.
 
 					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
-					unitbox.innerHTML = `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
-					return;
+					return `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
 				}
 
 				let colour = colours[renderer.selection.owner];
 
 				let mark = info.is_inspired ? "+" : "";
 
-				unitbox.innerHTML =
-							`<span style="color: ${colour};">Ship ${renderer.selection.id}${mark}</span> (${info.x}, ${info.y})`
+				return `<span style="color: ${colour};">Ship ${renderer.selection.id}${mark}</span> (${info.x}, ${info.y})`
 							+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
 							+ ` &mdash; next move <span style="color: ${colour};">${renderer.ship_move(renderer.selection.id)}</span>`;
 			}
@@ -507,15 +503,28 @@
 
 		renderer.clear = () => {
 
-			canvas.width = window.innerHeight;
-			canvas.height = window.innerHeight;
+			if (!renderer.game) {
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				return;
+			}
+
+			let desired_size;
+
+			if (!renderer.integer_box_sizes) {
+				desired_size = window.innerHeight;
+			} else {
+				desired_size = Math.max(1, Math.floor(window.innerHeight / renderer.height)) * renderer.height;
+			}
+
+			if (desired_size !== canvas.width || desired_size !== canvas.height) {
+				canvas.width = desired_size;
+				canvas.height = desired_size;
+			}
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
 		};
 
 		renderer.draw = () => {
-
-			renderer.show_selection_info();		// Done first since in rare cases the info_line size can change, affecting view space.
 
 			renderer.clear();
 
@@ -1014,8 +1023,11 @@
 
 			let lines = [];
 
+			lines.push(`<p>${renderer.selection_info()}</p>`);
+			lines.push(`<p><br></p>`);
+
 			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.width} x ${renderer.height}</p>`);
+			lines.push(`<p>${renderer.width} x ${renderer.height} &mdash; ${renderer.turn} / ${renderer.game_length() - 1}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -1037,11 +1049,7 @@
 				lines.push(`</ul>`);
 			}
 
-			ipcRenderer.send("relay", {
-				receiver: "info",
-				channel: "update",
-				content: lines.join(""),
-			});
+			infobox.innerHTML = lines.join("");
 		};
 
 		return renderer;
