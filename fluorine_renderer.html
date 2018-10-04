@@ -925,9 +925,12 @@
 			if (!renderer.game) return 0;
 
 			let frame = renderer.current_frame();
+
 			let some_ships = frame.entities[pid.toString()];
 
-			if (some_ships === undefined) return 0;
+			if (some_ships === undefined) {
+				return 0;
+			}
 
 			let count = 0;
 
@@ -948,9 +951,12 @@
 			if (!renderer.game) return 0;
 
 			let frame = renderer.current_frame();
+
 			let some_ships = frame.entities[pid.toString()];
 
-			if (some_ships === undefined) return 0;
+			if (some_ships === undefined) {
+				return 0;
+			}
 
 			let count = 0;
 
@@ -984,12 +990,15 @@
 
 			[x, y] = renderer.offset_adjust(x, y, true);
 
-			renderer.selection = renderer.selection_at(x, y, renderer.selection);
+			renderer.select_at(x, y, renderer.selection);
 
 			renderer.draw();
 		};
 
-		renderer.selection_at = (x, y, current) => {
+		renderer.select_at = (x, y, current) => {
+
+			if (!renderer.game) return;
+			if (x < 0 || y < 0 || x >= renderer.width || y >= renderer.height) return;
 
 			let frame = renderer.current_frame();
 
@@ -1016,15 +1025,18 @@
 							// In the event that we've already selected the ship,
 							// select the box underneath it instead.
 
-							return {type: "box", x: x, y: y};
+							renderer.selection = {type: "box", x: x, y: y};
+							return;
 						}
 
-						return {type: "ship", turn: renderer.turn, id: parseInt(sid, 10), owner: pid};
+						renderer.selection = {type: "ship", turn: renderer.turn, id: parseInt(sid, 10), owner: pid};
+						return;
 					}
 				}
 			}
 
-			return {type: "box", x: x, y: y};
+			renderer.selection = {type: "box", x: x, y: y};
+			return;
 		};
 
 		// --------------------------------------------------------------
