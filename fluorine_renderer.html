@@ -13,31 +13,26 @@
 			cursor: default;
 			overflow: hidden;
 		}
-		#info_line {
-			margin: 10px;		/* calculation below of info_line_height total size relies on this */
-			border: 0;
-			padding: 0;
-			overflow: hidden;
+
+		.left {
+			position: absolute;
+			top: 0;
+			left: 0;
 		}
-		#canvas {
-			padding-left: 0;
-			padding-right: 0;
-			margin-left: auto;
-			margin-right: auto;
-			display: block;
+
+		.right {
+			position: absolute;
+			top: 0;
+			right: 0
 		}
+
 	</style>
 </head>
 <body>
 
-<div>
-	<table style="width: calc(100% - 20px);" id="info_line"><tr>
-		<td style="width: 80%" id="unitbox">&nbsp;</td>				<!-- Needs some content so it has its real size -->
-		<td align="right" id="turnbox"></td>
-	</tr></table>
-</div>
+<div class="left" id="infobox">Hi...</div>
 
-<canvas id="canvas" width="100" height="100"></canvas>
+<div class="right" id="canvas_holder"><canvas id="canvas"></canvas></div>
 
 <script>
 
@@ -53,15 +48,10 @@
 	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
 
 	const canvas = document.getElementById("canvas");
+	const canvas_holder = document.getElementById("canvas_holder");
+	const infobox = document.getElementById("infobox");
+
 	const context = canvas.getContext("2d");
-
-	const info_line = document.getElementById("info_line");
-	const unitbox = document.getElementById("unitbox");
-	const turnbox = document.getElementById("turnbox");
-
-	function info_line_height() {
-		return info_line.offsetHeight + 20;		// relies on #info_line having margin of 10
-	}
 
 	function make_renderer() {
 
@@ -436,6 +426,8 @@
 
 		renderer.show_selection_info = () => {
 
+			return // FIXME
+
 			if (!renderer.selection) {
 				unitbox.innerHTML = "no selection";
 				return;
@@ -486,10 +478,6 @@
 			}
 		};
 
-		renderer.show_turn = () => {
-			turnbox.innerHTML = `${renderer.turn} / ${renderer.game_length() - 1}`;
-		};
-
 		// --------------------------------------------------------------
 
 		renderer.offset_adjust = (x, y, undo_flag) => {
@@ -519,28 +507,8 @@
 
 		renderer.clear = () => {
 
-			if (!renderer.game || renderer.width <= 0 || renderer.height <= 0) {
-				canvas.width = 100;
-				canvas.height = 100;
-				return;
-			}
-
-			let available_width = window.innerWidth;
-			let available_height = window.innerHeight - info_line_height();
-
-			if (renderer.integer_box_sizes === false) {
-				canvas.width = Math.max(renderer.width, available_width);
-				canvas.height = Math.max(renderer.height, available_height);
-				return;
-			}
-
-			let desired_width = Math.max(1, Math.floor(available_width / renderer.width)) * renderer.width;
-			let desired_height = Math.max(1, Math.floor(available_height / renderer.height)) * renderer.height;
-
-			if (desired_width !== canvas.width || desired_height !== canvas.height) {
-				canvas.width = desired_width;
-				canvas.height = desired_height;
-			}
+			canvas.width = window.innerHeight;
+			canvas.height = window.innerHeight;
 
 			context.clearRect(0, 0, canvas.width, canvas.height);
 		};
@@ -548,7 +516,6 @@
 		renderer.draw = () => {
 
 			renderer.show_selection_info();		// Done first since in rare cases the info_line size can change, affecting view space.
-			renderer.show_turn();				// Likewise.
 
 			renderer.clear();
 
