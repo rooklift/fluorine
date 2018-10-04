@@ -443,7 +443,7 @@
 				string_list.push(`<span style="color: ${colours[pid]}">${sid}</span>`);
 			}
 
-			return `<span style="color: #ff0000">Collision:</span> ${string_list.join(", ")}`;
+			return `<span style="color: #ff0000">Collision</span>: ${string_list.join(", ")}`;
 		};
 
 		renderer.selection_string = () => {
@@ -654,11 +654,7 @@
 					continue;
 				}
 
-				for (let sid in some_ships) {
-
-					if (some_ships.hasOwnProperty(sid) === false) {
-						continue;
-					}
+				for (let sid of Object.keys(some_ships)) {
 
 					let ship = some_ships[sid];
 
@@ -855,6 +851,9 @@
 
 		renderer.ship_at = (x, y) => {
 
+			// Returns our ship info object, not the original ship.
+			// Returns null if no ship present at x,y.
+
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
 				let some_ships = renderer.current_frame().entities[pid];
@@ -863,11 +862,7 @@
 					continue;
 				}
 
-				for (let sid in some_ships) {
-
-					if (some_ships.hasOwnProperty(sid) === false) {
-						continue;
-					}
+				for (let sid of Object.keys(some_ships)) {
 
 					let ship = some_ships[sid];
 
@@ -892,7 +887,8 @@
 
 		renderer.ship_info = (sid) => {
 
-			// Returns null if the ship can't be found...
+			// Returns our ship info object, not the original ship.
+			// Returns null if ship not present this frame.
 
 			let pid = renderer.sid_pid_map[sid];
 			let some_ships = renderer.current_frame().entities[pid];
@@ -954,18 +950,7 @@
 				return 0;
 			}
 
-			let count = 0;
-
-			for (let sid in some_ships) {
-
-				if (some_ships.hasOwnProperty(sid) === false) {
-					continue;
-				}
-
-				count++;
-			}
-
-			return count;
+			return Object.values(some_ships).length;
 		};
 
 		renderer.transit_count = (pid) => {
@@ -982,13 +967,8 @@
 
 			let count = 0;
 
-			for (let sid in some_ships) {
-
-				if (some_ships.hasOwnProperty(sid) === false) {
-					continue;
-				}
-
-				count += some_ships[sid].energy;
+			for (let ship of Object.values(some_ships)) {
+				count += ship.energy;
 			}
 
 			return count;
