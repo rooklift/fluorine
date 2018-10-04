@@ -439,28 +439,28 @@
 
 		renderer.box_with_ship_string = (sid, highlight_box) => {
 
-			let info = renderer.ship_info(sid);
+			let ship_info = renderer.ship_info(sid);
 
-			if (info === null) {
+			if (ship_info === null) {
 				let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
 				return `<span style="color: ${colours[renderer.selection.owner]};">Ship ${renderer.selection.id}</span> (${cause})`;
 			}
 
-			let colour = colours[info.owner];
-			let mark = info.is_inspired ? "+" : "";
+			let colour = colours[ship_info.owner];
+			let mark = ship_info.is_inspired ? "+" : "";
 
 			if (highlight_box) {
 
-				return `${renderer.box_string(info.x, info.y, true)}`
+				return `${renderer.box_string(ship_info.x, ship_info.y, true)}`
 						+ ` &mdash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
-						+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
+						+ ` &mdash; <span style="color: ${colour};">${ship_info.energy}</span>`
 						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 
 			} else {
 
-				return `${renderer.box_string(info.x, info.y, false)}`
+				return `${renderer.box_string(ship_info.x, ship_info.y, false)}`
 						+ ` &mdash; <span style="color: ${colour};">[Ship ${sid}${mark}]</span>`
-						+ ` &mdash; <span style="color: ${colour};">${info.energy}</span>`
+						+ ` &mdash; <span style="color: ${colour};">${ship_info.energy}</span>`
 						+ ` &mdash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 			}
 		};
@@ -1048,40 +1048,22 @@
 
 			let frame = renderer.current_frame();
 
-			for (let pid = 0; pid < renderer.players(); pid++) {
+			let ship_info = renderer.ship_at(x, y);
 
-				let some_ships = frame.entities[pid.toString()];
-
-				if (some_ships === undefined) {
-					continue;
-				}
-
-				for (let sid in some_ships) {
-
-					if (some_ships.hasOwnProperty(sid) === false) {
-						continue;
-					}
-
-					let ship = some_ships[sid];
-
-					if (x === ship.x && y === ship.y) {
-
-						if (renderer.selection && renderer.selection.type === "ship" && renderer.selection.id === parseInt(sid, 10)) {
-
-							// In the event that we've already selected the ship,
-							// select the box underneath it instead.
-
-							renderer.selection = {type: "box", x: x, y: y};
-							return;
-						}
-
-						renderer.selection = {type: "ship", turn: renderer.turn, id: parseInt(sid, 10), owner: pid};
-						return;
-					}
-				}
+			if (!ship_info) {
+				renderer.selection = {type: "box", x: x, y: y};
+				return;
 			}
 
-			renderer.selection = {type: "box", x: x, y: y};
+			// User clicked a ship, but in the event that we've already
+			// selected the ship, select the box underneath it instead.
+
+			if (renderer.selection && renderer.selection.type === "ship" && renderer.selection.id === ship_info.sid) {
+				renderer.selection = {type: "box", x: x, y: y};
+				return;
+			}
+
+			renderer.selection = {type: "ship", turn: renderer.turn, id: ship_info.sid, owner: ship_info.owner};
 			return;
 		};
 
