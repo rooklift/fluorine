@@ -77,6 +77,7 @@
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
+		renderer.grid_aesthetic = 0;
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
 
@@ -747,7 +748,21 @@
 
 				for (let y = 0; y < renderer.height; y++) {
 
-					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
+					let val;
+
+					switch (renderer.grid_aesthetic) {
+
+						case 0:
+							val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
+							break;
+						case 1:
+							val = Math.floor(255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 2048));
+							break;
+						case 2:
+							val = Math.floor(255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 1024));
+							break;
+					}
+
 					val = Math.min(255, val);
 
 					context.fillStyle = `rgb(${val},${val},${val})`;
