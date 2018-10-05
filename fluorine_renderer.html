@@ -290,7 +290,8 @@
 						d.x = event.location.x;
 						d.y = event.location.y;
 						d.pid = event.owner_id;
-						d.turn = n;
+						d.sid = event.id;
+						d.turn = n + 1;			// The turn in which the dropoff point is first shown.
 
 						renderer.dropoff_list.push(d);
 					}
@@ -462,7 +463,20 @@
 				}
 			}
 
-			// Ship never died; show final frame...
+			// Ship never died; did it become a dropoff point?
+
+			for (let n = 0; n < renderer.dropoff_list.length; n++) {
+
+				let d = renderer.dropoff_list[n];
+
+				if (d.sid === renderer.selection.sid) {
+					renderer.turn = d.turn;
+					renderer.draw();
+					return;
+				}
+			}
+
+			// It survived to the end.
 
 			renderer.turn = renderer.game_length() - 1;
 			renderer.draw();
@@ -713,7 +727,7 @@
 
 			for (let n = 0; n < renderer.dropoff_list.length; n++) {
 
-				if (renderer.dropoff_list[n].turn >= renderer.turn) {
+				if (renderer.dropoff_list[n].turn > renderer.turn) {
 					continue;
 				}
 
