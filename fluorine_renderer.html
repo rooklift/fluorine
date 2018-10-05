@@ -70,7 +70,7 @@
 		renderer.production_maps = null;
 		renderer.dropoff_list = null;
 		renderer.sid_pid_map = null;
-		renderer.all_collisions = null;
+		renderer.collision_data = null;
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
@@ -172,7 +172,7 @@
 			renderer.make_production_maps();
 			renderer.make_dropoff_list();
 			renderer.make_sid_pid_map();
-			renderer.make_all_collisions();
+			renderer.make_collision_data();
 
 			renderer.set_title();
 			renderer.draw();
@@ -298,14 +298,14 @@
 			}
 		};
 
-		renderer.make_all_collisions = () => {
+		renderer.make_collision_data = () => {
 
 			if (!renderer.game) {
-				renderer.all_collisions = null;
+				renderer.collision_data = null;
 				return;
 			}
 
-			renderer.all_collisions = [];
+			renderer.collision_data = [];
 
 			for (let n = 0; n < renderer.game_length(); n++) {
 
@@ -321,7 +321,7 @@
 						data.y = event.location.y;
 						data.sids = event.ships;			// FIXME? Make copy for safety.
 
-						renderer.all_collisions.push(data);
+						renderer.collision_data.push(data);
 					}
 				}
 			}
@@ -390,9 +390,9 @@
 
 			if (renderer.selection && renderer.selection.type === "box") {
 
-				for (let n = 0; n < renderer.all_collisions.length; n++) {
+				for (let n = 0; n < renderer.collision_data.length; n++) {
 
-					let data = renderer.all_collisions[n];
+					let data = renderer.collision_data[n];
 
 					if (data.x === renderer.selection.x && data.y === renderer.selection.y && data.turn === renderer.turn) {
 
@@ -401,9 +401,9 @@
 						let next_data;
 
 						if (reverse_flag) {
-							next_data = renderer.all_collisions[n - 1];
+							next_data = renderer.collision_data[n - 1];
 						} else {
-							next_data = renderer.all_collisions[n + 1];
+							next_data = renderer.collision_data[n + 1];
 						}
 
 						if (next_data === undefined) {
@@ -421,8 +421,8 @@
 			// Otherwise, find the right collision in the list to jump to...
 
 			if (reverse_flag) {
-				for (let n = renderer.all_collisions.length - 1; n >= 0; n--) {
-					let data = renderer.all_collisions[n];
+				for (let n = renderer.collision_data.length - 1; n >= 0; n--) {
+					let data = renderer.collision_data[n];
 					if (data.turn < renderer.turn) {
 						renderer.turn = data.turn;
 						renderer.selection = {type: "box", x: data.x, y: data.y};
@@ -431,8 +431,8 @@
 					}
 				}
 			} else {
-				for (let n = 0; n < renderer.all_collisions.length; n++) {
-					let data = renderer.all_collisions[n];
+				for (let n = 0; n < renderer.collision_data.length; n++) {
+					let data = renderer.collision_data[n];
 					if (data.turn > renderer.turn) {
 						renderer.turn = data.turn;
 						renderer.selection = {type: "box", x: data.x, y: data.y};
@@ -449,9 +449,9 @@
 			if (!renderer.selection) return;
 			if (renderer.selection.type !== "ship") return;
 
-			for (let n = 0; n < renderer.all_collisions.length; n++) {
+			for (let n = 0; n < renderer.collision_data.length; n++) {
 
-				let data = renderer.all_collisions[n];
+				let data = renderer.collision_data[n];
 
 				for (let i = 0; i < data.sids.length; i++) {
 					if (data.sids[i] === renderer.selection.sid) {
@@ -1148,10 +1148,8 @@
 			let lines = [];
 
 			lines.push(`<p>${renderer.selection_string()}</p>`);
-			lines.push(`<p><br></p>`);
-
-			lines.push(`<p>${path.basename(renderer.filename)}</p>`);
-			lines.push(`<p>${renderer.width} x ${renderer.height} &ndash; ${renderer.turn} / ${renderer.game_length() - 1}</p>`);
+			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1}</p>`);
+			lines.push(`<p style="color: #aaaaaa">${renderer.width} x ${renderer.height} &ndash; ${path.basename(renderer.filename)}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
