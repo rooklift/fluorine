@@ -3,6 +3,20 @@
 <head>
 	<title>Fluorine</title>
 	<style>
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #eaeaea;
+            border-left: 1px solid #ccc;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #aaa;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+        background-color: #999;
+        }
+    
 		body {
 			margin: 0;
 			border: 0;
@@ -15,7 +29,7 @@
 		}
 
 		.left {
-			position: absolute;
+			position: relative;
 			top: 0;
 			left: 1em;
 		}
@@ -25,6 +39,14 @@
 			top: 0;
 			right: 0;
 		}
+        
+        .lower { 
+            bottom: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 360px;
+            width: 30%
+        }
 
 		#canvas {
 			background-color: black;
@@ -35,6 +57,7 @@
 <body>
 
 <div class="left" id="infobox"></div>
+<div class="left lower" id="content"></div>
 
 <canvas class="right" id="canvas"></canvas>
 
@@ -49,6 +72,8 @@
 	const stream = require("stream");
 	const zstd = require("node-zstandard");
 
+    const TURN_REGEX = /^T:\s*(\d+)(.*)/
+    const SHIP_REGEX = /^S:\s*(\d+)(.*)/
 	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
 	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
 
@@ -171,8 +196,65 @@
 			renderer.make_dropoff_list();
 
 			renderer.set_title();
+            renderer.log_load()
 			renderer.draw();
 		};
+        
+        renderer.log_load = () => {
+            renderer.logs = {}
+            let filename = renderer.filename.replace(/\.(hlt|json)$/, ".log")
+            try {
+                let data = fs.readFileSync(filename);
+                data = data.toString().split("\n");
+                
+                for (let i in data) {
+                /*    try {
+                        let a = JSON.parse(data[i]);
+                        if ("styles" in a) {
+                            var config = a;
+                            ipcRenderer.send("set_styles", Object.values(config.styles));
+                        }
+                    } catch(e) {
+                        
+                    } */
+                    let turn_match = TURN_REGEX.exec(data[i]);
+                    if (turn_match) {
+                        let turn = parseInt(turn_match[1], 10);
+                        if (renderer.logs[turn] === undefined ) {
+                            renderer.logs[turn] = {};
+                        }
+                        let ship_match = SHIP_REGEX.exec(turn_match[2]);
+                        var line = turn_match[2];
+                        var ship = -1;
+                        if (ship_match) {
+                            ship = parseInt(ship_match[1], 10);
+                            line = ship_match[2];
+                        }
+                        if (renderer.logs[turn][ship] === undefined ) {
+                            renderer.logs[turn][ship] = [];
+                        }
+                        if (line.length > 40) {
+                            line = line.substring(0, 37) + "..."
+                        }
+                        renderer.logs[turn][ship].push(line);
+                        /*try {
+                            if ("style" in a) {
+                                ipcRenderer.send("relay", {
+                                    receiver: "renderer",
+                                    channel: "add_cell_style",
+                                    content: {turn: turn, data: a, style: config.styles[a.style]},
+                                });
+                            }
+                        } catch(e) {
+                            let message = match[2];
+                            viewer.frames[turn].push("<li>" + message + "</li>");
+                        }*/
+                    }
+                }
+            } catch (err) {
+                renderer.logs = null;
+            }
+        }
 
 		renderer.set_title = () => {
 
@@ -569,6 +651,7 @@
 			renderer.draw_collisions();
 			renderer.draw_selection_crosshairs();
 
+            renderer.log_lines();
 			renderer.send_info();
 		};
 
@@ -1067,6 +1150,48 @@
 
 		// --------------------------------------------------------------
 
+        renderer.log_lines = () => {
+            /*
+            This is the expected logs object format.
+            
+            renderer.logs = {
+                "1": {
+                    "-1": ["This is a line that belongs to no ship"]
+                },
+                "2": {
+                    "1": [
+                        "This belongs to ship 1",
+                        "This belongs to ship as well"
+                    ],
+                    "0": ["This belongs to ship 0."]
+                }
+            };*/
+            if (renderer.logs === undefined) {
+                return;
+            }
+            
+            if (renderer.logs === null) {
+                content.innerHTML = "No corresponding log file.";
+                return;
+            }
+            
+            let lines = renderer.logs[renderer.turn];
+            if (lines) {
+                if (renderer.selection && renderer.selection.type === "ship") {
+                    lines = lines[renderer.selection.sid];
+                } else {
+                    lines = lines[-1];
+                }
+            }
+            
+            if (lines) {
+                content.innerHTML = lines.join("<br>");
+            } else {
+                content.innerHTML = "";
+            }
+            
+        }
+        
 		renderer.send_info = () => {
 
 			if (!renderer.game) return;
