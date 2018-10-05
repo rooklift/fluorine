@@ -49,7 +49,9 @@
 	const stream = require("stream");
 	const zstd = require("node-zstandard");
 
-	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
+	const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
+	const explosion_colour = "#ff0000";
+
 	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
 
 	const canvas = document.getElementById("canvas");
@@ -579,7 +581,7 @@
 				string_list.push(`<span style="color: ${colours[pid]}">${sid}</span>`);
 			}
 
-			return `<span style="color: #ff0000">Collision</span>: ${string_list.join(", ")}`;
+			return `<span style="color: ${explosion_colour}>Collision</span>: ${string_list.join(", ")}`;
 		};
 
 		renderer.selection_string = () => {
@@ -850,7 +852,7 @@
 					let x = events[n].location.x;
 					let y = events[n].location.y;
 
-					context.fillStyle = "#ff0000";
+					context.fillStyle = explosion_colour;
 					let [i, j] = renderer.offset_adjust(x, y);
 					context.fillRect(i * box_width, j * box_height, box_width, box_height);
 				}
