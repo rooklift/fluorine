@@ -177,6 +177,33 @@ function make_main_menu() {
 						windows.send("renderer", "forward", 99999);
 					}
 				},
+				{
+					type: "separator"
+				},
+				{
+					label: "Previous collision",
+					accelerator: "C",
+					click: () => {
+						windows.send("renderer", "previous_collision", null);
+					}
+				},
+				{
+					label: "Next collision",
+					accelerator: "V",
+					click: () => {
+						windows.send("renderer", "next_collision", null);
+					}
+				},
+				{
+					type: "separator"
+				},
+				{
+					label: "Selected ship's fate",
+					accelerator: "X",
+					click: () => {
+						windows.send("renderer", "ship_fate", null);
+					}
+				},
 			]
 		},
 		{
