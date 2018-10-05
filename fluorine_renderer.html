@@ -753,16 +753,17 @@
 					switch (renderer.grid_aesthetic) {
 
 						case 0:
-							val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
+							val = renderer.production_maps[renderer.turn][x][y] / 4;
 							break;
 						case 1:
-							val = Math.floor(255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 2048));
+							val = 255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 2048);
 							break;
 						case 2:
-							val = Math.floor(255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 1024));
+							val = 255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 1024);
 							break;
 					}
 
+					val = Math.floor(val);
 					val = Math.min(255, val);
 
 					context.fillStyle = `rgb(${val},${val},${val})`;
