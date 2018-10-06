@@ -3,6 +3,10 @@
 	"description": "Replay viewer for Halite 3",
 	"version": "1.0.4",
 	"author": "Fohristiwhirl",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/fohristiwhirl/fluorine"
+	},
 	"main": "main.js",
 	"dependencies": {
 		"node-zstandard": "1.2.4"
