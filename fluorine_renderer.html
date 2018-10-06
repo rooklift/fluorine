@@ -1508,7 +1508,7 @@
 
 				let colour = colours[pid];
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
-				lines.push(`<ul>`);
+				lines.push(`<ul style="margin-top: 0;">`);
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)} &ndash; suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
