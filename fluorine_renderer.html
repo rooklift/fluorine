@@ -1361,7 +1361,12 @@
 				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)} &ndash; suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Dropoffs: ${dropoffs}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial} &ndash; Spent: ${spent}</li>`);
-				lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
+
+				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn - 1) {		// out by 1 error in replay format
+					lines.push(`<li>Net: <span style="color: ${colour}">crashed</span></li>`);
+				} else {
+					lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
+				}
 				lines.push(`</ul>`);
 			}
 
