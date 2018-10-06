@@ -586,7 +586,23 @@
 			let ship_info = renderer.ship_info(sid);
 
 			if (ship_info === null) {
-				let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
+
+				let cause;
+
+				for (let n = 0; n < renderer.dropoff_list.length; n++) {
+
+					let drop = renderer.dropoff_list[n];
+
+					if (drop.sid === sid && drop.turn <= renderer.turn) {
+						cause = "dropoff";
+						break;
+					}
+				}
+
+				if (cause === undefined) {
+					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
+				}
+
 				return `<span style="color: ${colours[renderer.selection.pid]};">Ship ${renderer.selection.sid}</span> (${cause})`;
 			}
 
@@ -922,51 +938,55 @@
 			}
 		};
 
-		renderer.draw_selection_crosshairs = () => {
-
-			let x;
-			let y;
+		renderer.get_selection_xy = () => {
 
 			if (!renderer.selection) {
+				return [null, null];
+			}
 
-				return;
+			if (renderer.selection.type === "box") {
+				return [renderer.selection.x, renderer.selection.y];
+			}
 
-			} else if (renderer.selection.type === "box") {
-
-				x = renderer.selection.x;
-				y = renderer.selection.y;
-
-			} else if (renderer.selection.type === "ship") {
+			if (renderer.selection.type === "ship") {
 
 				let info = renderer.ship_info(renderer.selection.sid);
 
 				if (info) {
+					return [info.x, info.y];
+				}
 
-					x = info.x;
-					y = info.y;
+				// Ship doesn't currently exist, was it just destroyed?
 
-				} else {
+				let collision = renderer.collision_involving_ship(renderer.selection.sid);
 
-					// Ship doesn't currently exist, was it just destroyed?
+				if (collision) {
+					return [collision.location.x, collision.location.y];
+				}
 
-					let collision = renderer.collision_involving_ship(renderer.selection.sid);
+				// Or maybe it is a dropoff?
 
-					if (collision) {
+				for (let n = 0; n < renderer.dropoff_list.length; n++) {
 
-						x = collision.location.x;
-						y = collision.location.y;
+					let drop = renderer.dropoff_list[n];
 
-					} else {
-
-						return;		// Return in the normal case.
-
+					if (drop.sid === renderer.selection.sid && drop.turn <= renderer.turn) {
+						return [drop.x, drop.y];
 					}
 				}
 
-			} else {
+				return [null, null];	// Ship is not to be found.
+			}
 
-				return;				// Return due to unknown selection type.
+			return [null, null];		// Unknown selection type.
+		};
 
+		renderer.draw_selection_crosshairs = () => {
+
+			let [x, y] = renderer.get_selection_xy();
+
+			if (x === null || y === null) {
+				return;
 			}
 
 			let [i, j] = renderer.offset_adjust(x, y);
@@ -1237,6 +1257,15 @@
 				let current = renderer.previous_frame().energy[pid];
 				let spent = deposited + initial - current;
 
+				let dropoffs = 0;
+
+				for (let n = 0; n < renderer.dropoff_list.length; n++) {
+					let drop = renderer.dropoff_list[n];
+					if (drop.pid === pid && drop.turn <= renderer.turn) {
+						dropoffs++;
+					}
+				}
+
 				let rank = renderer.game.game_statistics.player_statistics[pid].rank;
 				let rank_nice = `(${ranks[rank]})`;
 
@@ -1244,6 +1273,7 @@
 				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} ${rank_nice}</h2>`);
 				lines.push(`<ul>`);
 				lines.push(`<li>Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
+				lines.push(`<li>Dropoffs: ${dropoffs}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial} &ndash; Spent: ${spent}</li>`);
 				lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
 				lines.push(`</ul>`);
