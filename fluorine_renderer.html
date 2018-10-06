@@ -878,37 +878,41 @@
 					context.fillStyle = colour;
 					let [i, j] = renderer.offset_adjust(x, y);
 
+					let a = 0.1;
+					let b = 0.5;
+					let c = 1 - a;
+
 					switch (moves_map[sid]) {
 						case "n":
 							context.beginPath();
-							context.moveTo(i * box_width, (j + 1) * box_height);
-							context.lineTo((i + 1) * box_width, (j + 1) * box_height);
-							context.lineTo((i + 0.5) * box_width, j * box_height);
+							context.moveTo((i + a) * box_width, (j + c) * box_height);
+							context.lineTo((i + c) * box_width, (j + c) * box_height);
+							context.lineTo((i + b) * box_width, (j + a) * box_height);
 							context.fill();
 							break;
 						case "s":
 							context.beginPath();
-							context.moveTo(i * box_width, j * box_height);
-							context.lineTo((i + 1) * box_width, j * box_height);
-							context.lineTo((i + 0.5) * box_width, (j + 1) * box_height);
+							context.moveTo((i + a) * box_width, (j + a) * box_height);
+							context.lineTo((i + c) * box_width, (j + a) * box_height);
+							context.lineTo((i + b) * box_width, (j + c) * box_height);
 							context.fill();
 							break;
 						case "e":
 							context.beginPath();
-							context.moveTo(i * box_width, j * box_height);
-							context.lineTo(i * box_width, (j + 1) * box_height);
-							context.lineTo((i + 1) * box_width, (j + 0.5) * box_height);
+							context.moveTo((i + a) * box_width, (j + a) * box_height);
+							context.lineTo((i + a) * box_width, (j + c) * box_height);
+							context.lineTo((i + c) * box_width, (j + b) * box_height);
 							context.fill();
 							break;
 						case "w":
 							context.beginPath();
-							context.moveTo((i + 1) * box_width, j * box_height);
-							context.lineTo((i + 1) * box_width, (j + 1) * box_height);
-							context.lineTo(i * box_width, (j + 0.5) * box_height);
+							context.moveTo((i + c) * box_width, (j + a) * box_height);
+							context.lineTo((i + c) * box_width, (j + c) * box_height);
+							context.lineTo((i + a) * box_width, (j + b) * box_height);
 							context.fill();
 							break;
 						default:
-							context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
+							context.fillRect((i + 0.25) * box_width, (j + 0.25) * box_height, box_width / 2, box_height / 2);
 					}
 				}
 			}
