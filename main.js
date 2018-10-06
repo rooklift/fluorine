@@ -26,6 +26,10 @@ electron.app.on("ready", () => {
 		title: "Fluorine", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_select.html")
 	});
 
+	windows.new("turn", {
+		title: "Fluorine", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_turn.html")
+	});
+
 	electron.Menu.setApplicationMenu(make_main_menu());
 });
 
@@ -183,6 +187,14 @@ function make_main_menu() {
 					accelerator: "End",
 					click: () => {
 						windows.send("renderer", "forward", 99999);
+					}
+				},
+				{
+					label: "Go to turn...",
+					accelerator: "CommandOrControl+T",
+					click: () => {
+						windows.show("turn");
+						windows.send("turn", "focus_input", null);
 					}
 				},
 				{

@@ -166,6 +166,9 @@
 
 			console.log("Loading seemed OK.");
 
+			// Crude deletion of redundant zeroth frame...
+			renderer.game.full_frames = renderer.game.full_frames.slice(1);
+
 			renderer.filename = filename;
 			renderer.turn = 0;
 			renderer.selection = null;
@@ -455,15 +458,20 @@
 
 		// --------------------------------------------------------------
 
-		renderer.forward = (n) => {		// Negative arguments are allowed (go back).
+		renderer.go_to_turn = (n) => {
 
 			if (!renderer.game) return;
 
-			renderer.turn += n;
+			renderer.turn = n;
 			if (renderer.turn < 0) renderer.turn = 0;
 			if (renderer.turn >= renderer.game_length()) renderer.turn = renderer.game_length() - 1;
 
 			renderer.draw();
+		};
+
+		renderer.forward = (n) => {
+			if (!renderer.game) return;
+			renderer.go_to_turn(renderer.turn + n);
 		};
 
 		renderer.right = (n) => {
@@ -1342,7 +1350,13 @@
 
 				let deposited = renderer.previous_frame().deposited[pid];
 				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
-				let current = renderer.previous_frame().energy[pid];
+
+				let current;
+				if (renderer.turn === 0) {
+					current = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
+				} else {
+					current = renderer.previous_frame().energy[pid];		// Available energy is stored in previous frame.
+				}
 				let spent = deposited + initial - current;
 
 				let dropoffs = 0;
@@ -1365,7 +1379,7 @@
 				lines.push(`<li>Dropoffs: ${dropoffs}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial} &ndash; Spent: ${spent}</li>`);
 
-				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn - 1) {		// out by 1 error in replay format
+				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
 					lines.push(`<li>Net: <span style="color: ${colour}">crashed</span></li>`);
 				} else {
 					lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
@@ -1403,6 +1417,10 @@
 
 	ipcRenderer.on("forward", (event, n) => {
 		renderer.forward(n);
+	});
+
+	ipcRenderer.on("go_to_turn", (event, n) => {
+		renderer.go_to_turn(n);
 	});
 
 	ipcRenderer.on("right", (event, n) => {
