@@ -585,6 +585,30 @@
 			renderer.draw();
 		};
 
+		renderer.select_sid = (sid) => {
+
+			if (!renderer.game) return;
+
+			for (let turn = 0; turn < renderer.game_length(); turn++) {
+
+				let events = renderer.frame(turn).events;
+
+				for (let n = 0; n < events.length; n++) {
+
+					let event = events[n];
+
+					if (event.type === "spawn" && event.id === sid) {
+						renderer.selection = {type: "ship", turn: turn + 1, sid: sid, pid: renderer.sid_pid_map[sid]};
+						renderer.draw();
+						return;
+					}
+				}
+			}
+
+			renderer.selection = null;
+			renderer.draw();
+		};
+
 		// --------------------------------------------------------------
 
 		renderer.collision_at = (x, y) => {
@@ -1328,10 +1352,10 @@
 				}
 
 				let rank = renderer.game.game_statistics.player_statistics[pid].rank;
-				let rank_nice = `(${ranks[rank]})`;
+				let rank_nice = `${ranks[rank]}`;
 
 				let colour = colours[pid];
-				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} &nbsp; ${rank_nice}</h2>`);
+				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
 				lines.push(`<ul>`);
 				lines.push(`<li>Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)} &ndash; suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
@@ -1391,6 +1415,10 @@
 
 	ipcRenderer.on("ship_fate", () => {
 		renderer.ship_fate();
+	});
+
+	ipcRenderer.on("select_sid", (event, sid) => {
+		renderer.select_sid(sid);
 	});
 
 	ipcRenderer.on("toggle", (event, varname) => {

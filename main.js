@@ -22,6 +22,10 @@ electron.app.on("ready", () => {
 		title: "Fluorine", show: true, width: 1200, height: 800, resizable: true, page: path.join(__dirname, "fluorine_renderer.html")
 	});
 
+	windows.new("selector", {
+		title: "Fluorine", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_select.html")
+	});
+
 	electron.Menu.setApplicationMenu(make_main_menu());
 });
 
@@ -60,6 +64,10 @@ ipcMain.on("relay", (event, msg) => {
 
 ipcMain.on("show_window", (event, window_token) => {
 	windows.show(window_token);
+});
+
+ipcMain.on("hide_window", (event, window_token) => {
+	windows.hide(window_token);
 });
 
 // -------------------------------------------------------
@@ -316,6 +324,25 @@ function make_main_menu() {
 					accelerator: "Escape",
 					click: () => {
 						windows.send("renderer", "set", ["selection", null]);
+					}
+				},
+			]
+		},
+		{
+			label: "Windows",
+			submenu: [
+				{
+					label: "Renderer",
+					click: () => {
+						windows.show("renderer");
+					}
+				},
+				{
+					label: "Selector",
+					accelerator: "CommandOrControl+F",
+					click: () => {
+						windows.show("selector");
+						windows.send("selector", "focus_input", null);
 					}
 				},
 			]

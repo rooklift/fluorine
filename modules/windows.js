@@ -98,6 +98,13 @@ exports.show = (token) => {
 	all_windows[token].show();
 }
 
+exports.hide = (token) => {
+	if (all_windows[token] === undefined) {
+		return
+	}
+	all_windows[token].hide();
+}
+
 exports.get_window = (token) => {
 	return all_windows[token];
 }
