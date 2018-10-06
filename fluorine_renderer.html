@@ -1256,6 +1256,7 @@
 			lines.push(`<p>${renderer.selection_string()}</p>`);
 			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1}</p>`);
 			lines.push(`<p style="color: #aaaaaa">${renderer.width} x ${renderer.height} &ndash; ${path.basename(renderer.filename)}</p>`);
+			lines.push(`<p style="color: #aaaaaa">Engine ${renderer.game.ENGINE_VERSION}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
