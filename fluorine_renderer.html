@@ -784,7 +784,7 @@
 			let b = highlight_box_flag ? "]" : "";
 
 			return `<span style="color: ${colour};">${a}Ship ${sid}${mark}${b}</span>`
-					+ ` &ndash; <span style="color: ${colour};">${ship_info.energy} (${renderer.sid_halite_map[sid][renderer.turn]})</span>`
+					+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
 					+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 		};
 
