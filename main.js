@@ -254,7 +254,7 @@ function make_main_menu() {
 						{
 							label: "halite / 4",
 							type: "radio",
-							checked: false,
+							checked: true,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 1]);
 							}
@@ -262,7 +262,7 @@ function make_main_menu() {
 						{
 							label: "255 * sqrt(halite / 2048)",
 							type: "radio",
-							checked: true,
+							checked: false,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 2]);
 							}
