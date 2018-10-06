@@ -912,7 +912,11 @@
 							context.fill();
 							break;
 						default:
-							context.fillRect((i + 0.25) * box_width, (j + 0.25) * box_height, box_width / 2, box_height / 2);
+							// context.fillRect((i + 0.25) * box_width, (j + 0.25) * box_height, box_width / 2, box_height / 2);
+
+							context.beginPath();
+      						context.arc((i + b) * box_width, (j + b) * box_height, 0.35 * box_width, 0, 2 * Math.PI, false);
+							context.fill();
 					}
 				}
 			}
