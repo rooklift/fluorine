@@ -1129,22 +1129,22 @@
 			context.strokeStyle = "#cccccc";
 
 			context.beginPath();
-			context.moveTo(i, j);
+			context.moveTo(i, j - renderer.box_height());
 			context.lineTo(i, 0);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(i, j);
+			context.moveTo(i, j + renderer.box_height());
 			context.lineTo(i, canvas.height);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(i, j);
+			context.moveTo(i - renderer.box_width(), j);
 			context.lineTo(0, j);
 			context.stroke();
 
 			context.beginPath();
-			context.moveTo(i, j);
+			context.moveTo(i + renderer.box_width(), j);
 			context.lineTo(canvas.width, j);
 			context.stroke();
 
