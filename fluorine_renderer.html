@@ -572,16 +572,7 @@
 
 		// --------------------------------------------------------------
 
-		renderer.box_string = (x, y, highlight_flag) => {
-			let val = renderer.production_maps[renderer.turn][x][y];
-			if (highlight_flag) {
-				return `[${x}, ${y}] &ndash; ${val}`;
-			} else {
-				return `${x}, ${y} &ndash; ${val}`;
-			}
-		};
-
-		renderer.box_with_ship_string = (sid, highlight_box_flag) => {
+		renderer.ship_string = (sid, highlight_box_flag) => {
 
 			let ship_info = renderer.ship_info(sid);
 
@@ -600,7 +591,7 @@
 				}
 
 				if (cause === undefined) {
-					let cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
+					cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
 				}
 
 				return `<span style="color: ${colours[renderer.selection.pid]};">Ship ${renderer.selection.sid}</span> (${cause})`;
@@ -609,20 +600,12 @@
 			let colour = colours[ship_info.pid];
 			let mark = ship_info.is_inspired ? "+" : "";
 
-			if (highlight_box_flag) {
+			let a = highlight_box_flag ? "[" : "";
+			let b = highlight_box_flag ? "]" : "";
 
-				return `${renderer.box_string(ship_info.x, ship_info.y, true)}`
-						+ ` &ndash; <span style="color: ${colour};">Ship ${sid}${mark}</span>`
-						+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
-						+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
-
-			} else {
-
-				return `${renderer.box_string(ship_info.x, ship_info.y, false)}`
-						+ ` &ndash; <span style="color: ${colour};">[Ship ${sid}${mark}]</span>`
-						+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
-						+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
-			}
+			return `<span style="color: ${colour};">${a}Ship ${sid}${mark}${b}</span>`
+					+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
+					+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 		};
 
 		renderer.collision_string = (event) => {
@@ -654,23 +637,39 @@
 				return "no selection";
 			}
 
-			if (renderer.selection.type === "box") {
+			// First, make s a string with info about the relevant box...
 
-				let x = renderer.selection.x;
-				let y = renderer.selection.y;
+			let s = "";
+
+			let [x, y] = renderer.get_selection_xy();
+
+			if (x !== null && y !== null) {
+				let val = renderer.production_maps[renderer.turn][x][y];
+				if (renderer.selection.type === "box") {
+					s = `[${x}, ${y}] &ndash; ${val}`;
+				} else {
+					s = `${x}, ${y} &ndash; ${val}`;
+				}
+			}
+
+			// If our selection is a box, see if anything else is present...
+
+			if (renderer.selection.type === "box") {
 
 				let collision = renderer.collision_at(x, y);
 
 				if (collision) {
-					return `${renderer.box_string(x, y, true)} &ndash; ${renderer.collision_string(collision)}`;
+					return s + ` &ndash; ` + renderer.collision_string(collision);
 				} else {
 					let ship_info = renderer.ship_at(x, y);
 					if (ship_info) {
-						return renderer.box_with_ship_string(ship_info.sid, true);
+						return s + ` &ndash; ` + renderer.ship_string(ship_info.sid, false);
 					}
-					return `${renderer.box_string(x, y, true)}`;
+					return s;
 				}
 			}
+
+			// Otherwise, add info about the ship...
 
 			if (renderer.selection.type === "ship") {
 
@@ -679,13 +678,13 @@
 				let collision = renderer.collision_involving_ship(sid);
 
 				if (collision) {
-					let x = collision.location.x;
-					let y = collision.location.y;
-					return `${renderer.box_string(x, y)} &ndash; ${renderer.collision_string(collision)}`;
+					return s + ` &ndash; ` + renderer.collision_string(collision);
 				}
 
-				return renderer.box_with_ship_string(sid, false);
+				return s + (s !== "" ? " &ndash; " : "") + renderer.ship_string(sid, true);
 			}
+
+			return "unknown selection";
 		};
 
 		// --------------------------------------------------------------
