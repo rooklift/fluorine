@@ -244,15 +244,15 @@ function make_main_menu() {
 					label: "Grid",
 					submenu: [
 						{
-							label: "halite / 4",
+							label: "0",
 							type: "radio",
-							checked: true,
+							checked: false,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 0]);
 							}
 						},
 						{
-							label: "255 * sqrt(halite / 2048)",
+							label: "halite / 4",
 							type: "radio",
 							checked: false,
 							click: () => {
@@ -260,15 +260,15 @@ function make_main_menu() {
 							}
 						},
 						{
-							label: "255 * sqrt(halite / 1024)",
+							label: "255 * sqrt(halite / 2048)",
 							type: "radio",
-							checked: false,
+							checked: true,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 2]);
 							}
 						},
 						{
-							label: "0",
+							label: "255 * sqrt(halite / 1024)",
 							type: "radio",
 							checked: false,
 							click: () => {
