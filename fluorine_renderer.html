@@ -69,10 +69,12 @@
 		renderer.selection = null;
 		renderer.width = 0;
 		renderer.height = 0;
+
 		renderer.production_maps = null;
 		renderer.dropoff_list = null;
 		renderer.sid_pid_map = null;
 		renderer.collision_data = null;
+		renderer.self_loss_counts = null;
 		renderer.cumulative_build_counts = null;
 
 		renderer.integer_box_sizes = false;
@@ -176,7 +178,8 @@
 			renderer.make_production_maps();
 			renderer.make_dropoff_list();
 			renderer.make_sid_pid_map();
-			renderer.make_collision_data();
+			renderer.make_collision_data();				// Uses the sid_pid_map
+			renderer.make_self_loss_counts();			// Uses the collision data
 			renderer.make_cumulative_build_counts();
 
 			renderer.set_title();
@@ -327,7 +330,57 @@
 						data.y = event.location.y;
 						data.sids = event.ships;			// FIXME? Make copy for safety.
 
+						data.losses = [];
+
+						for (let pid = 0; pid < renderer.players(); pid++) {
+							data.losses.push(0);
+						}
+
+						for (let z = 0; z < event.ships.length; z++) {
+							let sid = event.ships[z];
+							let pid = renderer.sid_pid_map[sid];
+							data.losses[pid] += 1;
+						}
+
 						renderer.collision_data.push(data);
+					}
+				}
+			}
+		};
+
+		renderer.make_self_loss_counts = () => {
+
+			if (!renderer.game) {
+				renderer.self_loss_counts = null;
+				return;
+			}
+
+			renderer.self_loss_counts = [];
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				renderer.self_loss_counts.push([]);					// Format is [player][turn] --> count
+			}
+
+			// Zero the whole array...
+
+			for (let n = 0; n < renderer.game_length(); n++) {
+				for (let pid = 0; pid < renderer.players(); pid++) {
+					renderer.self_loss_counts[pid].push(0);
+				}
+			}
+
+			for (let n = 0; n < renderer.collision_data.length; n++) {
+
+				let data = renderer.collision_data[n];
+
+				for (let pid = 0; pid < renderer.players(); pid++) {
+
+					let losses = data.losses[pid];
+
+					if (losses > 1) {
+						for (let turn = data.turn; turn < renderer.game_length(); turn++) {
+							renderer.self_loss_counts[pid][turn] += losses;
+						}
 					}
 				}
 			}
@@ -1278,9 +1331,10 @@
 				let rank_nice = `(${ranks[rank]})`;
 
 				let colour = colours[pid];
-				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} ${rank_nice}</h2>`);
+				lines.push(`<h2 style="color: ${colour}">${renderer.game.players[pid].name} &nbsp; ${rank_nice}</h2>`);
 				lines.push(`<ul>`);
 				lines.push(`<li>Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]} &ndash; carrying ${renderer.transit_count(pid)}</li>`);
+				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)} &ndash; suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Dropoffs: ${dropoffs}</li>`);
 				lines.push(`<li>Deposits: ${deposited + initial} &ndash; Spent: ${spent}</li>`);
 				lines.push(`<li>Net: <span style="color: ${colour}">${current}</span></li>`);
