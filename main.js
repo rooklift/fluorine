@@ -326,19 +326,8 @@ function make_main_menu() {
 						windows.send("renderer", "set", ["selection", null]);
 					}
 				},
-			]
-		},
-		{
-			label: "Windows",
-			submenu: [
 				{
-					label: "Renderer",
-					click: () => {
-						windows.show("renderer");
-					}
-				},
-				{
-					label: "Selector",
+					label: "Select ship by ID...",
 					accelerator: "CommandOrControl+F",
 					click: () => {
 						windows.show("selector");
