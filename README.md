@@ -1,4 +1,4 @@
-![Fluorine Screenshot](https://user-images.githubusercontent.com/16438795/46490250-6af79b00-c7ff-11e8-9170-c70c4a459273.png)
+![Fluorine Screenshot](https://user-images.githubusercontent.com/16438795/46572697-29432d80-c982-11e8-8890-43516df4f997.png)
 
 # Fluorine
 
