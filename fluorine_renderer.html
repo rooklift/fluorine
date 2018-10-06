@@ -602,9 +602,20 @@
 					let event = events[n];
 
 					if (event.type === "spawn" && event.id === sid) {
+
 						renderer.selection = {type: "ship", turn: turn + 1, sid: sid, pid: renderer.sid_pid_map[sid]};
-						renderer.draw();
-						return;
+
+						if (renderer.turn < turn + 1) {
+							renderer.turn = turn + 1;
+							renderer.draw();
+							return;
+						} else if (renderer.ship_info(sid) === null) {
+							renderer.ship_fate();		// Uses renderer.selection, which we set above. Calls draw().
+							return;
+						} else {
+							renderer.draw();
+							return;
+						}
 					}
 				}
 			}
