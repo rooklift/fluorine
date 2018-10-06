@@ -888,8 +888,8 @@
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
-				context.fillStyle = "#000000";
-				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
+				// context.fillStyle = "#000000";
+				// context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 
 			for (let n = 0; n < renderer.dropoff_list.length; n++) {
@@ -905,8 +905,8 @@
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
-				context.fillStyle = "#000000";
-				context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
+				// context.fillStyle = "#000000";
+				// context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 		};
 
@@ -962,7 +962,10 @@
 					let x = ship.x;
 					let y = ship.y;
 
-					context.fillStyle = colour;
+					let opacity = ship.energy / 1000;
+
+					context.strokeStyle = colour;
+
 					let [i, j] = renderer.offset_adjust(x, y);
 
 					let a = 0.1;
@@ -975,35 +978,67 @@
 							context.moveTo((i + a) * box_width, (j + c) * box_height);
 							context.lineTo((i + c) * box_width, (j + c) * box_height);
 							context.lineTo((i + b) * box_width, (j + a) * box_height);
+							context.closePath();
+							context.fillStyle = "#000000";
 							context.fill();
+							context.globalAlpha = opacity;
+							context.fillStyle = colour;
+							context.fill();
+							context.globalAlpha = 1;
+							context.stroke();
 							break;
 						case "s":
 							context.beginPath();
 							context.moveTo((i + a) * box_width, (j + a) * box_height);
 							context.lineTo((i + c) * box_width, (j + a) * box_height);
 							context.lineTo((i + b) * box_width, (j + c) * box_height);
+							context.closePath();
+							context.fillStyle = "#000000";
 							context.fill();
+							context.globalAlpha = opacity;
+							context.fillStyle = colour;
+							context.fill();
+							context.globalAlpha = 1;
+							context.stroke();
 							break;
 						case "e":
 							context.beginPath();
 							context.moveTo((i + a) * box_width, (j + a) * box_height);
 							context.lineTo((i + a) * box_width, (j + c) * box_height);
 							context.lineTo((i + c) * box_width, (j + b) * box_height);
+							context.closePath();
+							context.fillStyle = "#000000";
 							context.fill();
+							context.globalAlpha = opacity;
+							context.fillStyle = colour;
+							context.fill();
+							context.globalAlpha = 1;
+							context.stroke();
 							break;
 						case "w":
 							context.beginPath();
 							context.moveTo((i + c) * box_width, (j + a) * box_height);
 							context.lineTo((i + c) * box_width, (j + c) * box_height);
 							context.lineTo((i + a) * box_width, (j + b) * box_height);
+							context.closePath();
+							context.fillStyle = "#000000";
 							context.fill();
+							context.globalAlpha = opacity;
+							context.fillStyle = colour;
+							context.fill();
+							context.globalAlpha = 1;
+							context.stroke();
 							break;
 						default:
-							// context.fillRect((i + 0.25) * box_width, (j + 0.25) * box_height, box_width / 2, box_height / 2);
-
 							context.beginPath();
       						context.arc((i + b) * box_width, (j + b) * box_height, 0.35 * box_width, 0, 2 * Math.PI, false);
+      						context.fillStyle = "#000000";
 							context.fill();
+							context.globalAlpha = opacity;
+							context.fillStyle = colour;
+							context.fill();
+							context.globalAlpha = 1;
+							context.stroke();
 					}
 				}
 			}
