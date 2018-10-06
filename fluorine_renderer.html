@@ -1513,7 +1513,7 @@
 				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)} &ndash; suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
 				lines.push(`<li>Mined: ${renderer.mined_counts[pid][renderer.turn]}</li>`);
-				lines.push(`<li>Deposits: ${deposited + initial} &ndash; Spent: ${spent}</li>`);
+				lines.push(`<li>Deposits: ${deposited} &ndash; Spent: ${spent - initial}</li>`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
 					lines.push(`<li>Net: <span style="color: ${colour}">crashed</span></li>`);
