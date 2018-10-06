@@ -23,11 +23,11 @@ electron.app.on("ready", () => {
 	});
 
 	windows.new("selector", {
-		title: "Fluorine", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_select.html")
+		title: "Select Ship", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_select.html")
 	});
 
 	windows.new("turn", {
-		title: "Fluorine", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_turn.html")
+		title: "Go To Turn", show: false, width: 320, height: 80, resizable: true, page: path.join(__dirname, "fluorine_turn.html")
 	});
 
 	electron.Menu.setApplicationMenu(make_main_menu());
