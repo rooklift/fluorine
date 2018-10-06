@@ -853,6 +853,9 @@
 						case 2:
 							val = 255 * Math.sqrt(renderer.production_maps[renderer.turn][x][y] / 1024);
 							break;
+						case 3:
+							val = 0;
+							break;
 					}
 
 					val = Math.floor(val);

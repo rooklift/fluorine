@@ -255,6 +255,14 @@ function make_main_menu() {
 								windows.send("renderer", "set", ["grid_aesthetic", 2]);
 							}
 						},
+						{
+							label: "0",
+							type: "radio",
+							checked: false,
+							click: () => {
+								windows.send("renderer", "set", ["grid_aesthetic", 3]);
+							}
+						},
 					]
 				},
 				{
