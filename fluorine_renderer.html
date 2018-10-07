@@ -334,8 +334,7 @@
 
 			// renderer.collision_data: array of collision events in sane order
 
-			// FIXME:  1. adjust halite losses for collisions over a player's structure.
-			//         2. reduce halite losses by the amount of fuel burned to get to the square.
+			// FIXME: adjust halite losses for collisions over a player's structure.
 
 			renderer.collision_data = [];
 
@@ -355,11 +354,25 @@
 						}
 
 						for (let z = 0; z < event.ships.length; z++) {
+
 							let sid = event.ships[z];
 							let pid = renderer.sid_pid_map[sid];
 							data.losses[pid] += 1;
-							let ship_final_state = renderer.frame(n).entities[pid][sid];
-							data.halite_losses[pid] += ship_final_state.energy;
+
+							let final_state = renderer.frame(n).entities[pid][sid];
+
+							let burned_en_route = 0;
+
+							if (final_state.x !== data.x || final_state.y !== data.y) {		// The ship moved before colliding.
+								let ground = renderer.production_list[n][final_state.x][final_state.y];		// Ship's source before moving.
+								if (final_state.is_inspired) {
+									burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.INSPIRED_MOVE_COST_RATIO);
+								} else {
+									burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.MOVE_COST_RATIO);
+								}
+							}
+
+							data.halite_losses[pid] += final_state.energy - burned_en_route;
 						}
 
 						renderer.collision_data.push(data);
