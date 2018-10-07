@@ -1634,22 +1634,22 @@
 				let colour = colours[pid];
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
-				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]}, carrying ${carrying}</li>`);
-				lines.push(`<li>Losses: ${renderer.build_counts[pid][renderer.turn] - renderer.ship_count(pid)} &ndash; dropped halite: ${scrapped}</li>`);
-				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Mined: ${mined} &ndash; burned: ${burned}</li>`);
-				lines.push(`<li>Initial: ${initial}, deposits: ${deposited}`);
+				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
+				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
+				lines.push(`<li>Mined: ${mined}, extras: ${-(mined - carrying - burned - deposited - scrapped - initial)} &ndash; burned: ${burned}</li>`);
+				lines.push(`<li>Carrying ${carrying}, dropped: ${scrapped}</li>`);
+				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
-					lines.push(`<li>Total: ${initial + deposited} &ndash; spent: ${spent} = <span style="color: ${colour}">crashed</span></li>`);
+					lines.push(`<li>Profit = <span style="color: ${colour}">crashed</span></li>`);
 				} else {
-					lines.push(`<li>Total: ${initial + deposited} &ndash; spent: ${spent} = <span style="color: ${colour}">${current}</span></li>`);
+					lines.push(`<li>Profit = <span style="color: ${colour}">${current}</span></li>`);
 				}
 
-				// Debugging:
-				lines.push(`<li>Discrepancy: ${mined - carrying - burned - deposited - scrapped}</li>`);
-
 				lines.push(`</ul>`);
+
+				// Note to self - the discrepancy from halite absorbed during
+				// dropoff construction IS included in the deposited stat.
 			}
 
 			infobox.innerHTML = lines.join("");
