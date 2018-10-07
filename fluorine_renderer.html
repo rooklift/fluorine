@@ -1636,8 +1636,8 @@
 				lines.push(`<ul style="margin-top: 0;">`);
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
 				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
-				lines.push(`<li>Mined: ${mined}, extras: ${-(mined - carrying - burned - deposited - scrapped - initial)} &ndash; burned: ${burned}</li>`);
-				lines.push(`<li>Carrying ${carrying}, dropped: ${scrapped}</li>`);
+				lines.push(`<li>Mined: ${mined}, extras: ${-(mined - carrying - burned - deposited - scrapped - initial)}</li>`);
+				lines.push(`<li>Burned: ${burned}, carrying ${carrying}, dropped: ${scrapped}</li>`);
 				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
