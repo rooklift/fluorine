@@ -76,6 +76,7 @@
 		renderer.mined_counts = null;
 		renderer.burn_counts = null;
 		renderer.scrap_counts = null;
+		renderer.absorbed_counts = null;
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
@@ -211,16 +212,19 @@
 			renderer.offset_x = 0;
 			renderer.offset_y = 0;
 
+			// Various things in this process use stuff that was created previously, so keep this order:
+
 			renderer.make_production_list();
 			renderer.make_dropoff_list();
 			renderer.make_sid_pid_map();
-			renderer.make_collision_data();				// Uses sid_pid_map
-			renderer.make_self_loss_counts();			// Uses collision_data
+			renderer.make_collision_data();
+			renderer.make_self_loss_counts();
 			renderer.make_build_counts();
-			renderer.make_sid_halite_counts();			// Uses sid_pid_map
-			renderer.make_mined_counts();				// Uses sid_pid_map and sid_halite_counts
-			renderer.make_burn_counts();				// Uses production_list
+			renderer.make_sid_halite_counts();
+			renderer.make_mined_counts();
+			renderer.make_burn_counts();
 			renderer.make_scrap_counts();
+			renderer.make_absorbed_counts();
 
 			renderer.set_title();
 			renderer.draw();
@@ -324,6 +328,10 @@
 						// Note "turn" saved here (n + 1) is the turn in which the dropoff point is first shown.
 
 						let d = {x: event.location.x, y: event.location.y, pid: event.owner_id, sid: event.id, turn: n + 1};
+
+						// Save a stat for how much halite on the ground was absorbed by the player...
+
+						d.absorbed = renderer.production_list[n][event.location.x][event.location.y];
 						renderer.dropoff_list.push(d);
 					}
 				}
@@ -649,6 +657,31 @@
 				}
 			}
 		};
+
+		renderer.make_absorbed_counts = () => {
+
+			renderer.absorbed_counts = [];
+
+			// renderer.absorbed_counts array of arrays: [pid][turn] --> absorbed count
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				renderer.absorbed_counts.push([]);
+				for (let turn = 0; turn < renderer.game_length(); turn++) {
+					renderer.absorbed_counts[pid].push(0);
+				}
+			}
+
+			for (let n = 0; n < renderer.dropoff_list.length; n++) {
+
+				let dropoff = renderer.dropoff_list[n];
+				let pid = dropoff.pid;
+				let absorbed = dropoff.absorbed;
+
+				for (let turn = dropoff.turn; turn < renderer.game_length(); turn++) {
+					renderer.absorbed_counts[pid][turn] += absorbed;
+				}
+			}
+		}
 
 		// --------------------------------------------------------------
 
@@ -1617,6 +1650,7 @@
 				let carrying = renderer.transit_count(pid);
 				let scrapped = renderer.scrap_counts[pid][renderer.turn];
 				let mined = renderer.mined_counts[pid][renderer.turn];
+				let absorbed = renderer.absorbed_counts[pid][renderer.turn];
 				let burned = renderer.burn_counts[pid][renderer.turn];
 
 				let dropoffs = 0;
@@ -1636,7 +1670,7 @@
 				lines.push(`<ul style="margin-top: 0;">`);
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
 				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
-				lines.push(`<li>Mined: ${mined}, extras: ${-(mined - carrying - burned - deposited - scrapped - initial)}</li>`);
+				lines.push(`<li>Initial: ${initial}, mined: ${mined}, absorbed: ${absorbed}</li>`);
 				lines.push(`<li>Burned: ${burned}, carrying ${carrying}, dropped: ${scrapped}</li>`);
 				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
 
@@ -1646,10 +1680,15 @@
 					lines.push(`<li>Profit = <span style="color: ${colour}">${current}</span></li>`);
 				}
 
+				if (mined + absorbed - carrying - burned - deposited - scrapped !== 0) {
+					lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
+				}
+
 				lines.push(`</ul>`);
 
 				// Note to self - the discrepancy from halite absorbed during
 				// dropoff construction IS included in the deposited stat.
+				// But initial 5000 is not.
 			}
 
 			infobox.innerHTML = lines.join("");
