@@ -71,10 +71,11 @@
 		renderer.sid_pid_map = null;
 		renderer.collision_data = null;
 		renderer.self_loss_counts = null;
-		renderer.cumulative_build_counts = null;
+		renderer.build_counts = null;
 		renderer.sid_halite_counts = null;
 		renderer.mined_counts = null;
 		renderer.burn_counts = null;
+		renderer.scrap_counts = null;
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
@@ -215,10 +216,11 @@
 			renderer.make_sid_pid_map();
 			renderer.make_collision_data();				// Uses sid_pid_map
 			renderer.make_self_loss_counts();			// Uses collision_data
-			renderer.make_cumulative_build_counts();
+			renderer.make_build_counts();
 			renderer.make_sid_halite_counts();			// Uses sid_pid_map
 			renderer.make_mined_counts();				// Uses sid_pid_map and sid_halite_counts
-			renderer.make_burn_counts();				// Uses FIXME
+			renderer.make_burn_counts();				// Uses production_list
+			renderer.make_scrap_counts();
 
 			renderer.set_title();
 			renderer.draw();
@@ -332,6 +334,9 @@
 
 			// renderer.collision_data: array of collision events in sane order
 
+			// FIXME:  1. adjust halite losses for collisions over a player's structure.
+			//         2. reduce halite losses by the amount of fuel burned to get to the square.
+
 			renderer.collision_data = [];
 
 			for (let n = 0; n < renderer.game_length(); n++) {
@@ -342,16 +347,19 @@
 
 					if (event.type === "shipwreck") {
 
-						let data = {turn: n + 1, x: event.location.x, y: event.location.y, sids: event.ships, losses: []};
+						let data = {turn: n + 1, x: event.location.x, y: event.location.y, sids: event.ships, losses: [], halite_losses: []};
 
 						for (let pid = 0; pid < renderer.players(); pid++) {
 							data.losses.push(0);
+							data.halite_losses.push(0);
 						}
 
 						for (let z = 0; z < event.ships.length; z++) {
 							let sid = event.ships[z];
 							let pid = renderer.sid_pid_map[sid];
 							data.losses[pid] += 1;
+							let ship_final_state = renderer.frame(n).entities[pid][sid];
+							data.halite_losses[pid] += ship_final_state.energy;
 						}
 
 						renderer.collision_data.push(data);
@@ -387,6 +395,7 @@
 					let losses = data.losses[pid];
 
 					if (losses > 1) {
+						// FIXME? This is a relatively expensive way of updating everything.
 						for (let turn = data.turn; turn < renderer.game_length(); turn++) {
 							renderer.self_loss_counts[pid][turn] += losses;
 						}
@@ -395,21 +404,21 @@
 			}
 		};
 
-		renderer.make_cumulative_build_counts = () => {
+		renderer.make_build_counts = () => {
 
-			// renderer.cumulative_build_counts: array of arrays: [pid][turn] --> ships made
+			// renderer.build_counts: array of arrays: [pid][turn] --> ships made
 
-			renderer.cumulative_build_counts = [];
+			renderer.build_counts = [];
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
-				renderer.cumulative_build_counts.push([]);
+				renderer.build_counts.push([]);
 			}
 
 			// Zero the whole array...
 
 			for (let n = 0; n < renderer.game_length(); n++) {
 				for (let pid = 0; pid < renderer.players(); pid++) {
-					renderer.cumulative_build_counts[pid].push(0);
+					renderer.build_counts[pid].push(0);
 				}
 			}
 
@@ -418,7 +427,7 @@
 				// First, make this turn's cumulative count equal last turn's for all players...
 
 				for (let pid = 0; pid < renderer.players(); pid++) {
-					renderer.cumulative_build_counts[pid][n] = renderer.cumulative_build_counts[pid][n - 1];
+					renderer.build_counts[pid][n] = renderer.build_counts[pid][n - 1];
 				}
 
 				// Now add new ships...
@@ -431,7 +440,7 @@
 
 					if (event.type === "spawn") {
 						let pid = event.owner_id;
-						renderer.cumulative_build_counts[pid][n] += 1;
+						renderer.build_counts[pid][n] += 1;
 					}
 				}
 			}
@@ -547,10 +556,10 @@
 							let ship = some_ships[sid];
 
 							if (ship === undefined) {
-								console.log(`sid ${sid} not in entities list on turn ${turn}`);
+								console.log(`sid ${sid} not in entities list on turn ${turn - 1}`);
 							}
 
-							let ground = renderer.production_list[turn][ship.x][ship.y];
+							let ground = renderer.production_list[turn - 1][ship.x][ship.y];
 
 							let cost;
 
@@ -567,6 +576,34 @@
 					}
 
 					renderer.burn_counts[pid].push(renderer.burn_counts[pid][turn - 1] + spent);
+				}
+			}
+		};
+
+		renderer.make_scrap_counts = () => {
+
+			// renderer.burn_counts array of arrays: [pid][turn] --> scrap count
+
+			renderer.scrap_counts = [];
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				renderer.scrap_counts.push([]);
+				for (let turn = 0; turn < renderer.game_length(); turn++) {
+					renderer.scrap_counts[pid].push(0);
+				}
+			}
+
+			for (let n = 0; n < renderer.collision_data.length; n++) {
+
+				let data = renderer.collision_data[n];
+
+				for (let pid = 0; pid < renderer.players(); pid++) {
+					if (data.halite_losses[pid] > 0) {
+						for (let turn = data.turn; turn < renderer.game_length(); turn++) {
+							// FIXME? This is a relatively expensive way of updating everything.
+							renderer.scrap_counts[pid][turn] += data.halite_losses[pid];
+						}
+					}
 				}
 			}
 		};
@@ -1533,7 +1570,12 @@
 				} else {
 					current = renderer.previous_frame().energy[pid];		// Available energy is stored in previous frame.
 				}
+
 				let spent = deposited + initial - current;
+				let carrying = renderer.transit_count(pid);
+				let scrapped = renderer.scrap_counts[pid][renderer.turn];
+				let mined = renderer.mined_counts[pid][renderer.turn];
+				let burned = renderer.burn_counts[pid][renderer.turn];
 
 				let dropoffs = 0;
 
@@ -1550,10 +1592,10 @@
 				let colour = colours[pid];
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
-				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]}, carrying ${renderer.transit_count(pid)}</li>`);
-				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, of which suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
-				lines.push(`<li>Dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Mined: ${renderer.mined_counts[pid][renderer.turn]} &ndash; burned: ${renderer.burn_counts[pid][renderer.turn]}</li>`);
+				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]}, carrying ${carrying}</li>`);
+				lines.push(`<li>Losses: ${renderer.build_counts[pid][renderer.turn] - renderer.ship_count(pid)} &ndash; dropped halite: ${scrapped}</li>`);
+				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
+				lines.push(`<li>Mined: ${mined} &ndash; burned: ${burned}</li>`);
 				lines.push(`<li>Initial: ${initial}, deposits: ${deposited}`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
@@ -1561,6 +1603,10 @@
 				} else {
 					lines.push(`<li>Total: ${initial + deposited} &ndash; spent: ${spent} = <span style="color: ${colour}">${current}</span></li>`);
 				}
+
+				// Debugging:
+				lines.push(`<li>Discrepancy: ${mined - carrying - burned - deposited - scrapped}</li>`);
+
 				lines.push(`</ul>`);
 			}
 
