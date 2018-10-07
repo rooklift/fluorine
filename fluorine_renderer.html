@@ -74,6 +74,7 @@
 		renderer.cumulative_build_counts = null;
 		renderer.sid_halite_counts = null;
 		renderer.mined_counts = null;
+		renderer.burn_counts = null;
 
 		renderer.integer_box_sizes = false;
 		renderer.triangles_show_next = true;
@@ -192,7 +193,7 @@
 
 		renderer.finish_load = (filename) => {
 
-			console.log("Loading seemed OK.");
+			console.time("finish_load");
 
 			// Crude deletion of redundant zeroth frame...
 			// We gotta undo this if saving the file.
@@ -212,14 +213,17 @@
 			renderer.make_production_list();
 			renderer.make_dropoff_list();
 			renderer.make_sid_pid_map();
-			renderer.make_collision_data();				// Uses the sid_pid_map
-			renderer.make_self_loss_counts();			// Uses the collision data
+			renderer.make_collision_data();				// Uses sid_pid_map
+			renderer.make_self_loss_counts();			// Uses collision_data
 			renderer.make_cumulative_build_counts();
-			renderer.make_sid_halite_counts();			// Uses the sid_pid_map
-			renderer.make_mined_counts();
+			renderer.make_sid_halite_counts();			// Uses sid_pid_map
+			renderer.make_mined_counts();				// Uses sid_pid_map and sid_halite_counts
+			renderer.make_burn_counts();				// Uses FIXME
 
 			renderer.set_title();
 			renderer.draw();
+
+			console.timeEnd("finish_load");
 		};
 
 		renderer.set_title = () => {
@@ -505,19 +509,69 @@
 			}
 		};
 
+		renderer.make_burn_counts = () => {
+
+			// renderer.burn_counts array of arrays: [pid][turn] --> burned count
+
+			renderer.burn_counts = [];
+
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				renderer.burn_counts.push([]);
+				renderer.burn_counts[pid].push(0);					// Data for turn 0 and 1.
+			}
+
+			for (let turn = 1; turn < renderer.game_length(); turn++) {
+
+				for (let pid = 0; pid < renderer.players(); pid++) {
+
+					let spent = 0;
+
+					// The burn happens between last frame and this frame...
+
+					let some_moves = renderer.frame(turn - 1).moves[pid];
+					let some_ships = renderer.frame(turn - 1).entities[pid];
+
+					if (some_moves === undefined || some_ships === undefined) {
+						console.log("Got undefined in make_burn_counts()");
+						continue;
+					}
+
+					for (let n = 0; n < some_moves.length; n++) {
+
+						let move = some_moves[n];
+
+						if (move.type === "m" && "nsew".includes(move.direction)) {
+
+							let sid = move.id;
+
+							let ship = some_ships[sid];
+
+							if (ship === undefined) {
+								console.log(`sid ${sid} not in entities list on turn ${turn}`);
+							}
+
+							let ground = renderer.production_list[turn][ship.x][ship.y];
+							spent += Math.floor(ground / 10);
+						}
+					}
+
+					renderer.burn_counts[pid].push(renderer.burn_counts[pid][turn - 1] + spent);
+				}
+			}
+		};
+
 		// --------------------------------------------------------------
 
 		renderer.save = (filename) => {
+
 			if (!filename || !renderer.game) return;
 
 			// Undo our frame 0 deletion...
-
-			renderer.game.full_frames = [renderer.deleted_frame].concat(renderer.game.full_frames);
+			renderer.game.full_frames.unshift(renderer.deleted_frame);
 
 			fs.writeFileSync(filename, JSON.stringify(renderer.game, null, "\t"));
 
 			// Redo our frame 0 deletion...
-
 			renderer.game.full_frames = renderer.game.full_frames.slice(1);
 		};
 
@@ -1488,7 +1542,7 @@
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.cumulative_build_counts[pid][renderer.turn]}, carrying ${renderer.transit_count(pid)}</li>`);
 				lines.push(`<li>Losses: ${renderer.cumulative_build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, of which suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Mined: ${renderer.mined_counts[pid][renderer.turn]}</li>`);
+				lines.push(`<li>Mined: ${renderer.mined_counts[pid][renderer.turn]} &ndash; burned: ${renderer.burn_counts[pid][renderer.turn]}</li>`);
 				lines.push(`<li>Initial: ${initial}, deposits: ${deposited}`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
