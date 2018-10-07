@@ -552,7 +552,13 @@
 
 							let ground = renderer.production_list[turn][ship.x][ship.y];
 
-							let cost = Math.floor(ground / 10);
+							let cost;
+
+							if (ship.is_inspired) {
+								cost = Math.floor(ground / renderer.game.GAME_CONSTANTS.INSPIRED_MOVE_COST_RATIO);
+							} else {
+								cost = Math.floor(ground / renderer.game.GAME_CONSTANTS.MOVE_COST_RATIO);
+							}
 
 							if (cost <= ship.energy) {		// No burn if can't afford.
 								spent += cost;
@@ -1112,7 +1118,7 @@
 					let x = ship.x;
 					let y = ship.y;
 
-					let opacity = ship.energy / 1000;
+					let opacity = ship.energy / renderer.game.GAME_CONSTANTS.MAX_ENERGY;
 
 					context.strokeStyle = colour;
 
