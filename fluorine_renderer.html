@@ -1680,15 +1680,14 @@
 					lines.push(`<li>Profit = <span style="color: ${colour}">${current}</span></li>`);
 				}
 
-				if (mined + absorbed - carrying - burned - deposited - scrapped !== 0) {
+				if (mined + absorbed - deposited - carrying - burned - scrapped !== 0) {
 					lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
 				}
 
 				lines.push(`</ul>`);
 
-				// Note to self - the discrepancy from halite absorbed during
-				// dropoff construction IS included in the deposited stat.
-				// But initial 5000 is not.
+				// Note to self - halite absorbed during dropoff construction IS included in the deposited stat.
+				// But initial 5000 is not. (My "gathered" stat is deposited + initial.)
 			}
 
 			infobox.innerHTML = lines.join("");
