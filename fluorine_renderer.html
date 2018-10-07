@@ -334,8 +334,6 @@
 
 			// renderer.collision_data: array of collision events in sane order
 
-			// FIXME: adjust halite losses for collisions over a player's structure.
-
 			renderer.collision_data = [];
 
 			for (let n = 0; n < renderer.game_length(); n++) {
@@ -348,10 +346,16 @@
 
 						let data = {turn: n + 1, x: event.location.x, y: event.location.y, sids: event.ships, losses: [], halite_losses: []};
 
+						// Setup...
+
 						for (let pid = 0; pid < renderer.players(); pid++) {
 							data.losses.push(0);
 							data.halite_losses.push(0);
 						}
+
+						// Calculate ships lost and halite dropped by each player...
+
+						let total_dropped = 0;
 
 						for (let z = 0; z < event.ships.length; z++) {
 
@@ -360,6 +364,8 @@
 							data.losses[pid] += 1;
 
 							let final_state = renderer.frame(n).entities[pid][sid];
+
+							// Adjustment for fuel burned en route to the collision...
 
 							let burned_en_route = 0;
 
@@ -373,7 +379,30 @@
 							}
 
 							data.halite_losses[pid] += final_state.energy - burned_en_route;
+
+							total_dropped += final_state.energy - burned_en_route;
 						}
+
+						// Adjustment for collisions over a factory...
+
+						for (let pid = 0; pid < renderer.players(); pid++) {
+							if (renderer.game.players[pid].factory_location.x === data.x && renderer.game.players[pid].factory_location.y === data.y) {
+								data.halite_losses[pid] -= total_dropped;
+							}
+						}
+
+						// Adjustment for collisions over a dropoff...
+
+						for (let z = 0; z < renderer.dropoff_list.length; z++) {
+
+							let dropoff = renderer.dropoff_list[z];
+
+							if (dropoff.turn <= n && dropoff.x === data.x && dropoff.y === data.y) {
+								data.halite_losses[dropoff.pid] -= total_dropped;
+							}
+						}
+
+						// Save...
 
 						renderer.collision_data.push(data);
 					}
@@ -611,7 +640,7 @@
 				let data = renderer.collision_data[n];
 
 				for (let pid = 0; pid < renderer.players(); pid++) {
-					if (data.halite_losses[pid] > 0) {
+					if (data.halite_losses[pid] !== 0) {
 						for (let turn = data.turn; turn < renderer.game_length(); turn++) {
 							// FIXME? This is a relatively expensive way of updating everything.
 							renderer.scrap_counts[pid][turn] += data.halite_losses[pid];
