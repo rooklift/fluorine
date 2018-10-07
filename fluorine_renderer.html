@@ -1526,6 +1526,8 @@
 
 				if (move.type === "m" && move.id === sid) {
 					return lookups[move.direction];
+				} else if (move.type === "c") {
+					return "construct";
 				}
 			}
 
