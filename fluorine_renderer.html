@@ -92,7 +92,7 @@
 			o.energy = energy;
 			o.is_inspired = is_inspired;
 			return o;
-		}
+		};
 
 		renderer.new_ship_selection = (turn, sid) => {
 			let o = Object.create(null);
@@ -109,7 +109,7 @@
 			o.x = x;
 			o.y = y;
 			return o;
-		}
+		};
 
 		// --------------------------------------------------------------
 
@@ -435,14 +435,16 @@
 
 		renderer.make_sid_halite_counts = () => {
 
-			// renderer.sid_halite_counts: array of arrays: [sid][turn] --> halite carried, or null if ship not present
+			// renderer.sid_halite_counts: map of arrays: [sid][turn] --> halite carried, or null if ship not present
 
-			renderer.sid_halite_counts = [];
+			// This could be done as an array of arrays but I'm not assuming contiguous sids.
 
-			let total_ships = Object.keys(renderer.sid_pid_map).length;
+			renderer.sid_halite_counts = Object.create(null);
 
-			for (let sid = 0; sid < total_ships; sid++) {
-				renderer.sid_halite_counts.push([]);
+			for (let sid of Object.keys(renderer.sid_pid_map)) {
+
+				renderer.sid_halite_counts[sid] = [];
+
 				for (let turn = 0; turn < renderer.game_length(); turn++) {
 					renderer.sid_halite_counts[sid].push(null);
 				}
@@ -781,9 +783,7 @@
 			let a = highlight_box_flag ? "[" : "";
 			let b = highlight_box_flag ? "]" : "";
 
-			return `<span style="color: ${colour};">${a}Ship ${sid}${mark}${b}</span>`
-					+ ` &ndash; <span style="color: ${colour};">${ship_info.energy}</span>`
-					+ ` &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+			return `<span style="color: ${colour};">${a}Ship ${sid}${mark}${b}</span> &ndash; <span style="color: ${colour};">${ship_info.energy}</span> &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
 		};
 
 		renderer.collision_string = (event) => {
@@ -1342,7 +1342,7 @@
 			let some_moves = renderer.current_frame().moves[pid];
 
 			if (some_moves === undefined) {
-				return lookups["o"];
+				return lookups.o;
 			}
 
 			for (let n = 0; n < some_moves.length; n++) {
@@ -1354,7 +1354,7 @@
 				}
 			}
 
-			return lookups["o"];
+			return lookups.o;
 		};
 
 		renderer.ship_count = (pid) => {
