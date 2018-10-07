@@ -551,7 +551,12 @@
 							}
 
 							let ground = renderer.production_list[turn][ship.x][ship.y];
-							spent += Math.floor(ground / 10);
+
+							let cost = Math.floor(ground / 10);
+
+							if (cost <= ship.energy) {		// No burn if can't afford.
+								spent += cost;
+							}
 						}
 					}
 
