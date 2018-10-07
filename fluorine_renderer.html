@@ -215,7 +215,7 @@
 			renderer.make_collision_data();				// Uses the sid_pid_map
 			renderer.make_self_loss_counts();			// Uses the collision data
 			renderer.make_cumulative_build_counts();
-			renderer.make_sid_halite_counts();				// Uses the sid_pid_map
+			renderer.make_sid_halite_counts();			// Uses the sid_pid_map
 			renderer.make_mined_counts();
 
 			renderer.set_title();
@@ -473,8 +473,6 @@
 
 			renderer.mined_counts = [];
 
-			let total_ships = Object.keys(renderer.sid_pid_map).length;
-
 			for (let pid = 0; pid < renderer.players(); pid++) {
 				renderer.mined_counts.push([]);
 				renderer.mined_counts[pid].push(0);					// Data for turn 0.
@@ -488,7 +486,7 @@
 					counts_this_turn.push(0);
 				}
 
-				for (let sid = 0; sid < total_ships; sid++) {
+				for (let sid of Object.keys(renderer.sid_pid_map)) {
 
 					if (renderer.sid_halite_counts[sid][turn] !== null && renderer.sid_halite_counts[sid][turn - 1] !== null) {
 
