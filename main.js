@@ -2,7 +2,6 @@
 
 const alert = require("./modules/alert");
 const electron = require("electron");
-const {MenuItem} = require('electron')
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const windows = require("./modules/windows");
@@ -61,31 +60,6 @@ ipcMain.on("renderer_ready", () => {
 		windows.send("renderer", "open", process.argv[1]);
 	}
 
-});
-
-ipcMain.on("set_styles", (event, msg) => {
-    //let t = JSON.parse(JSON.stringify(template));
-    let m = electron.Menu.getApplicationMenu().items[3].submenu;
-    //console.log("Old styles: " + JSON.stringify(m));
-    let i = {
-                type: "radio",
-                checked: false,
-            };
-    for (let s = 0; s < 15; s++) {
-        let mi = m.items[s];
-        if (s < msg.length) {
-            let style = msg[s];
-            mi.label = style.name;
-            mi.enabled = true;
-            mi.click = () => {
-                windows.send("renderer", "set_style", style.name);
-            };
-        } else {
-            mi.label = "Custom Style #" + s;
-            mi.enabled = false;
-        }
-    }
-    electron.Menu.setApplicationMenu(electron.Menu.getApplicationMenu())
 });
 
 ipcMain.on("relay", (event, msg) => {
@@ -324,17 +298,6 @@ function make_main_menu() {
 						}
 					]
 				},
-                {
-					label: "Draw text in styles",
-					type: "checkbox",
-					click: (menuItem) => {
-						if (menuItem.checked) {
-							windows.send("renderer", "set", ["draw_alt_map_text", true]);
-						} else {
-							windows.send("renderer", "set", ["draw_alt_map_text", false]);
-						}
-					}
-				},
 				{
 					type: "separator"
 				},
@@ -393,42 +356,7 @@ function make_main_menu() {
 				},
 			]
 		},
-		{
-			label: "Styles",
-			submenu: [
-                {
-					label: "Energy (size)",
-					click: () => {
-						windows.send("renderer", "set_style", {name: "Energy (size)", default_style: {c: "#000", s:1, tc: "#FFF", t: ""}});
-					},
-                    accelerator: "1",
-					type: "radio",
-					checked: true,
-				}
-			]
-		},
 	];
-    for (let i = 1; i < 15; i++) {
-        let mi = {
-            label: "Custom Style #" + i.toString(),
-            click: () => {
-                windows.send("renderer", "set_style", i);
-            },
-            accelerator: (i+1).toString(),
-            type: "radio",
-            checked: false,
-            enabled: false
-        }
-        if (i < 5) {
-            mi.accelerator = (parseInt(i,10) + 1).toString();
-        } else if (i < 10) {
-            mi.accelerator = "CommandOrControl+" + (parseInt(i,10) - 4).toString();
-        }else {
-            mi.accelerator = "Shift+" + (parseInt(i,10) - 9).toString();
-        }
-        template[template.length-1].submenu.push(mi);
-    }
-    
 
 	return electron.Menu.buildFromTemplate(template);
 }
