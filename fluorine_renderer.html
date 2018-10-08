@@ -76,6 +76,7 @@
 	const SHIP_REGEX = /^S:\s*(\d+)(.*)/
 	const colours = ["#eeaaee", "#63ceca", "#ffbe00", "#c5ec98"];
 	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
+    const standard_style = {name: "Energy (size)", default_style: {c: "#000", s:1, tc: "#FFF", t: ""}};
 
 	const canvas = document.getElementById("canvas");
 	const infobox = document.getElementById("infobox");
@@ -199,23 +200,55 @@
 
 			renderer.set_title();
 			renderer.log_load()
+            setTimeout(function () { renderer.fill_alt_maps(); }, );
 			renderer.draw();
 		};
+        
+        renderer.log_load_config = (data) => {
+            // Trying reading the config from the 0th line only...
+            try {
+                let a = JSON.parse(data);
+                if ("styles" in a) {
+                    var config = a;
+                    for (let attr in config.styles) {
+                        renderer.styles[attr] = config.styles[attr];
+                    }
+                    ipcRenderer.send("set_styles", Object.values(renderer.styles));
+                }
+            } catch(e) {
+                console.log("No style configuration found.")
+            }
+        }
 		
 		renderer.log_load = () => {
+        
+            // remove old data
 			renderer.logs = {}
+            renderer.alt_styles_data = {}
+            
+            // This below line controls the default styles, the template controls the menu items
+            renderer.styles = {"Energy (size)": standard_style}
+
 			let filename = renderer.filename.replace(/\.(hlt|json)$/, ".log")
 			try {
 				let data = fs.readFileSync(filename);
 				data = data.toString().split("\n");
 				
+                // load any config from the log file, right now just styles
+                renderer.log_load_config(data[0]);
+                
 				for (let i in data) {
+                    // find the turn that the log item is for...
 					let turn_match = TURN_REGEX.exec(data[i]);
 					if (turn_match) {
 						let turn = parseInt(turn_match[1], 10);
 						if (renderer.logs[turn] === undefined ) {
 							renderer.logs[turn] = {};
+                            renderer.alt_styles_data[turn] = {};
 						}
+                        
+                        // If there's a ship this is tied to, set it with that ship.
+                        // If not, show it only with no ship.
 						let ship_match = SHIP_REGEX.exec(turn_match[2]);
 						var line = turn_match[2];
 						var ship = -1;
@@ -223,6 +256,17 @@
 							ship = parseInt(ship_match[1], 10);
 							line = ship_match[2];
 						}
+                        
+                        // Read for any alt-map data
+                        try {
+                            let j = JSON.parse(line);
+                            if ("style" in j) {
+                                renderer.alt_styles_data[turn][j["style"]] = j.data;
+                            }
+                            continue;
+                        } catch (err) {
+                            console.log(err.msg);
+                        }
 						if (renderer.logs[turn][ship] === undefined ) {
 							renderer.logs[turn][ship] = [];
 						}
@@ -614,22 +658,99 @@
 			renderer.log_lines();
 			renderer.send_info();
 		};
+        
+        renderer.draw_square_on_grid = (i,j,size_ratio,color)  => {
+            let box_width = renderer.box_width();
+			let box_height = renderer.box_height();
+            
+            let offset_width = .5*box_width - (size_ratio*box_width)/2;
+            let offset_height = .5*box_height - (size_ratio*box_height)/2;
+            let x = i*box_width+offset_width;
+            let y = j*box_height+offset_height;
+        
+            context.beginPath();
+            context.fillStyle = color;
+            context.fillRect(x, y, size_ratio*box_width, size_ratio*box_height);
+            context.closePath();
+        };
+        
+        renderer.draw_text_on_grid = (i,j,text,text_color, size_ratio) => {
+            if (text !== "") {
+                let box_width = renderer.box_width();
+                let box_height = renderer.box_height();
+            
+                context.fillStyle = text_color;
+                let x = i*box_width+box_width/2;
+                let y = j*box_height+box_height/2;
+                context.textAlign="center"; 
+                context.textBaseline="middle";
+                context.font = (20 * size_ratio) + "px monospace";
+                context.fillText(text, x, y, box_width);
+            }
+        };
+        
+        renderer.fill_alt_maps = () => {            
+            // Recursive call with breaks so it doesn't fully block
+            renderer.complete_styles_for_turn(0);
+        }
+        
+        renderer.complete_styles_for_turn = (turn) => {
+            if (turn >= renderer.game_length()) {
+                return;
+            }
+            
+            if (!!renderer.alt_styles_data[turn]) {
+                for (let x = 0; x < renderer.width; x++) {
+                    for (let y = 0; y < renderer.height; y++) {
+                        for (let key in renderer.styles) {
+                            if (key == standard_style.name) {
+                                continue;
+                            }
+                            let base_style = renderer.styles[key];
+                            let style = renderer.alt_styles_data[turn][base_style.name][x][y];
+                            renderer.complete_grid_style(base_style, style);
+                        }
+                    }
+                }
+            }
+            turn += 1;
+            setTimeout(function() {renderer.complete_styles_for_turn(turn);}, 1);
+        }
+        
+        renderer.complete_grid_style = (base_style, grid_style) => {
+            if (!grid_style.complete) {                        
+                for (let attr in base_style.default_style) {
+                    if (!grid_style[attr]) {
+                        grid_style[attr] = base_style.default_style[attr];
+                    }
+                }
+                grid_style.complete = true;
+            }
+        }
 
 		renderer.draw_grid = () => {
 
 			let box_width = renderer.box_width();
 			let box_height = renderer.box_height();
-
+            
 			for (let x = 0; x < renderer.width; x++) {
 
 				for (let y = 0; y < renderer.height; y++) {
-
-					let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
-					val = Math.min(255, val);
-
-					context.fillStyle = `rgb(${val},${val},${val})`;
-					let [i, j] = renderer.offset_adjust(x, y);
-					context.fillRect(i * box_width, j * box_height, box_width, box_height);
+                    if (renderer.style && renderer.alt_styles_data && renderer.alt_styles_data[renderer.turn] && renderer.alt_styles_data[renderer.turn][renderer.style.name]) {
+                        let style = renderer.alt_styles_data[renderer.turn][renderer.style.name][x][y];
+                        renderer.complete_grid_style(renderer.style, style);
+                        renderer.draw_square_on_grid(x, y, style.s, style.c);
+                        if (renderer.draw_alt_map_text) {
+                            renderer.draw_text_on_grid(x, y, style.t, style.tc, style.s);
+                        }
+                    } else {
+                        let val = Math.floor(renderer.production_maps[renderer.turn][x][y] / 4);
+                        val = Math.min(255, val);
+    
+                        context.fillStyle = `rgb(${val},${val},${val})`;
+                        let [i, j] = renderer.offset_adjust(x, y);
+                        context.fillRect(i * box_width, j * box_height, box_width, box_height);
+                    }
 				}
 			}
 		};
@@ -1205,6 +1326,11 @@
 
 	ipcRenderer.on("log", (event, msg) => {
 		console.log(msg);
+	});
+    
+    ipcRenderer.on("set_style", (event, style_name) => {
+		renderer.style = renderer.styles[style_name];
+        renderer.draw();
 	});
 
 	window.addEventListener("resize", () => renderer.draw());
