@@ -227,7 +227,7 @@
 			renderer.make_absorbed_counts();
 
 			renderer.set_title();
-			renderer.send_dropoff_stats();
+			renderer.send_mining_dropoff_stats();
 			renderer.send_constants();
 			renderer.draw();
 
@@ -1712,7 +1712,7 @@
 			});
 		};
 
-		renderer.send_dropoff_stats = () => {
+		renderer.send_mining_dropoff_stats = () => {
 
 			if (!renderer.game) return;
 
@@ -1720,8 +1720,8 @@
 
 			let stats = renderer.game.game_statistics.player_statistics;
 
-			lines.push(`<p>Halite per dropoff at game end.</p>`);
-			lines.push(`<p>Includes factories.</p>`);
+			lines.push(`<p>Mining / dropoff statistics at game end...</p>`);
+			// lines.push(`<p>May not exactly match Fluorine's calculations due to some counting discrepancies in the engine.</p>`);
 
 			for (let n = 0; n < stats.length; n++) {
 
@@ -1744,17 +1744,23 @@
 				let factory_x = renderer.game.players[pid].factory_location.x;
 				let factory_y = renderer.game.players[pid].factory_location.y;
 
+				let normal_mined = stats[n].total_mined;
+				let inspired_mined = stats[n].total_bonus;
+
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${username}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
-
+				lines.push(`<li style="margin-top: 0;">Mined (normal + inspired): ${normal_mined} + ${inspired_mined}</li>`);
+				lines.push(`<li>Returned to dropoffs:</li>`);
+				lines.push(`<ul>`);
 				for (let i = 0; i < foo.length; i++) {
-					lines.push(`<li${i === 0 ? " style=\"margin-top: 0;\"" : ""}>${foo[i].x}, ${foo[i].y} &ndash; ${foo[i].val}${foo[i].x === factory_x && foo[i].y === factory_y ? " (factory)" : ""}</li>`);
+					lines.push(`<li>${foo[i].x}, ${foo[i].y} &ndash; ${foo[i].val}${foo[i].x === factory_x && foo[i].y === factory_y ? " (factory)" : ""}</li>`);
 				}
+				lines.push(`</ul>`);
 				lines.push(`</ul>`);
 			}
 
 			ipcRenderer.send("relay", {
-				receiver: "dropoff_stats",
+				receiver: "mining_dropoff_stats",
 				channel: "update",
 				content: lines.join(""),
 			});
