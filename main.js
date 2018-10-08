@@ -26,10 +26,6 @@ electron.app.on("ready", () => {
 		title: "Mining / Dropoffs", show: false, width: 400, height: 600, resizable: true, page: path.join(__dirname, "fluorine_info.html")
 	});
 
-	windows.new("constants", {
-		title: "Constants", show: false, width: 400, height: 600, resizable: true, page: path.join(__dirname, "fluorine_info.html")
-	});
-
 	windows.new("selector", {
 		title: "Select Ship", show: false, width: 320, height: 100, resizable: true, page: path.join(__dirname, "fluorine_select.html")
 	});
@@ -90,21 +86,6 @@ function make_main_menu() {
 			label: "File",
 			submenu: [
 				{
-					label: "About...",
-					click: () => {
-						alert(about_message);
-					}
-				},
-				{
-					type: "separator"
-				},
-				{
-					role: "toggledevtools"
-				},
-				{
-					type: "separator"
-				},
-				{
 					label: "Open...",
 					accelerator: "CommandOrControl+O",
 					click: () => {
@@ -118,7 +99,7 @@ function make_main_menu() {
 					type: "separator"
 				},
 				{
-					label: "Save decompressed JSON...",
+					label: "Save decompressed JSON",
 					accelerator: "CommandOrControl+S",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
@@ -128,7 +109,7 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Save current frame...",
+					label: "Save current frame",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
@@ -137,7 +118,7 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Save current entities...",
+					label: "Save current entities",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
@@ -146,7 +127,7 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Save current moves...",
+					label: "Save current moves",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
@@ -355,6 +336,9 @@ function make_main_menu() {
 					}
 				},
 				{
+					type: "separator"
+				},
+				{
 					label: "Select ship by ID...",
 					accelerator: "CommandOrControl+F",
 					click: () => {
@@ -374,10 +358,16 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Constants",
+					type: "separator"
+				},
+				{
+					label: "About Fluorine",
 					click: () => {
-						windows.show("constants");
+						alert(about_message);
 					}
+				},
+				{
+					role: "toggledevtools"
 				},
 			]
 		},

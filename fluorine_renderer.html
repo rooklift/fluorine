@@ -228,7 +228,6 @@
 
 			renderer.set_title();
 			renderer.send_mining_dropoff_stats();
-			renderer.send_constants();
 			renderer.draw();
 
 			console.timeEnd("finish_load");
@@ -1698,19 +1697,6 @@
 		};
 
 		// --------------------------------------------------------------
-
-		renderer.send_constants = () => {
-
-			if (!renderer.game) return;
-
-			let s = JSON.stringify(renderer.game.GAME_CONSTANTS, null, 2);
-
-			ipcRenderer.send("relay", {
-				receiver: "constants",
-				channel: "update",
-				content: "<pre>" + s + "</pre>",
-			});
-		};
 
 		renderer.send_mining_dropoff_stats = () => {
 
