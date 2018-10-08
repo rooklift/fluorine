@@ -22,6 +22,14 @@ electron.app.on("ready", () => {
 		title: "Fluorine", show: true, width: 1200, height: 800, resizable: true, page: path.join(__dirname, "fluorine_renderer.html")
 	});
 
+	windows.new("dropoff_stats", {
+		title: "Dropoffs", show: false, width: 400, height: 600, resizable: true, page: path.join(__dirname, "fluorine_info.html")
+	});
+
+	windows.new("constants", {
+		title: "Constants", show: false, width: 400, height: 600, resizable: true, page: path.join(__dirname, "fluorine_info.html")
+	});
+
 	windows.new("selector", {
 		title: "Select Ship", show: false, width: 320, height: 100, resizable: true, page: path.join(__dirname, "fluorine_select.html")
 	});
@@ -352,6 +360,23 @@ function make_main_menu() {
 					click: () => {
 						windows.show("selector");
 						windows.send("selector", "focus_input", null);
+					}
+				},
+			]
+		},
+		{
+			label: "Extra",
+			submenu: [
+				{
+					label: "Dropoff stats (final)",
+					click: () => {
+						windows.show("dropoff_stats");
+					}
+				},
+				{
+					label: "Constants",
+					click: () => {
+						windows.show("constants");
 					}
 				},
 			]

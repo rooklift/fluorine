@@ -227,6 +227,8 @@
 			renderer.make_absorbed_counts();
 
 			renderer.set_title();
+			renderer.send_dropoff_stats();
+			renderer.send_constants();
 			renderer.draw();
 
 			console.timeEnd("finish_load");
@@ -1104,7 +1106,7 @@
 			renderer.draw_collisions();
 			renderer.draw_selection_crosshairs();
 
-			renderer.send_info();
+			renderer.write_infobox();
 		};
 
 		renderer.draw_grid = () => {
@@ -1619,7 +1621,7 @@
 
 		// --------------------------------------------------------------
 
-		renderer.send_info = () => {
+		renderer.write_infobox = () => {
 
 			if (!renderer.game) return;
 
@@ -1693,6 +1695,69 @@
 			}
 
 			infobox.innerHTML = lines.join("");
+		};
+
+		// --------------------------------------------------------------
+
+		renderer.send_constants = () => {
+
+			if (!renderer.game) return;
+
+			let s = JSON.stringify(renderer.game.GAME_CONSTANTS, null, 2);
+
+			ipcRenderer.send("relay", {
+				receiver: "constants",
+				channel: "update",
+				content: "<pre>" + s + "</pre>",
+			});
+		};
+
+		renderer.send_dropoff_stats = () => {
+
+			if (!renderer.game) return;
+
+			let lines = [];
+
+			let stats = renderer.game.game_statistics.player_statistics;
+
+			lines.push(`<p>Halite per dropoff at game end.</p>`);
+			lines.push(`<p>Includes factories.</p>`);
+
+			for (let n = 0; n < stats.length; n++) {
+
+				let pid = stats[n].player_id;
+				let username = renderer.game.players[pid].name;
+				let colour = colours[pid];
+
+				let hpd = stats[n].halite_per_dropoff;
+
+				let foo = [];
+
+				for (let i = 0; i < hpd.length; i++) {
+					foo.push({x: hpd[i][0].x, y: hpd[i][0].y, val: hpd[i][1]});
+				}
+
+				foo.sort((a, b) => {
+					return b.val - a.val;
+				});
+
+				let factory_x = renderer.game.players[pid].factory_location.x;
+				let factory_y = renderer.game.players[pid].factory_location.y;
+
+				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${username}</h2>`);
+				lines.push(`<ul style="margin-top: 0;">`);
+
+				for (let i = 0; i < foo.length; i++) {
+					lines.push(`<li${i === 0 ? " style=\"margin-top: 0;\"" : ""}>${foo[i].x}, ${foo[i].y} &ndash; ${foo[i].val}${foo[i].x === factory_x && foo[i].y === factory_y ? " (factory)" : ""}</li>`);
+				}
+				lines.push(`</ul>`);
+			}
+
+			ipcRenderer.send("relay", {
+				receiver: "dropoff_stats",
+				channel: "update",
+				content: lines.join(""),
+			});
 		};
 
 		return renderer;
