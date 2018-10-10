@@ -39,20 +39,22 @@
 	"use strict";
 
 	const alert = require("./modules/alert");
+	const app = require('electron').remote.app;
 	const fs = require("fs");
 	const ipcRenderer = require("electron").ipcRenderer;
 	const path = require("path");
 	const stream = require("stream");
 	const zstd = require("node-zstandard");
 
+	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
 	const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
 	const explosion_colour = "#ff0000";
 
-	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
+	const prefs = ["integer_box_sizes", "triangles_show_next", "grid_aesthetic"];
+	const userdata_path = app.getPath("userData");
 
 	const canvas = document.getElementById("canvas");
 	const infobox = document.getElementById("infobox");
-
 	const context = canvas.getContext("2d");
 
 	function make_renderer() {
@@ -744,12 +746,44 @@
 
 		renderer.toggle = (varname) => {
 			renderer[varname] = !renderer[varname];
+			if (prefs.includes(varname)) renderer.save_prefs();
 			renderer.draw();
 		};
 
 		renderer.set = (varname, value) => {
 			renderer[varname] = value;
+			if (prefs.includes(varname)) renderer.save_prefs();
 			renderer.draw();
+		};
+
+		renderer.save_prefs = () => {
+
+			let o = Object.create(null);
+
+			for (let n = 0; n < prefs.length; n++) {
+				let varname = prefs[n];
+				o[varname] = renderer[varname];
+			}
+
+			let filename = path.join(userdata_path, "prefs.json");
+			fs.writeFileSync(filename, JSON.stringify(o));
+		};
+
+		renderer.read_prefs = () => {
+
+			try {
+				let filename = path.join(userdata_path, "prefs.json");
+				let s = fs.readFileSync(filename, "utf8");
+				let o = JSON.parse(s);
+
+				for (let [varname, value] of Object.entries(o)) {
+					if (prefs.includes(varname)) {
+						renderer[varname] = value;
+					}
+				}
+			} catch (err) {
+				console.log("Couldn't read prefs.")
+			}
 		};
 
 		renderer.next_collision = (reverse_flag) => {
@@ -1678,7 +1712,7 @@
 				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
-					lines.push(`<li>Profit = <span style="color: ${colour}">crashed</span></li>`);
+					lines.push(`<li>Profit = <span style="color: ${colour}">dead</span></li>`);
 				} else {
 					lines.push(`<li>Profit = <span style="color: ${colour}">${current}</span></li>`);
 				}
@@ -1752,6 +1786,7 @@
 			});
 		};
 
+		renderer.read_prefs();
 		return renderer;
 	}
 
