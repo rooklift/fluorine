@@ -587,17 +587,17 @@
 
 				for (let pid = 0; pid < renderer.players(); pid++) {
 
-					let spent = 0;
-
 					// The burn happens between last frame and this frame...
 
 					let some_moves = renderer.frame(turn - 1).moves[pid];
 					let some_ships = renderer.frame(turn - 1).entities[pid];
 
 					if (some_moves === undefined || some_ships === undefined) {
-						console.log("Got undefined in make_burn_counts()");
+						renderer.burn_counts[pid].push(renderer.burn_counts[pid][turn - 1]);
 						continue;
 					}
+
+					let spent = 0;
 
 					for (let n = 0; n < some_moves.length; n++) {
 
