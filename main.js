@@ -1,7 +1,9 @@
 "use strict";
 
 const alert = require("./modules/alert");
+const app = require('electron').app;
 const electron = require("electron");
+const fs = require("fs");
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const windows = require("./modules/windows");
@@ -11,6 +13,28 @@ let about_message = `Fluorine: Replay viewer for Halite 3\n` +
 					`Electron ${process.versions.electron}\n` +
 					`Node ${process.versions.node}\n` +
 					`V8 ${process.versions.v8}`
+
+// -------------------------------------------------------
+// Read prefs.
+
+let prefs = Object.create(null);	// First, set defaults for everything in case load fails.
+prefs.integer_box_sizes = false;
+prefs.triangles_show_next = true;
+prefs.grid_aesthetic = 1;
+
+let userdata_path = app.getPath("userData");
+
+try {
+	let filename = path.join(userdata_path, "prefs.json");
+	let s = fs.readFileSync(filename, "utf8");
+	let o = JSON.parse(s);
+
+	for (let [varname, value] of Object.entries(o)) {
+		prefs[varname] = value;
+	}
+} catch (err) {
+	// pass
+}
 
 // -------------------------------------------------------
 
@@ -221,6 +245,7 @@ function make_main_menu() {
 				{
 					label: "Integer box sizes",
 					type: "checkbox",
+					checked: prefs.integer_box_sizes,
 					click: (menuItem) => {
 						if (menuItem.checked) {
 							windows.send("renderer", "set", ["integer_box_sizes", true]);
@@ -235,7 +260,7 @@ function make_main_menu() {
 						{
 							label: "0",
 							type: "radio",
-							checked: false,
+							checked: prefs.grid_aesthetic === 0,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 0]);
 							}
@@ -243,7 +268,7 @@ function make_main_menu() {
 						{
 							label: "halite / 4",
 							type: "radio",
-							checked: true,
+							checked: prefs.grid_aesthetic === 1,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 1]);
 							}
@@ -251,7 +276,7 @@ function make_main_menu() {
 						{
 							label: "255 * sqrt(halite / 2048)",
 							type: "radio",
-							checked: false,
+							checked: prefs.grid_aesthetic === 2,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 2]);
 							}
@@ -259,7 +284,7 @@ function make_main_menu() {
 						{
 							label: "255 * sqrt(halite / 1024)",
 							type: "radio",
-							checked: false,
+							checked: prefs.grid_aesthetic === 3,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 3]);
 							}
@@ -272,7 +297,7 @@ function make_main_menu() {
 						{
 							label: "Show next move",
 							type: "radio",
-							checked: true,
+							checked: prefs.triangles_show_next,
 							click: () => {
 								windows.send("renderer", "set", ["triangles_show_next", true]);
 							}
@@ -280,7 +305,7 @@ function make_main_menu() {
 						{
 							label: "Show previous move",
 							type: "radio",
-							checked: false,
+							checked: prefs.triangles_show_next === false,
 							click: () => {
 								windows.send("renderer", "set", ["triangles_show_next", false]);
 							}
