@@ -120,6 +120,15 @@ function make_main_menu() {
 					}
 				},
 				{
+					label: "Open F-Log...",
+					click: () => {
+						let files = electron.dialog.showOpenDialog();
+						if (files && files.length > 0) {
+							windows.send("renderer", "open_flog", files[0]);
+						}
+					}
+				},
+				{
 					type: "separator"
 				},
 				{

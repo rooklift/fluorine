@@ -68,6 +68,8 @@
 		renderer.width = 0;
 		renderer.height = 0;
 
+		renderer.flog = null;
+
 		renderer.production_list = null;
 		renderer.dropoff_list = null;
 		renderer.sid_pid_map = null;
@@ -140,14 +142,16 @@
 			// Returns false if it wasn't plain JSON.
 			// Blocks while reading.
 
+			let game_object;
+
 			try {
 				let contents = fs.readFileSync(filename);
-				renderer.game = JSON.parse(contents);
+				game_object = JSON.parse(contents);
 			} catch (err) {
 				return false;
 			}
 
-			renderer.finish_load(filename);
+			renderer.finish_load(filename, game_object);
 			return true;
 		};
 
@@ -165,6 +169,7 @@
 			// I believe the following is async (event loopy)...
 
 			zstd.decompressFileToStream(filename, loading_stream, (err, result) => {
+
 				if (err) {
 					console.log("Loading failed (a).");
 					if (!warned) {
@@ -180,8 +185,9 @@
 					}
 				});
 				result.on("finish", () => {
+					let game_object;
 					try {
-						renderer.game = JSON.parse(all_chunks.join(""));
+						game_object = JSON.parse(all_chunks.join(""));
 					} catch (new_err) {
 						console.log("Loading failed (c).");
 						if (!warned) {
@@ -191,14 +197,47 @@
 						}
 						return;		// So finish_load() isn't called.
 					}
-					renderer.finish_load(filename);
+					renderer.finish_load(filename, game_object);
 				});
 			});
 		};
 
-		renderer.finish_load = (filename) => {
+		renderer.open_flog = (filename) => {
+			if (!renderer.game) {
+				alert("Open a game first.");
+				return;
+			}
+
+			let flog_raw;
+
+			try {
+				let contents = fs.readFileSync(filename);
+				flog_raw = JSON.parse(contents);
+			} catch (err) {
+				alert("Couldn't open this flog.");
+				return;
+			}
+
+			renderer.flog = Object.create(null);
+
+			for (let n = 0; n < flog_raw.length; n++) {
+				let key = `${flog_raw[n].t}-${flog_raw[n].x}-${flog_raw[n].y}`;
+				renderer.flog[key] = flog_raw[n].msg;
+			}
+
+			renderer.draw();
+		};
+
+		renderer.finish_load = (filename, game_object) => {
 
 			console.time("finish_load");
+
+			if (game_object.REPLAY_FILE_VERSION === undefined) {
+				alert("Successfully read some JSON but it doesn't seem to be a Halite 3 replay.");
+				return
+			}
+
+			renderer.game = game_object;
 
 			// Crude deletion of redundant zeroth frame...
 			// We gotta undo this if saving the file.
@@ -211,6 +250,8 @@
 			renderer.selection = null;
 			renderer.width = renderer.game.production_map.width;
 			renderer.height = renderer.game.production_map.height;
+
+			renderer.flog = null;
 
 			renderer.offset_x = 0;
 			renderer.offset_y = 0;
@@ -1670,6 +1711,30 @@
 			}
 
 			lines.push(`<p>${renderer.selection_string()}</p>`);
+
+			if (renderer.flog) {
+
+				let msg = "&nbsp;";
+
+				if (renderer.selection) {
+
+					msg = undefined;
+
+					let [x, y] = renderer.get_selection_xy();
+
+					if (x !== null && y !== null) {
+						let key = `${renderer.turn}-${x}-${y}`;
+						msg = renderer.flog[key];
+					}
+				}
+
+				if (msg === undefined) {
+					msg = `<span style="color: #aaaaaa">&lt;no flog message&gt;</span>`;
+				}
+
+				lines.push(`<p>${msg}</p>`);
+			};
+
 			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}<br>Engine ${renderer.game.ENGINE_VERSION}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
@@ -1795,6 +1860,10 @@
 
 	ipcRenderer.on("open", (event, filename) => {
 		renderer.open(filename);
+	});
+
+	ipcRenderer.on("open_flog", (event, filename) => {
+		renderer.open_flog(filename);
 	});
 
 	ipcRenderer.on("save", (event, filename) => {
