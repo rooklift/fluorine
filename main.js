@@ -120,12 +120,21 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Open F-Log...",
+					type: "separator"
+				},
+				{
+					label: "Open f-log...",
 					click: () => {
 						let files = electron.dialog.showOpenDialog();
 						if (files && files.length > 0) {
 							windows.send("renderer", "open_flog", files[0]);
 						}
+					}
+				},
+				{
+					label: "What is an f-log?",
+					click: () => {
+						about_flogging();
 					}
 				},
 				{
@@ -408,4 +417,27 @@ function make_main_menu() {
 	];
 
 	return electron.Menu.buildFromTemplate(template);
+}
+
+function about_flogging() {
+
+	let s = `
+An f-log is a JSON file with the following format:
+
+  [
+    {"t":4,"x":8,"y":16,"msg":"Hello"},
+    {"t":12,"x":8,"y":15,"msg":"Hi again"}
+  ]
+
+When an f-log is loaded, if the Fluorine crosshairs are over a point \
+with a message (i.e. at time t, coordinates x and y) then the given \
+message will be displayed in the infobox.
+
+Note that Fluorine considers the first turn to be turn 0. Watch for \
+out-by-one issues if relying on the engine's turn count, which starts \
+at 1.
+
+Also note that loading an f-log is not safe against malicious input.`;
+
+	alert(s);
 }
