@@ -39,11 +39,13 @@
 
 			input_turn.value = "";
 
-			ipcRenderer.send("relay", {
-				receiver: "renderer",
-				channel: "go_to_turn",
-				content: turn,
-			});
+			if (!Number.isNaN(turn)) {
+				ipcRenderer.send("relay", {
+					receiver: "renderer",
+					channel: "go_to_turn",
+					content: turn,
+				});
+			}
 
 			ipcRenderer.send("show_window", "renderer");	// Renderer to front.
 			ipcRenderer.send("hide_window", "turn");

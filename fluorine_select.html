@@ -39,11 +39,13 @@
 
 			input_sid.value = "";
 
-			ipcRenderer.send("relay", {
-				receiver: "renderer",
-				channel: "select_sid",
-				content: sid,
-			});
+			if (!Number.isNaN(sid)) {
+				ipcRenderer.send("relay", {
+					receiver: "renderer",
+					channel: "select_sid",
+					content: sid,
+				});
+			}
 
 			ipcRenderer.send("show_window", "renderer");	// Renderer to front.
 			ipcRenderer.send("hide_window", "selector");
