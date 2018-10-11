@@ -574,7 +574,7 @@
 
 		renderer.make_burn_counts = () => {
 
-			// renderer.burn_counts array of arrays: [pid][turn] --> burned count
+			// renderer.burn_counts: array of arrays: [pid][turn] --> burned count
 
 			renderer.burn_counts = [];
 
@@ -636,7 +636,7 @@
 
 		renderer.make_scrap_counts = () => {
 
-			// renderer.burn_counts array of arrays: [pid][turn] --> scrap count
+			// renderer.scrap_counts: array of arrays: [pid][turn] --> scrap count
 
 			renderer.scrap_counts = [];
 
@@ -666,7 +666,7 @@
 
 			renderer.absorbed_counts = [];
 
-			// renderer.absorbed_counts array of arrays: [pid][turn] --> absorbed count
+			// renderer.absorbed_counts: array of arrays: [pid][turn] --> absorbed count
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 				renderer.absorbed_counts.push([]);
