@@ -85,7 +85,9 @@ ipcMain.on("renderer_ready", () => {
 	// Only good for standalone release.
 
 	else if (process.argv.length === 2 && path.basename(process.argv[0]) !== "electron" && path.basename(process.argv[0]) !== "electron.exe") {
-		windows.send("renderer", "open", process.argv[1]);
+		if (process.argv[1] !== ".") {
+			windows.send("renderer", "open", process.argv[1]);
+		}
 	}
 
 });
