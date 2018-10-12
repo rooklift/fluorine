@@ -80,6 +80,7 @@
 		renderer.build_counts = null;
 		renderer.sid_halite_counts = null;
 		renderer.mined_counts = null;
+		renderer.inspired_counts = null;
 		renderer.burn_counts = null;
 		renderer.scrap_counts = null;
 		renderer.absorbed_counts = null;
@@ -591,35 +592,59 @@
 			// renderer.mined_counts: array of arrays: [pid][turn] --> mined count
 
 			renderer.mined_counts = [];
+			renderer.inspired_counts = [];
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 				renderer.mined_counts.push([]);
 				renderer.mined_counts[pid].push(0);					// Data for turn 0.
+				renderer.inspired_counts.push([]);
+				renderer.inspired_counts[pid].push(0);				// Data for turn 0.
+
 			}
 
 			for (let turn = 1; turn < renderer.game_length(); turn++) {
 
 				let counts_this_turn = [];
+				let inspired_this_turn = [];
 
 				for (let pid = 0; pid < renderer.players(); pid++) {
 					counts_this_turn.push(0);
+					inspired_this_turn.push(0);
 				}
+
+				let previous_frame = renderer.frame(turn - 1);
 
 				for (let sid of Object.keys(renderer.sid_pid_map)) {
 
 					if (renderer.sid_halite_counts[sid][turn] !== null && renderer.sid_halite_counts[sid][turn - 1] !== null) {
 
-						if (renderer.sid_halite_counts[sid][turn] > renderer.sid_halite_counts[sid][turn - 1]) {
+						// Ship exists both this frame and last frame.
+
+						let ship_gain = renderer.sid_halite_counts[sid][turn] - renderer.sid_halite_counts[sid][turn - 1];
+
+						if (ship_gain > 0) {
 
 							let pid = renderer.sid_pid_map[sid];
-							counts_this_turn[pid] += renderer.sid_halite_counts[sid][turn] - renderer.sid_halite_counts[sid][turn - 1];
+							counts_this_turn[pid] += ship_gain;
 
+							let ship = previous_frame.entities[pid][sid];
+							if (ship.is_inspired) {
+
+								let x = ship.x;
+								let y = ship.y;
+								let expected_gain = Math.ceil(renderer.production_list[turn - 1][x][y] / renderer.game.GAME_CONSTANTS.EXTRACT_RATIO);
+
+								if (ship_gain > expected_gain) {
+									inspired_this_turn[pid] += ship_gain - expected_gain;
+								}
+							}
 						}
 					}
 				}
 
 				for (let pid = 0; pid < renderer.players(); pid++) {
 					renderer.mined_counts[pid].push(renderer.mined_counts[pid][turn - 1] + counts_this_turn[pid]);
+					renderer.inspired_counts[pid].push(renderer.inspired_counts[pid][turn - 1] + inspired_this_turn[pid]);
 				}
 			}
 		};
@@ -1763,6 +1788,7 @@
 				let spent = deposited + initial - current;
 				let carrying = renderer.transit_count(pid);
 				let scrapped = renderer.scrap_counts[pid][renderer.turn];
+				let inspired = renderer.inspired_counts[pid][renderer.turn];
 				let mined = renderer.mined_counts[pid][renderer.turn];
 				let absorbed = renderer.absorbed_counts[pid][renderer.turn];
 				let burned = renderer.burn_counts[pid][renderer.turn];
@@ -1783,7 +1809,7 @@
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}</li>`);
+				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}. Inspired bonus: <span style="color: ${colour}">${inspired}</span></li>`);
 				lines.push(`<li>Initial: ${initial}, mined: ${mined}, absorbed: ${absorbed}</li>`);
 				lines.push(`<li>Burned: ${burned}, carrying ${carrying}, dropped: ${scrapped}</li>`);
 				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
