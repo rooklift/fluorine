@@ -1809,7 +1809,7 @@
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
 				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}. Inspired bonus: <span style="color: ${colour}">${inspired}</span></li>`);
+				lines.push(`<li>Suicides: ${renderer.self_loss_counts[pid][renderer.turn]}. Inspired mine bonus: <span style="color: ${colour}">${inspired}</span></li>`);
 				lines.push(`<li>Initial: ${initial}, mined: ${mined}, absorbed: ${absorbed}</li>`);
 				lines.push(`<li>Burned: ${burned}, carrying ${carrying}, dropped: ${scrapped}</li>`);
 				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
