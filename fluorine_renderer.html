@@ -237,7 +237,7 @@
 
 		renderer.finish_load = (filename, o) => {
 
-			if (o.REPLAY_FILE_VERSION === undefined) {
+			if (o.GAME_CONSTANTS === undefined || o.full_frames === undefined || o.game_statistics === undefined || o.players === undefined || o.production_map === undefined) {
 				if (o.constants && o.engine_version && o.frames && o.num_frames && o.num_players && o.planets) {
 					alert("This is a Halite 2 replay. Someone made a good viewer for those.");
 				} else {
