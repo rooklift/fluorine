@@ -235,16 +235,20 @@
 			renderer.draw();
 		};
 
-		renderer.finish_load = (filename, game_object) => {
+		renderer.finish_load = (filename, o) => {
 
-			console.time("finish_load");
-
-			if (game_object.REPLAY_FILE_VERSION === undefined) {
-				alert("Successfully read some JSON but it doesn't seem to be a Halite 3 replay.");
+			if (o.REPLAY_FILE_VERSION === undefined) {
+				if (o.constants && o.engine_version && o.frames && o.num_frames && o.num_players && o.planets) {
+					alert("This is a Halite 2 replay. Someone made a good viewer for those.");
+				} else {
+					alert("Successfully read some JSON but it doesn't seem to be a Halite 3 replay.");
+				}
 				return
 			}
 
-			renderer.game = game_object;
+			console.time("finish_load");
+
+			renderer.game = o;
 
 			// Crude deletion of redundant zeroth frame...
 			// We gotta undo this if saving the file.
