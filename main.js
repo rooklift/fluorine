@@ -46,8 +46,8 @@ electron.app.on("ready", () => {
 		title: "Fluorine", show: true, width: 1200, height: 800, resizable: true, page: path.join(__dirname, "fluorine_renderer.html")
 	});
 
-	windows.new("mining_dropoff_stats", {
-		title: "Mining / Dropoffs", show: false, width: 400, height: 600, resizable: true, page: path.join(__dirname, "fluorine_info.html")
+	windows.new("extra_stats", {
+		title: "Extra Stats", show: false, width: 400, height: 800, resizable: true, page: path.join(__dirname, "fluorine_info.html")
 	});
 
 	windows.new("selector", {
@@ -419,9 +419,9 @@ function make_main_menu() {
 			label: "Extra",
 			submenu: [
 				{
-					label: "Mining / dropoff stats",
+					label: "Extra stats",
 					click: () => {
-						windows.show("mining_dropoff_stats");
+						windows.show("extra_stats");
 					}
 				},
 				{
