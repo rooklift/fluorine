@@ -223,6 +223,9 @@ function make_main_menu() {
 					}
 				},
 				{
+					type: "separator"
+				},
+				{
 					label: "Go to turn...",
 					accelerator: "CommandOrControl+T",
 					click: () => {
@@ -280,6 +283,7 @@ function make_main_menu() {
 						{
 							label: "0",
 							type: "radio",
+							accelerator: "F1",
 							checked: prefs.grid_aesthetic === 0,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 0]);
@@ -288,6 +292,7 @@ function make_main_menu() {
 						{
 							label: "halite / 4",
 							type: "radio",
+							accelerator: "F2",
 							checked: prefs.grid_aesthetic === 1,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 1]);
@@ -296,6 +301,7 @@ function make_main_menu() {
 						{
 							label: "255 * sqrt(halite / 2048)",
 							type: "radio",
+							accelerator: "F3",
 							checked: prefs.grid_aesthetic === 2,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 2]);
@@ -304,6 +310,7 @@ function make_main_menu() {
 						{
 							label: "255 * sqrt(halite / 1024)",
 							type: "radio",
+							accelerator: "F4",
 							checked: prefs.grid_aesthetic === 3,
 							click: () => {
 								windows.send("renderer", "set", ["grid_aesthetic", 3]);
@@ -368,6 +375,7 @@ function make_main_menu() {
 				},
 				{
 					label: "Reset camera",
+					accelerator: "R",
 					click: () => {
 						windows.send("renderer", "set", ["offset_x", 0]);
 						windows.send("renderer", "set", ["offset_y", 0]);
@@ -431,9 +439,10 @@ An f-log is a JSON file with the following format:
     {"t": 12, "x": 8, "y": 15, "msg": "Hi again"}
   ]
 
-When an f-log is loaded, if the Fluorine crosshairs are over a point \
+When an f-log is loaded, if the Fluorine crosshairs are on a point \
 with a message (i.e. at time t, coordinates x and y) then the given \
-message will be displayed in the infobox.
+message will be displayed in the infobox. If the f-log has more than \
+one message for a given [t,x,y] then all of them will be shown.
 
 Note that Fluorine considers the first turn to be turn 0. Watch for \
 out-by-one issues if relying on the engine's turn count, which starts \

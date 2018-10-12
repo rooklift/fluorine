@@ -50,6 +50,8 @@
 	const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
 	const explosion_colour = "#ff0000";
 
+	const flog_concat_string = " ";
+
 	const prefs = ["integer_box_sizes", "triangles_show_next", "grid_aesthetic"];
 	const userdata_path = app.getPath("userData");
 
@@ -222,7 +224,12 @@
 
 			for (let n = 0; n < flog_raw.length; n++) {
 				let key = `${flog_raw[n].t}-${flog_raw[n].x}-${flog_raw[n].y}`;
-				renderer.flog[key] = flog_raw[n].msg;
+				let old_msg = renderer.flog[key];
+				if (old_msg === undefined) {
+					renderer.flog[key] = flog_raw[n].msg;
+				} else {
+					renderer.flog[key] += flog_concat_string + flog_raw[n].msg;
+				}
 			}
 
 			renderer.draw();
