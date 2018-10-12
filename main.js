@@ -399,6 +399,20 @@ function make_main_menu() {
 						windows.send("selector", "focus_input", null);
 					}
 				},
+				{
+					type: "separator"
+				},
+        		{
+        			accelerator: "CommandOrControl+=",
+        			role: "zoomin"
+        		},
+        		{
+        			accelerator: "CommandOrControl+-",
+        			role: "zoomout"
+        		},
+        		{
+					role: "resetzoom"
+				},
 			]
 		},
 		{
