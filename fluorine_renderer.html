@@ -1210,9 +1210,9 @@
 			let desired_size;
 
 			if (!renderer.integer_box_sizes) {
-				desired_size = Math.max(1 * renderer.height, window.innerHeight);
+				desired_size = Math.max(1 * renderer.height, window.innerHeight - 1);
 			} else {
-				desired_size = Math.max(1, Math.floor(window.innerHeight / renderer.height)) * renderer.height;
+				desired_size = Math.max(1, Math.floor((window.innerHeight - 1) / renderer.height)) * renderer.height;
 			}
 
 			if (desired_size !== canvas.width || desired_size !== canvas.height) {
