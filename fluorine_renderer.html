@@ -3,6 +3,7 @@
 <head>
 	<title>Fluorine</title>
 	<style>
+
 		body {
 			margin: 0;
 			border: 0;
@@ -13,26 +14,34 @@
 			cursor: default;
 			overflow: hidden;
 		}
-		.left {
-			position: absolute;
-			top: 0;
-			left: 1em;
-		}
-		.right {
-			position: absolute;
-			top: 0;
-			right: 0;
-		}
+
 		#canvas {
-			background-color: black;
+			float: left;
+			margin-right: 1em;
+		}
+
+		#infobox {
+			margin-top: 0;
+			white-space: nowrap;
+			overflow: hidden;		/* prevents the child margins from sticking out, interfering with the floating canvas */
+		}
+
+		h2 {
+			margin: 0;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0;
+			margin-top: 0;
+			margin-bottom: 1em;
 		}
 	</style>
 </head>
 <body>
 
-<div class="left" id="infobox"></div>
-
-<canvas class="right" id="canvas"></canvas>
+	<canvas id="canvas"></canvas>
+	<div id="infobox"></div>
 
 <script>
 
@@ -1855,8 +1864,8 @@
 
 				lines.push(
 					`
-					<h2 style="color: ${colour}; margin-bottom: 0;">${name} &ndash; ${ranks[rank]}</h2>
-					<ul style="margin-top: 0;">
+					<h2 style="color: ${colour}">${name} &ndash; ${ranks[rank]}</h2>
+					<ul>
 						<li style="margin-top: 0;">Ships: ${c}${ships}${z} / ${c}${builds}${z}
 							&ndash; lost: ${c}${dead_ships}${z}, dropoffs: ${c}${dropoffs}${z}</li>
 						<li>Self-destructs: ${c}${sd}${z}. Inspired mine bonus: ${c}${inspired}${z}</li>
