@@ -1767,7 +1767,7 @@
 				lines.push(`<p>${msg}</p>`);
 			};
 
-			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}<br>Engine ${renderer.game.ENGINE_VERSION}</p>`);
+			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}</p>`);
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -1839,9 +1839,11 @@
 
 			let stats = renderer.game.game_statistics.player_statistics;
 
-			lines.push(`<p style="color: #aaaaaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
+			lines.push(`<p style="margin-bottom: 0; color: #aaaaaa">Engine: ${renderer.game.ENGINE_VERSION}</p>`);
 
-			lines.push(`<p>Dropoff statistics at game end:</p>`);
+			lines.push(`<p style="margin-top: 0; color: #aaaaaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
+
+			lines.push(`<p style="color: #aaaaaa">Dropoff stats at end:</p>`);
 
 			for (let n = 0; n < stats.length; n++) {
 
