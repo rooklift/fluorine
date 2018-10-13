@@ -399,15 +399,17 @@ function make_main_menu() {
 				{
 					type: "separator"
 				},
-        		{
-        			accelerator: "CommandOrControl+=",
-        			role: "zoomin"
-        		},
-        		{
-        			accelerator: "CommandOrControl+-",
-        			role: "zoomout"
-        		},
-        		{
+				{
+					label: "Font smaller",
+					accelerator: "CommandOrControl+-",
+					role: "zoomout"
+				},
+				{
+					label: "Font larger",
+					accelerator: "CommandOrControl+=",
+					role: "zoomin"
+				},
+				{
 					role: "resetzoom"
 				},
 			]
@@ -446,8 +448,8 @@ function about_flogging() {
 An f-log is a JSON file with the following format:
 
   [
-    {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
-    {"t": 12, "x": 8, "y": 15, "msg": "Hi again"}
+	{"t": 4, "x": 8, "y": 16, "msg": "Hello"},
+	{"t": 12, "x": 8, "y": 15, "msg": "Hi again"}
   ]
 
 When an f-log is loaded, if the Fluorine crosshairs are on a point \
