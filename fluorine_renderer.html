@@ -251,11 +251,22 @@
 
 			renderer.game = o;
 
-			// Crude deletion of redundant zeroth frame...
-			// We gotta undo this if saving the file.
+			// Crude deletion of redundant zeroth frame.
+			// We gotta undo this if saving the file...
 
 			renderer.deleted_frame = renderer.game.full_frames[0];
 			renderer.game.full_frames = renderer.game.full_frames.slice(1);
+
+			// We rather rely on certain arrays in the replay being in order.
+			// They probably are, but make sure...
+
+			renderer.game.players.sort((a, b) => {
+				return a.player_id - b.player_id;
+			});
+
+			renderer.game.game_statistics.player_statistics.sort((a, b) => {
+				return a.player_id - b.player_id;
+			});
 
 			renderer.filename = filename;
 			renderer.turn = 0;
@@ -1892,7 +1903,7 @@
 				return renderer.game.game_statistics.player_statistics[a].rank - renderer.game.game_statistics.player_statistics[b].rank;
 			});
 
-			let stats = renderer.game.game_statistics.player_statistics;	// We rather rely on this array being in order.
+			let stats = renderer.game.game_statistics.player_statistics;
 
 			for (let pid of all_pids) {
 
