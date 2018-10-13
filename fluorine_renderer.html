@@ -244,7 +244,7 @@
 				} else {
 					alert("Successfully read some JSON but it doesn't seem to be a Halite 3 replay.");
 				}
-				return
+				return;
 			}
 
 			console.time("finish_load");
@@ -860,7 +860,7 @@
 					}
 				}
 			} catch (err) {
-				console.log("Couldn't read prefs.")
+				console.log("Couldn't read prefs.");
 			}
 		};
 
@@ -1671,7 +1671,7 @@
 				}
 			}
 
-			return count
+			return count;
 		};
 
 		renderer.transit_count = (pid) => {
@@ -1775,7 +1775,7 @@
 				}
 
 				lines.push(`<p>${msg}</p>`);
-			};
+			}
 
 			// -----------------------------------------------------
 
@@ -1791,7 +1791,17 @@
 
 			// -----------------------------------------------------
 
+			let all_pids = [];
+
 			for (let pid = 0; pid < renderer.players(); pid++) {
+				all_pids.push(pid);
+			}
+
+			all_pids.sort((a, b) => {
+				return renderer.game.game_statistics.player_statistics[a].rank - renderer.game.game_statistics.player_statistics[b].rank;
+			});
+
+			for (let pid of all_pids) {
 
 				// Data cached at load time...
 
@@ -1894,9 +1904,6 @@
 
 				let factory_x = renderer.game.players[pid].factory_location.x;
 				let factory_y = renderer.game.players[pid].factory_location.y;
-
-				let normal_mined = stats[n].total_mined;
-				let inspired_mined = stats[n].total_bonus;
 
 				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${username}</h2>`);
 				lines.push(`<ul style="margin-top: 0;">`);
