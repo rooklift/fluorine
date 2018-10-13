@@ -1658,6 +1658,22 @@
 			return Object.values(some_ships).length;
 		};
 
+		renderer.dropoff_count = (pid) => {
+
+			if (!renderer.game) return 0;
+
+			let count = 0;
+
+			for (let n = 0; n < renderer.dropoff_list.length; n++) {
+				let drop = renderer.dropoff_list[n];
+				if (drop.pid === pid && drop.turn <= renderer.turn) {
+					count++;
+				}
+			}
+
+			return count
+		};
+
 		renderer.transit_count = (pid) => {
 
 			if (!renderer.game) return 0;
@@ -1734,15 +1750,9 @@
 
 			let lines = [];
 
-			let halite_total = 0;
-
-			for (let x = 0; x < renderer.width; x++) {
-				for (let y = 0; y < renderer.height; y++) {
-					halite_total += renderer.production_list[renderer.turn][x][y];
-				}
-			}
-
 			lines.push(`<p>${renderer.selection_string()}</p>`);
+
+			// -----------------------------------------------------
 
 			if (renderer.flog) {
 
@@ -1767,54 +1777,73 @@
 				lines.push(`<p>${msg}</p>`);
 			};
 
+			// -----------------------------------------------------
+
+			let halite_total = 0;
+
+			for (let x = 0; x < renderer.width; x++) {
+				for (let y = 0; y < renderer.height; y++) {
+					halite_total += renderer.production_list[renderer.turn][x][y];
+				}
+			}
+
 			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}</p>`);
+
+			// -----------------------------------------------------
 
 			for (let pid = 0; pid < renderer.players(); pid++) {
 
-				let deposited = renderer.previous_frame().deposited[pid];
-				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
+				// Data cached at load time...
 
-				let current;
-				if (renderer.turn === 0) {
-					current = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
-				} else {
-					current = renderer.previous_frame().energy[pid];		// Available energy is stored in previous frame.
-				}
-
-				let spent = deposited + initial - current;
-				let carrying = renderer.transit_count(pid);
 				let scrapped = renderer.scrap_counts[pid][renderer.turn];
 				let inspired = renderer.inspired_counts[pid][renderer.turn];
 				let mined = renderer.mined_counts[pid][renderer.turn];
 				let absorbed = renderer.absorbed_counts[pid][renderer.turn];
 				let burned = renderer.burn_counts[pid][renderer.turn];
+				let sd = renderer.self_loss_counts[pid][renderer.turn];
+				let builds = renderer.build_counts[pid][renderer.turn];
 
-				let dropoffs = 0;
+				// Data we get from the replay...
 
-				for (let n = 0; n < renderer.dropoff_list.length; n++) {
-					let drop = renderer.dropoff_list[n];
-					if (drop.pid === pid && drop.turn <= renderer.turn) {
-						dropoffs++;
-					}
-				}
-
+				let name = renderer.game.players[pid].name;
 				let rank = renderer.game.game_statistics.player_statistics[pid].rank;
-				let rank_nice = `${ranks[rank]}`;
+				let initial = renderer.game.GAME_CONSTANTS.INITIAL_ENERGY;
+				let deposited = renderer.previous_frame().deposited[pid];
 
-				let colour = colours[pid];
-				lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${renderer.game.players[pid].name} &ndash; ${rank_nice}</h2>`);
-				lines.push(`<ul style="margin-top: 0;">`);
-				lines.push(`<li style="margin-top: 0;">Ships: <span style="color: ${colour}">${renderer.ship_count(pid)}</span> / ${renderer.build_counts[pid][renderer.turn]} &ndash; lost: ${renderer.build_counts[pid][renderer.turn] - (renderer.ship_count(pid) + dropoffs)}, dropoffs: <span style="color: ${colour}">${dropoffs}</span></li>`);
-				lines.push(`<li>Self-destructs: ${renderer.self_loss_counts[pid][renderer.turn]}. Inspired mine bonus: <span style="color: ${colour}">${inspired}</span></li>`);
-				lines.push(`<li>Initial: ${initial}, mined: ${mined}, absorbed: ${absorbed}</li>`);
-				lines.push(`<li>Burned: ${burned}, carrying ${carrying}, dropped: ${scrapped}</li>`);
-				lines.push(`<li>Gathered: ${deposited + initial} &ndash; spent: ${spent}</li>`);
+				// Data we have functions for...
+
+				let carrying = renderer.transit_count(pid);
+				let ships = renderer.ship_count(pid);
+				let dropoffs = renderer.dropoff_count(pid);
+
+				// Data we calculate...
+
+				let current = renderer.turn === 0 ? renderer.game.GAME_CONSTANTS.INITIAL_ENERGY : renderer.previous_frame().energy[pid];
+				let spent = deposited + initial - current;
+				let gathered = deposited + initial;
+				let dead_ships = builds - (ships + dropoffs);
 
 				if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
-					lines.push(`<li>Profit = <span style="color: ${colour}">dead</span></li>`);
-				} else {
-					lines.push(`<li>Profit = <span style="color: ${colour}">${current}</span></li>`);
+					current = "dead";		// Set this after spent is calculated, above.
 				}
+
+				let colour = colours[pid];
+
+				let c = `<span style="color: ${colour}">`;
+				let z = `</span>`;
+
+				lines.push(
+					`
+					<h2 style="color: ${colour}; margin-bottom: 0;">${name} &ndash; ${ranks[rank]}</h2>
+					<ul style="margin-top: 0;">
+						<li style="margin-top: 0;">Ships: ${c}${ships}${z} / ${c}${builds}${z}
+							&ndash; lost: ${c}${dead_ships}${z}, dropoffs: ${c}${dropoffs}${z}</li>
+						<li>Self-destructs: ${c}${sd}${z}. Inspired mine bonus: ${c}${inspired}${z}</li>
+						<li>Initial: ${c}${initial}${z}, mined: ${c}${mined}${z}, absorbed: ${c}${absorbed}${z}</li>
+						<li>Burned: ${c}${burned}${z}, carrying ${c}${carrying}${z}, dropped: ${c}${scrapped}${z}</li>
+						<li>Gathered: ${c}${gathered}${z} &ndash; spent: ${c}${spent}${z}</li>
+						<li>Profit = ${c}${current}${z}</li>`
+				);
 
 				if (mined + absorbed - deposited - carrying - burned - scrapped !== 0) {
 					lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
