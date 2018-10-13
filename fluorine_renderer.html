@@ -31,11 +31,11 @@
 		}
 
 		ul {
-			list-style: none;
-			padding: 0;
+			padding: 0;				/* apparently this also removes the bullets */
 			margin-top: 0;
 			margin-bottom: 1em;
 		}
+
 	</style>
 </head>
 <body>
@@ -1866,7 +1866,7 @@
 					`
 					<h2 style="color: ${colour}">${name} &ndash; ${ranks[rank]}</h2>
 					<ul>
-						<li style="margin-top: 0;">Ships: ${c}${ships}${z} / ${c}${builds}${z}
+						<li>Ships: ${c}${ships}${z} / ${c}${builds}${z}
 							&ndash; lost: ${c}${dead_ships}${z}, dropoffs: ${c}${dropoffs}${z}</li>
 						<li>Self-destructs: ${c}${sd}${z}. Inspired mine bonus: ${c}${inspired}${z}</li>
 						<li>Initial: ${c}${initial}${z}, mined: ${c}${mined}${z}, absorbed: ${c}${absorbed}${z}</li>
