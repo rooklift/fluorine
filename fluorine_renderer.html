@@ -1876,21 +1876,30 @@
 
 			let lines = [];
 
-			let stats = renderer.game.game_statistics.player_statistics;
-
 			lines.push(`<p style="margin-bottom: 0; color: #aaaaaa">Engine: ${renderer.game.ENGINE_VERSION}</p>`);
 
 			lines.push(`<p style="margin-top: 0; color: #aaaaaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
 
 			lines.push(`<p style="color: #aaaaaa">Dropoff stats at end:</p>`);
 
-			for (let n = 0; n < stats.length; n++) {
+			let all_pids = [];
 
-				let pid = stats[n].player_id;
+			for (let pid = 0; pid < renderer.players(); pid++) {
+				all_pids.push(pid);
+			}
+
+			all_pids.sort((a, b) => {
+				return renderer.game.game_statistics.player_statistics[a].rank - renderer.game.game_statistics.player_statistics[b].rank;
+			});
+
+			let stats = renderer.game.game_statistics.player_statistics;	// We rather rely on this array being in order.
+
+			for (let pid of all_pids) {
+
 				let username = renderer.game.players[pid].name;
 				let colour = colours[pid];
 
-				let hpd = stats[n].halite_per_dropoff;
+				let hpd = stats[pid].halite_per_dropoff;
 
 				let foo = [];
 
