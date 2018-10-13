@@ -1269,8 +1269,6 @@
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
-				// context.fillStyle = "#000000";
-				// context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 
 			for (let n = 0; n < renderer.dropoff_list.length; n++) {
@@ -1286,8 +1284,6 @@
 				context.fillStyle = colours[pid];
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
-				// context.fillStyle = "#000000";
-				// context.fillRect(i * box_width + box_width / 4, j * box_height + box_height / 4, box_width / 2, box_height / 2);
 			}
 		};
 
@@ -1843,7 +1839,7 @@
 
 			let stats = renderer.game.game_statistics.player_statistics;
 
-			lines.push(`<p style="color: #ffffaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
+			lines.push(`<p style="color: #aaaaaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
 
 			lines.push(`<p>Dropoff statistics at game end:</p>`);
 
