@@ -8,11 +8,8 @@ const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const windows = require("./modules/windows");
 
-let about_message = `Fluorine: Replay viewer for Halite 3\n` +
-					`--\n` +
-					`Electron ${process.versions.electron}\n` +
-					`Node ${process.versions.node}\n` +
-					`V8 ${process.versions.v8}`
+let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
+	`Electron ${process.versions.electron} + Node ${process.versions.node} + Chrome ${process.versions.chrome} + V8 ${process.versions.v8}`;
 
 // -------------------------------------------------------
 // Read prefs.
