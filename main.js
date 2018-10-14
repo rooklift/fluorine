@@ -410,6 +410,7 @@ function make_main_menu() {
 					role: "zoomin"
 				},
 				{
+					label: "Reset font",
 					role: "resetzoom"
 				},
 			]

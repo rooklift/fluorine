@@ -1876,7 +1876,9 @@
 				);
 
 				if (mined + absorbed - deposited - carrying - burned - scrapped !== 0) {
-					lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
+					if (current !== "dead") {
+						lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
+					}
 				}
 
 				lines.push(`</ul>`);
