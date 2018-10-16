@@ -51,6 +51,8 @@ exports.new = (token, params = {}) => {		// token is an internal name for us to 
 	win.on("hide", () => {
 		quit_if_all_windows_are_hidden();
 	});
+
+	return win;		// Though caller may well not need this.
 };
 
 exports.change_zoom = (token, diff) => {
