@@ -87,7 +87,6 @@
 		renderer.collision_data = null;
 		renderer.self_loss_counts = null;
 		renderer.build_counts = null;
-		renderer.sid_halite_counts = null;		// FIXME: this could be removed with a little effort
 		renderer.mined_counts = null;
 		renderer.inspired_counts = null;
 		renderer.burn_counts = null;
@@ -297,7 +296,6 @@
 			renderer.make_collision_data();
 			renderer.make_self_loss_counts();
 			renderer.make_build_counts();
-			renderer.make_sid_halite_counts();
 			renderer.make_mined_counts();
 			renderer.make_burn_counts();
 			renderer.make_scrap_counts();
@@ -574,40 +572,6 @@
 			}
 		};
 
-		renderer.make_sid_halite_counts = () => {
-
-			// renderer.sid_halite_counts: map of arrays: [sid][turn] --> halite carried, or null if ship not present
-
-			// This could be done as an array of arrays but I'm not assuming contiguous sids.
-
-			renderer.sid_halite_counts = Object.create(null);
-
-			for (let sid of Object.keys(renderer.sid_pid_map)) {
-
-				renderer.sid_halite_counts[sid] = [];
-
-				for (let turn = 0; turn < renderer.game_length(); turn++) {
-					renderer.sid_halite_counts[sid].push(null);
-				}
-			}
-
-			for (let turn = 0; turn < renderer.game_length(); turn++) {
-
-				for (let pid = 0; pid < renderer.players(); pid++) {
-
-					let some_ships = renderer.frame(turn).entities[pid];
-
-					if (some_ships === undefined) {
-						continue;
-					}
-
-					for (let [sid, ship] of Object.entries(some_ships)) {
-						renderer.sid_halite_counts[sid][turn] = ship.energy;
-					}
-				}
-			}
-		};
-
 		renderer.make_mined_counts = () => {
 
 			// renderer.mined_counts: array of arrays: [pid][turn] --> mined count
@@ -635,17 +599,19 @@
 
 				let previous_frame = renderer.frame(turn - 1);
 
-				for (let sid of Object.keys(renderer.sid_pid_map)) {
+				for (let [sid, pid] of Object.entries(renderer.sid_pid_map)) {
 
-					if (renderer.sid_halite_counts[sid][turn] !== null && renderer.sid_halite_counts[sid][turn - 1] !== null) {
+					let ship_now = renderer.frame(turn).entities[pid][sid];
+					let ship_prev = renderer.frame(turn - 1).entities[pid][sid];
+
+					if (ship_now !== undefined && ship_prev !== undefined) {
 
 						// Ship exists both this frame and last frame.
 
-						let ship_gain = renderer.sid_halite_counts[sid][turn] - renderer.sid_halite_counts[sid][turn - 1];
+						let ship_gain = ship_now.energy - ship_prev.energy;
 
 						if (ship_gain > 0) {
 
-							let pid = renderer.sid_pid_map[sid];
 							counts_this_turn[pid] += ship_gain;
 
 							let ship = previous_frame.entities[pid][sid];
