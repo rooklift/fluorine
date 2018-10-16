@@ -61,7 +61,7 @@
 
 	const flog_concat_string = " ";
 
-	const prefs = ["integer_box_sizes", "triangles_show_next", "grid_aesthetic"];
+	const prefs = ["integer_box_sizes", "turns_start_at_one", "triangles_show_next", "grid_aesthetic"];
 	const userdata_path = app.getPath("userData");
 
 	const canvas = document.getElementById("canvas");
@@ -87,7 +87,7 @@
 		renderer.collision_data = null;
 		renderer.self_loss_counts = null;
 		renderer.build_counts = null;
-		renderer.sid_halite_counts = null;
+		renderer.sid_halite_counts = null;		// FIXME: this could be removed with a little effort
 		renderer.mined_counts = null;
 		renderer.inspired_counts = null;
 		renderer.burn_counts = null;
@@ -98,6 +98,7 @@
 		renderer.offset_y = 0;
 
 		renderer.integer_box_sizes = false;
+		renderer.turns_start_at_one = false;
 		renderer.triangles_show_next = true;
 		renderer.grid_aesthetic = 1;
 
@@ -1768,6 +1769,8 @@
 
 			if (!renderer.game) return;
 
+			let turn_fudge = renderer.turns_start_at_one ? 1 : 0;
+
 			let lines = [];
 
 			lines.push(`<p>${renderer.selection_string()}</p>`);
@@ -1785,7 +1788,7 @@
 					let [x, y] = renderer.get_selection_xy();
 
 					if (x !== null && y !== null) {
-						let key = `${renderer.turn}-${x}-${y}`;
+						let key = `${renderer.turn + turn_fudge}-${x}-${y}`;
 						msg = renderer.flog[key];
 					}
 				}
@@ -1807,7 +1810,7 @@
 				}
 			}
 
-			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}</p>`);
+			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}</p>`);
 
 			// -----------------------------------------------------
 

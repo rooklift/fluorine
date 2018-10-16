@@ -16,6 +16,7 @@ let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 
 
 let prefs = Object.create(null);	// First, set defaults for everything in case load fails.
 prefs.integer_box_sizes = false;
+prefs.turns_start_at_one = false;
 prefs.triangles_show_next = true;
 prefs.grid_aesthetic = 1;
 
@@ -275,6 +276,18 @@ function make_main_menu() {
 					}
 				},
 				{
+					label: "Turns start at 1",
+					type: "checkbox",
+					checked: prefs.turns_start_at_one,
+					click: (menuItem) => {
+						if (menuItem.checked) {
+							windows.send("renderer", "set", ["turns_start_at_one", true]);
+						} else {
+							windows.send("renderer", "set", ["turns_start_at_one", false]);
+						}
+					}
+				},
+				{
 					label: "Grid",
 					submenu: [
 						{
@@ -446,6 +459,7 @@ function make_main_menu() {
 function about_flogging() {
 
 	let s = `
+
 An f-log is a JSON file with the following format:
 
   [
@@ -458,9 +472,9 @@ with a message (i.e. at time t, coordinates x and y) then the given \
 message will be displayed in the infobox. If the f-log has more than \
 one message for a given [t,x,y] then all of them will be shown.
 
-Note that Fluorine considers the first turn to be turn 0. Watch for \
-out-by-one issues if relying on the engine's turn count, which starts \
-at 1.
+For t, you may consider turns as starting at 0 or 1. There is a menu \
+item in the View menu for this. Make sure Fluorine is using the same \
+system as your bot.
 
 Also note that loading an f-log is not safe against malicious input.`;
 
