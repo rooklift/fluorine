@@ -57,7 +57,7 @@ exports.new = (token, params = {}) => {		// token is an internal name for us to 
 
 exports.change_zoom = (token, diff) => {
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	let contents = all_windows[token].webContents;
 	contents.getZoomFactor((val) => {
@@ -69,7 +69,7 @@ exports.change_zoom = (token, diff) => {
 
 exports.set_zoom = (token, val) => {
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	let contents = all_windows[token].webContents;
 	contents.setZoomFactor(val);
@@ -77,7 +77,7 @@ exports.set_zoom = (token, val) => {
 
 exports.send = (token, channel, msg) => {
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	let contents = all_windows[token].webContents;
 	contents.send(channel, msg);
@@ -88,28 +88,28 @@ exports.set_menu = (token, menu) => {
 	// Set an individual window's menu. Has some issues with OS X.
 
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	all_windows[token].setMenu(menu);
-}
+};
 
 exports.show = (token) => {
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	all_windows[token].show();
-}
+};
 
 exports.hide = (token) => {
 	if (all_windows[token] === undefined) {
-		return
+		return;
 	}
 	all_windows[token].hide();
-}
+};
 
 exports.get_window = (token) => {
 	return all_windows[token];
-}
+};
 
 function quit_if_all_windows_are_hidden() {
 	let keys = Object.keys(all_windows);
