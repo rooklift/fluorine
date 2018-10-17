@@ -1622,7 +1622,29 @@
 				let move = some_moves[n];
 
 				if (move.type === "m" && move.id === sid) {
+
+					if (move.direction === "o") {
+						return lookups.o;				// Return here because this never fails.
+					}
+
+					// Check for move failure...
+
+					let ship = renderer.current_frame().entities[pid][sid];
+					let carrying = ship.energy;
+					let cost;
+
+					if (ship.is_inspired) {
+						cost = Math.floor(renderer.production_list[renderer.turn][ship.x][ship.y] / renderer.game.GAME_CONSTANTS.INSPIRED_MOVE_COST_RATIO);
+					} else {
+						cost = Math.floor(renderer.production_list[renderer.turn][ship.x][ship.y] / renderer.game.GAME_CONSTANTS.MOVE_COST_RATIO);
+					}
+
+					if (cost > ship.energy) {
+						return lookups[move.direction] + " (fails)";
+					}
+
 					return lookups[move.direction];
+
 				} else if (move.type === "c") {
 					return "construct";
 				}
