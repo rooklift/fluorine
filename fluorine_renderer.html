@@ -93,6 +93,8 @@
 		renderer.scrap_counts = null;
 		renderer.absorbed_counts = null;
 
+		renderer.initial_halite = 0;
+
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
 
@@ -303,8 +305,16 @@
 
 			renderer.set_title();
 			renderer.send_extra_stats();
-			renderer.draw();
 
+			renderer.initial_halite = 0;
+
+			for (let x = 0; x < renderer.width; x++) {
+				for (let y = 0; y < renderer.height; y++) {
+					renderer.initial_halite += renderer.production_list[0][x][y];
+				}
+			}
+
+			renderer.draw();
 			console.timeEnd("finish_load");
 		};
 
@@ -781,6 +791,12 @@
 			if (!filename || !renderer.game) return;
 			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame().moves, null, "\t"));
 		};
+
+		renderer.save_events = (filename) => {
+			if (!filename || !renderer.game) return;
+			fs.writeFileSync(filename, JSON.stringify(renderer.current_frame().events, null, "\t"));
+		};
+
 
 		// --------------------------------------------------------------
 
@@ -1799,7 +1815,11 @@
 				}
 			}
 
-			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total}</p>`);
+			console.log(renderer.initial_halite);
+
+			let percentage = Math.floor(100 * halite_total / renderer.initial_halite);
+
+			lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total} (${percentage}%)</p>`);
 
 			// -----------------------------------------------------
 
@@ -1971,6 +1991,10 @@
 
 	ipcRenderer.on("save_moves", (event, filename) => {
 		renderer.save_moves(filename);
+	});
+
+	ipcRenderer.on("save_events", (event, filename) => {
+		renderer.save_events(filename);
 	});
 
 	ipcRenderer.on("forward", (event, n) => {

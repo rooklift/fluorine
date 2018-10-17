@@ -173,11 +173,20 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Save current moves",
+					label: "Save upcoming moves",
 					click: () => {
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_moves", outfilename);
+						}
+					}
+				},
+				{
+					label: "Save upcoming events",
+					click: () => {
+						let outfilename = electron.dialog.showSaveDialog();
+						if (outfilename) {
+							windows.send("renderer", "save_events", outfilename);
 						}
 					}
 				},
