@@ -59,7 +59,7 @@
 	try {
 		zstd = require("node-zstandard");
 	} catch (err) {
-		alert("Couldn't load zstd module. This can usually be fixed by running \"npm install\"");
+		alert("Couldn't load zstd module. This can usually be fixed by running \"npm install\" but until then, Fluorine can still open JSON replays.");
 	}
 
 	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
