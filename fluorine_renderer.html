@@ -53,7 +53,14 @@
 	const ipcRenderer = require("electron").ipcRenderer;
 	const path = require("path");
 	const stream = require("stream");
-	const zstd = require("node-zstandard");
+
+	let zstd;
+
+	try {
+		zstd = require("node-zstandard");
+	} catch (err) {
+		alert("Couldn't load zstd module. This can usually be fixed by running \"npm install\"");
+	}
 
 	const ranks = ["???", "1st", "2nd", "3rd", "4th"];
 	const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
@@ -170,6 +177,11 @@
 		};
 
 		renderer.open_zstd = (filename) => {
+
+			if (zstd === undefined) {
+				alert("The zstd module is not loaded, so Fluorine can only load JSON replays.");
+				return;
+			}
 
 			let warned = false;
 			let all_chunks = [];
@@ -1814,8 +1826,6 @@
 					halite_total += renderer.production_list[renderer.turn][x][y];
 				}
 			}
-
-			console.log(renderer.initial_halite);
 
 			let percentage = Math.floor(100 * halite_total / renderer.initial_halite);
 
