@@ -1,50 +1,14 @@
 <html>
 <head>
 	<title></title>
-	<style>
-		html {
-			overflow-y: scroll;
-		}
-		body {
-			margin: 1em;
-			background-color: black;
-			color: white;
-			cursor: default;
-		}
-		li {
-			margin: 0;
-		}
-		ul {
-			margin: 0;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="default_background.css">
+	<link rel="stylesheet" type="text/css" href="fluorine_info.css">
 </head>
 <body>
 
 <div id="content"></div>
 
-<script>
-	"use strict";
-	const alert = require("./modules/alert");
-	const ipcRenderer = require("electron").ipcRenderer;
-	ipcRenderer.on("update", (event, msg) => {
-		let content = document.getElementById("content");
-		content.innerHTML = msg;
-	});
-	// Setup drag-and-drop...
-	window.ondragover = () => false;
-	window.ondragleave = () => false;
-	window.ondragend = () => false;
-	window.ondrop = (event) => {
-		event.preventDefault();
-		ipcRenderer.send("relay", {
-			receiver: "renderer",
-			channel: "open",
-			content: event.dataTransfer.files[0].path,
-		});
-		return false;
-	};
-</script>
+<script src="fluorine_info.js"></script>
 
 </body>
 </html>
