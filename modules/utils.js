@@ -18,3 +18,20 @@ exports.assign_without_overwrite = (target, source) => {
 		}
 	}
 }
+
+// Sorts the given array by results of a function applied to all elements.
+exports.sort_by = (list, key) => {
+	return list.sort((a,b) => {
+		const key_a = key(a);
+		const key_b = key(b);
+		if (key_a < key_b) {
+			return -1;
+		}
+		else if (key_a > key_b) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	});
+}

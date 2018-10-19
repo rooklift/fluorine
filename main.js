@@ -7,6 +7,7 @@ const fs = require("fs");
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const windows = require("./modules/windows");
+const {sort_by} = require("./modules/utils");
 
 let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
 	`Electron ${process.versions.electron} + Node ${process.versions.node} + Chrome ${process.versions.chrome} + V8 ${process.versions.v8}`;
@@ -109,6 +110,7 @@ ipcMain.on("hide_window", (event, window_token) => {
 // -------------------------------------------------------
 // Replay dir monitoring.
 
+
 let replay_dir_watchers = [];
 function monitor_dirs(dirs) {
 	dirs = dirs || [];
@@ -116,11 +118,31 @@ function monitor_dirs(dirs) {
 	for (const watcher of replay_dir_watchers) {
 		watcher.close();
 	}
+
+	const is_replay_file = (filename) => filename.endsWith(".hlt");
+
+	// Open the most recent replay file.
+	if (dirs.length) {
+		const get_replays = (dir) => {
+			return fs.readdirSync(dirs[0])
+				     .filter(is_replay_file)
+				     .map(filename => path.join(dir, filename));
+		}
+		const replay_paths = [].concat(...dirs.map(get_replays));
+		if (replay_paths.length) {
+			const replay_path = sort_by(replay_paths,
+				filepath => -fs.statSync(filepath).mtime.getTime()
+			)[0];
+			windows.send("renderer", "open", replay_path);
+		}
+	}
+
+	// Start the new watchers.
 	replay_dir_watchers = dirs.map(dir => fs.watch(
 		dir,
 		{persistent: false},
 		(eventType, filename) => {
-			if (eventType == "change" && filename.endsWith(".hlt")) {
+			if (eventType == "change" && is_replay_file(filename)) {
 				windows.send("renderer", "open", path.join(dir, filename));
 			}
 		}
