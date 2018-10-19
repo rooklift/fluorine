@@ -105,6 +105,28 @@ ipcMain.on("hide_window", (event, window_token) => {
 	windows.hide(window_token);
 });
 
+
+// -------------------------------------------------------
+// Replay dir monitoring.
+
+let replay_dir_watchers = [];
+function monitor_dirs(dirs) {
+	dirs = dirs || [];
+
+	for (const watcher of replay_dir_watchers) {
+		watcher.close();
+	}
+	replay_dir_watchers = dirs.map(dir => fs.watch(
+		dir,
+		{persistent: false},
+		(eventType, filename) => {
+			if (eventType == "change" && filename.endsWith(".hlt")) {
+				windows.send("renderer", "open", path.join(dir, filename));
+			}
+		}
+	));
+}
+
 // -------------------------------------------------------
 
 function make_main_menu() {
@@ -120,6 +142,16 @@ function make_main_menu() {
 						if (files && files.length > 0) {
 							windows.send("renderer", "open", files[0]);
 						}
+					}
+				},
+				{
+					label: "Monitor Replay Folder...",
+					accelerator: "CommandOrControl+Shift+O",
+					click: () => {
+						// Note: Users can click "cancel" to stop monitoring files.
+						monitor_dirs(electron.dialog.showOpenDialog({
+							properties: ['openDirectory', 'multiSelections'],
+						}));
 					}
 				},
 				{
