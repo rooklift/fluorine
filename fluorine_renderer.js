@@ -1032,16 +1032,15 @@ function make_renderer() {
                 cause = renderer.turn < renderer.selection.turn ? "not yet present" : "no longer present";
             }
 
-            return `<span style="color: ${colours[renderer.selection.pid]};">Ship ${renderer.selection.sid}</span> (${cause})`;
+            return `<span class="player-${renderer.selection.pid}-colour">Ship ${renderer.selection.sid}</span> (${cause})`;
         }
 
-        let colour = colours[ship_info.pid];
         let mark = ship_info.is_inspired ? "+" : "";
 
         let a = highlight_box_flag ? "[" : "";
         let b = highlight_box_flag ? "]" : "";
 
-        return `<span style="color: ${colour};">${a}Ship ${sid}${mark}${b}</span> &ndash; <span style="color: ${colour};">${ship_info.energy}</span> &ndash; next is <span style="color: ${colour};">${renderer.ship_move(sid)}</span>`;
+        return `<span class="player-${ship_info.pid}-colour">${a}Ship ${sid}${mark}${b}</span> &ndash; <span class="player-${ship_info.pid}-colour">${ship_info.energy}</span> &ndash; next is <span class="player-${ship_info.pid}-colour">${renderer.ship_move(sid)}</span>`;
     };
 
     renderer.collision_string = (event) => {
@@ -1061,10 +1060,10 @@ function make_renderer() {
         for (let n = 0; n < sids.length; n++) {
             let sid = sids[n];
             let pid = renderer.sid_pid_map[sid];
-            string_list.push(`<span style="color: ${colours[pid]}">${sid}</span>`);
+            string_list.push(`<span class="player-${pid}-colour">${sid}</span>`);
         }
 
-        return `<span style="color: ${explosion_colour}">Collision</span>: ${string_list.join(", ")}`;
+        return `<span class=".collision">Collision</span>: ${string_list.join(", ")}`;
     };
 
     renderer.selection_string = () => {
@@ -1765,7 +1764,7 @@ function make_renderer() {
             }
 
             if (msg === undefined) {
-                msg = `<span style="color: #aaaaaa">&lt;no f-log message&gt;</span>`;
+                msg = `<span class="lowlight">&lt;no f-log message&gt;</span>`;
             }
 
             lines.push(`<p>${msg}</p>`);
@@ -1783,7 +1782,7 @@ function make_renderer() {
 
         let percentage = Math.floor(100 * halite_total / renderer.initial_halite);
 
-        lines.push(`<p style="color: #aaaaaa">Turn: <span style="color: #ffffff">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total} (${percentage}%)</p>`);
+        lines.push(`<p color="lowlight">Turn: <span class="white-text">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total} (${percentage}%)</p>`);
 
         // -----------------------------------------------------
 
@@ -1833,14 +1832,12 @@ function make_renderer() {
                 current = "dead";       // Set this after spent is calculated, above.
             }
 
-            let colour = colours[pid];
-
-            let c = `<span style="color: ${colour}">`;
+            let c = `<span class="player-${pid}-colour">`;
             let z = `</span>`;
 
             lines.push(
                 `
-                <h2 style="color: ${colour}">${name} &ndash; ${ranks[rank]}</h2>
+                <h2 class="player-${pid}-colour">${name} &ndash; ${ranks[rank]}</h2>
                 <ul>
                     <li>Ships: ${c}${ships}${z} / ${c}${builds}${z}
                         &ndash; lost: ${c}${dead_ships}${z}, dropoffs: ${c}${dropoffs}${z}</li>
@@ -1853,7 +1850,7 @@ function make_renderer() {
 
             if (mined + absorbed - deposited - carrying - burned - scrapped !== 0) {
                 if (current !== "dead") {
-                    lines.push(`<li style="color: #ff0000">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
+                    lines.push(`<li class="warning-text">Discrepancy: ${mined + absorbed - carrying - burned - deposited - scrapped}</li>`);
                 }
             }
 
@@ -1874,11 +1871,9 @@ function make_renderer() {
 
         let lines = [];
 
-        lines.push(`<p style="margin-bottom: 0; color: #aaaaaa">Engine: ${renderer.game.ENGINE_VERSION}</p>`);
-
-        lines.push(`<p style="margin-top: 0; color: #aaaaaa">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
-
-        lines.push(`<p style="color: #aaaaaa">Dropoff deliveries at end:</p>`);
+        lines.push(`<p class="lowlight no-margin-bottom">Engine: ${renderer.game.ENGINE_VERSION}</p>`);
+        lines.push(`<p class="lowlight no-margin-top">./halite.exe --width ${renderer.width} --height ${renderer.height} -s ${renderer.game.map_generator_seed}</p>`);
+        lines.push(`<p class="lowlight">Dropoff deliveries at end:</p>`);
 
         let all_pids = [];
 
@@ -1895,7 +1890,6 @@ function make_renderer() {
         for (let pid of all_pids) {
 
             let username = renderer.game.players[pid].name;
-            let colour = colours[pid];
 
             let hpd = stats[pid].halite_per_dropoff;
 
@@ -1912,8 +1906,8 @@ function make_renderer() {
             let factory_x = renderer.game.players[pid].factory_location.x;
             let factory_y = renderer.game.players[pid].factory_location.y;
 
-            lines.push(`<h2 style="color: ${colour}; margin-bottom: 0;">${username}</h2>`);
-            lines.push(`<ul style="margin-top: 0;">`);
+            lines.push(`<h2 class="player-${pid}-colour no-margin-bot">${username}</h2>`);
+            lines.push(`<ul class="no-margin-top">`);
             for (let i = 0; i < foo.length; i++) {
                 lines.push(`<li>${foo[i].x}, ${foo[i].y} &ndash; ${foo[i].val}${foo[i].x === factory_x && foo[i].y === factory_y ? " (factory)" : ""}</li>`);
             }
