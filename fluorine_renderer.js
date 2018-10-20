@@ -5,8 +5,8 @@ const app = require('electron').remote.app;
 const fs = require("fs");
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
+const read_prefs = require("./modules/preferences").read_prefs;
 const stream = require("stream");
-const {read_prefs} = require("./modules/preferences");
 
 let zstd;
 
@@ -57,7 +57,6 @@ function make_renderer() {
     renderer.offset_y = 0;
 
     renderer.prefs = read_prefs(app);
-
 
     // --------------------------------------------------------------
 
@@ -1740,7 +1739,7 @@ function make_renderer() {
 
         let percentage = Math.floor(100 * halite_total / renderer.initial_halite);
 
-        lines.push(`<p color="lowlight">Turn: <span class="white-text">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total} (${percentage}%)</p>`);
+        lines.push(`<p class="lowlight">Turn: <span class="white-text">${renderer.turn + turn_fudge}</span> / ${renderer.game_length() - 1} &ndash; free halite: ${halite_total} (${percentage}%)</p>`);
 
         // -----------------------------------------------------
 
