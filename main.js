@@ -36,7 +36,6 @@ try {
 
 // -------------------------------------------------------
 
-process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = true;		// FIXME: this is lame. What's the correct way to prevent the console warning?
 
 electron.app.on("ready", () => {
 
