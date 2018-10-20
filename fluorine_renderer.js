@@ -1,4 +1,3 @@
-
 "use strict";
 
 const alert = require("./modules/alert");
@@ -7,6 +6,7 @@ const fs = require("fs");
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
 const stream = require("stream");
+const {read_prefs} = require("./modules/preferences");
 
 let zstd;
 
@@ -21,9 +21,6 @@ const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
 const explosion_colour = "#ff0000";
 
 const flog_concat_string = " ";
-
-const prefs = ["integer_box_sizes", "turns_start_at_one", "triangles_show_next", "grid_aesthetic"];
-const userdata_path = app.getPath("userData");
 
 const canvas = document.getElementById("canvas");
 const infobox = document.getElementById("infobox");
@@ -59,10 +56,8 @@ function make_renderer() {
     renderer.offset_x = 0;
     renderer.offset_y = 0;
 
-    renderer.integer_box_sizes = false;
-    renderer.turns_start_at_one = false;
-    renderer.triangles_show_next = true;
-    renderer.grid_aesthetic = 1;
+    renderer.prefs = read_prefs(app);
+
 
     // --------------------------------------------------------------
 
@@ -792,46 +787,9 @@ function make_renderer() {
         renderer.draw();
     };
 
-    renderer.toggle = (varname) => {
-        renderer[varname] = !renderer[varname];
-        if (prefs.includes(varname)) renderer.save_prefs();
+    renderer.set = (attrname, value) => {
+        renderer[attrname] = value;
         renderer.draw();
-    };
-
-    renderer.set = (varname, value) => {
-        renderer[varname] = value;
-        if (prefs.includes(varname)) renderer.save_prefs();
-        renderer.draw();
-    };
-
-    renderer.save_prefs = () => {
-
-        let o = Object.create(null);
-
-        for (let n = 0; n < prefs.length; n++) {
-            let varname = prefs[n];
-            o[varname] = renderer[varname];
-        }
-
-        let filename = path.join(userdata_path, "prefs.json");
-        fs.writeFileSync(filename, JSON.stringify(o));
-    };
-
-    renderer.read_prefs = () => {
-
-        try {
-            let filename = path.join(userdata_path, "prefs.json");
-            let s = fs.readFileSync(filename, "utf8");
-            let o = JSON.parse(s);
-
-            for (let [varname, value] of Object.entries(o)) {
-                if (prefs.includes(varname)) {
-                    renderer[varname] = value;
-                }
-            }
-        } catch (err) {
-            console.log("Couldn't read prefs.");
-        }
     };
 
     renderer.next_collision = (reverse_flag) => {
@@ -1158,7 +1116,7 @@ function make_renderer() {
 
         let desired_size;
 
-        if (!renderer.integer_box_sizes) {
+        if (!renderer.prefs.integer_box_sizes) {
             desired_size = Math.max(1 * renderer.height, window.innerHeight - 1);
         } else {
             desired_size = renderer.height * Math.max(1, Math.floor((window.innerHeight - 1) / renderer.height));
@@ -1200,7 +1158,7 @@ function make_renderer() {
 
                 let val;
 
-                switch (renderer.grid_aesthetic) {
+                switch (renderer.prefs.grid_aesthetic) {
                     case 0:
                         val = 0;
                         break;
@@ -1291,7 +1249,7 @@ function make_renderer() {
         let box_height = renderer.box_height();
         let frame = renderer.current_frame();
 
-        let moves_map = renderer.get_moves_map(renderer.triangles_show_next);
+        let moves_map = renderer.get_moves_map(renderer.prefs.triangles_show_next);
 
         for (let pid = 0; pid < renderer.players(); pid++) {
 
@@ -1739,7 +1697,7 @@ function make_renderer() {
 
         if (!renderer.game) return;
 
-        let turn_fudge = renderer.turns_start_at_one ? 1 : 0;
+        let turn_fudge = renderer.prefs.turns_start_at_one ? 1 : 0;
 
         let lines = [];
 
@@ -1921,7 +1879,6 @@ function make_renderer() {
         });
     };
 
-    renderer.read_prefs();
     return renderer;
 }
 
@@ -1987,13 +1944,13 @@ ipcRenderer.on("select_sid", (event, sid) => {
     renderer.select_sid(sid);
 });
 
-ipcRenderer.on("toggle", (event, varname) => {
-    renderer.toggle(varname);
+ipcRenderer.on("set", (event, foo) => {
+    renderer.set(foo[0], foo[1]);               // Format is [attrname, value]
 });
 
-ipcRenderer.on("set", (event, foo) => {
-    renderer.set(foo[0], foo[1]);               // Format is [varname, value]
-});
+ipcRenderer.on("prefs_changed", (event, prefs) => {
+    renderer.set("prefs", prefs);
+})
 
 ipcRenderer.on("log", (event, msg) => {
     console.log(msg);

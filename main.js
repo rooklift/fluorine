@@ -7,32 +7,25 @@ const fs = require("fs");
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const windows = require("./modules/windows");
+const {save_prefs, read_prefs} = require("./modules/preferences");
+const {sort_by} = require("./modules/utils");
 
 let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
 	`Electron ${process.versions.electron} + Node ${process.versions.node} + Chrome ${process.versions.chrome} + V8 ${process.versions.v8}`;
 
 // -------------------------------------------------------
-// Read prefs.
+// Preferences.
 
-let prefs = Object.create(null);	// First, set defaults for everything in case load fails.
-prefs.integer_box_sizes = false;
-prefs.turns_start_at_one = false;
-prefs.triangles_show_next = true;
-prefs.grid_aesthetic = 1;
-
-let userdata_path = app.getPath("userData");
-
-try {
-	let filename = path.join(userdata_path, "prefs.json");
-	let s = fs.readFileSync(filename, "utf8");
-	let o = JSON.parse(s);
-
-	for (let [varname, value] of Object.entries(o)) {
-		prefs[varname] = value;
+const prefs = read_prefs(app);
+function set_pref(attrname, value) {
+	if (!prefs.hasOwnProperty(attrname)) {
+		throw new Error("Tried to set a prefence attr that wasn't defined: ", attrname);
 	}
-} catch (err) {
-	// pass
+	prefs[attrname] = value;
+	windows.send("renderer", "prefs_changed", prefs);
+	save_prefs(app, prefs);
 }
+
 
 // -------------------------------------------------------
 
@@ -90,6 +83,9 @@ ipcMain.on("renderer_ready", () => {
 			windows.send("renderer", "open", process.argv[1]);
 		}
 	}
+	else {
+		monitor_dirs(prefs.last_monitored_replay_dirs);
+	}
 
 });
 
@@ -104,6 +100,51 @@ ipcMain.on("show_window", (event, window_token) => {
 ipcMain.on("hide_window", (event, window_token) => {
 	windows.hide(window_token);
 });
+
+
+// -------------------------------------------------------
+// Replay dir monitoring.
+
+
+let replay_dir_watchers = [];
+function monitor_dirs(dirs) {
+	dirs = dirs || [];
+
+	for (const watcher of replay_dir_watchers) {
+		watcher.close();
+	}
+
+	const is_replay_file = (filename) => filename.endsWith(".hlt");
+
+	// Open the most recent replay file.
+	if (dirs.length) {
+		const get_replays = (dir) => {
+			return fs.readdirSync(dirs[0])
+				     .filter(is_replay_file)
+				     .map(filename => path.join(dir, filename));
+		}
+		const replay_paths = [].concat(...dirs.map(get_replays));
+		if (replay_paths.length) {
+			const replay_path = sort_by(replay_paths,
+				filepath => -fs.statSync(filepath).mtime.getTime()
+			)[0];
+			windows.send("renderer", "open", replay_path);
+		}
+	}
+
+	// Start the new watchers.
+	replay_dir_watchers = dirs.map(dir => fs.watch(
+		dir,
+		{persistent: false},
+		(eventType, filename) => {
+			if (eventType == "change" && is_replay_file(filename)) {
+				windows.send("renderer", "open", path.join(dir, filename));
+			}
+		}
+	));
+
+	set_pref("last_monitored_replay_dirs", dirs);
+}
 
 // -------------------------------------------------------
 
@@ -120,6 +161,16 @@ function make_main_menu() {
 						if (files && files.length > 0) {
 							windows.send("renderer", "open", files[0]);
 						}
+					}
+				},
+				{
+					label: "Monitor Replay Folder...",
+					accelerator: "CommandOrControl+Shift+O",
+					click: () => {
+						// Note: Users can click "cancel" to stop monitoring files.
+						monitor_dirs(electron.dialog.showOpenDialog({
+							properties: ['openDirectory', 'multiSelections'],
+						}));
 					}
 				},
 				{
@@ -280,11 +331,7 @@ function make_main_menu() {
 					type: "checkbox",
 					checked: prefs.integer_box_sizes,
 					click: (menuItem) => {
-						if (menuItem.checked) {
-							windows.send("renderer", "set", ["integer_box_sizes", true]);
-						} else {
-							windows.send("renderer", "set", ["integer_box_sizes", false]);
-						}
+						set_pref("integer_box_sizes", menuItem.checked);
 					}
 				},
 				{
@@ -292,11 +339,7 @@ function make_main_menu() {
 					type: "checkbox",
 					checked: prefs.turns_start_at_one,
 					click: (menuItem) => {
-						if (menuItem.checked) {
-							windows.send("renderer", "set", ["turns_start_at_one", true]);
-						} else {
-							windows.send("renderer", "set", ["turns_start_at_one", false]);
-						}
+						set_pref("turns_start_at_one", menuItem.checked);
 					}
 				},
 				{
@@ -308,7 +351,7 @@ function make_main_menu() {
 							accelerator: "F1",
 							checked: prefs.grid_aesthetic === 0,
 							click: () => {
-								windows.send("renderer", "set", ["grid_aesthetic", 0]);
+								set_pref("grid_aesthetic", 0);
 							}
 						},
 						{
@@ -317,7 +360,7 @@ function make_main_menu() {
 							accelerator: "F2",
 							checked: prefs.grid_aesthetic === 1,
 							click: () => {
-								windows.send("renderer", "set", ["grid_aesthetic", 1]);
+								set_pref("grid_aesthetic", 1);
 							}
 						},
 						{
@@ -326,7 +369,7 @@ function make_main_menu() {
 							accelerator: "F3",
 							checked: prefs.grid_aesthetic === 2,
 							click: () => {
-								windows.send("renderer", "set", ["grid_aesthetic", 2]);
+								set_pref("grid_aesthetic", 2);
 							}
 						},
 						{
@@ -335,7 +378,7 @@ function make_main_menu() {
 							accelerator: "F4",
 							checked: prefs.grid_aesthetic === 3,
 							click: () => {
-								windows.send("renderer", "set", ["grid_aesthetic", 3]);
+								set_pref("grid_aesthetic", 3);
 							}
 						},
 					]
@@ -348,7 +391,7 @@ function make_main_menu() {
 							type: "radio",
 							checked: prefs.triangles_show_next,
 							click: () => {
-								windows.send("renderer", "set", ["triangles_show_next", true]);
+								set_pref("triangles_show_next", true);
 							}
 						},
 						{
@@ -356,7 +399,7 @@ function make_main_menu() {
 							type: "radio",
 							checked: prefs.triangles_show_next === false,
 							click: () => {
-								windows.send("renderer", "set", ["triangles_show_next", false]);
+								set_pref("triangles_show_next", false);
 							}
 						}
 					]
