@@ -164,13 +164,21 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Monitor Replay Folder...",
+					type: "separator"
+				},
+				{
+					label: "Monitor replay folder...",
 					accelerator: "CommandOrControl+Shift+O",
 					click: () => {
-						// Note: Users can click "cancel" to stop monitoring files.
 						monitor_dirs(electron.dialog.showOpenDialog({
-							properties: ['openDirectory', 'multiSelections'],
+							properties: ["openDirectory", "multiSelections"],
 						}));
+					}
+				},
+				{
+					label: "Stop monitoring",
+					click: () => {
+						monitor_dirs(null);
 					}
 				},
 				{
