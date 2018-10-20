@@ -1783,6 +1783,7 @@ function make_renderer() {
 			let spent = deposited + initial - current;
 			let gathered = deposited + initial;
 			let dead_ships = builds - (ships + dropoffs);
+			let pc_of_gathered = Math.round(10000 * current / gathered) / 100;
 
 			if (renderer.game.game_statistics.player_statistics[pid].last_turn_alive < renderer.turn) {
 				current = "dead";       // Set this after spent is calculated, above.
@@ -1801,7 +1802,7 @@ function make_renderer() {
 					<li>Initial: ${c}${initial}${z}, mined: ${c}${mined}${z}, absorbed: ${c}${absorbed}${z}</li>
 					<li>Burned: ${c}${burned}${z}, carrying ${c}${carrying}${z}, dropped: ${c}${scrapped}${z}</li>
 					<li>Gathered: ${c}${gathered}${z} &ndash; spent: ${c}${spent}${z}</li>
-					<li>Profit = ${c}${current}${z}</li>`
+					<li>Profit = ${c}${current}${z} (${c}${pc_of_gathered}%${z} of gathered)</li>`
 			);
 
 			if (mined + absorbed - deposited - carrying - burned - scrapped !== 0) {
