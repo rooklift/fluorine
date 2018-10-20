@@ -1020,7 +1020,7 @@ function make_renderer() {
             string_list.push(`<span class="player-${pid}-colour">${sid}</span>`);
         }
 
-        return `<span class=".collision">Collision</span>: ${string_list.join(", ")}`;
+        return `<span class="collision">Collision</span>: ${string_list.join(", ")}`;
     };
 
     renderer.selection_string = () => {
