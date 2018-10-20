@@ -105,8 +105,8 @@ ipcMain.on("hide_window", (event, window_token) => {
 // -------------------------------------------------------
 // Replay dir monitoring.
 
-
 let replay_dir_watchers = [];
+
 function monitor_dirs(dirs) {
 	dirs = dirs || [];
 
