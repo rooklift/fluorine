@@ -30,6 +30,8 @@ function set_pref(attrname, value) {
 
 // -------------------------------------------------------
 
+let menu;
+
 electron.app.on("ready", () => {
 
 	let main = windows.new("renderer", {
@@ -52,7 +54,8 @@ electron.app.on("ready", () => {
 		title: "Go To Turn", show: false, width: 320, height: 100, resizable: true, page: path.join(__dirname, "fluorine_turn.html")
 	});
 
-	electron.Menu.setApplicationMenu(make_main_menu());
+	menu = make_main_menu();
+	electron.Menu.setApplicationMenu(menu);
 });
 
 electron.app.on("window-all-closed", () => {
@@ -143,6 +146,10 @@ function monitor_dirs(dirs) {
 		}
 	));
 
+	// Checkmark on/off for the "open" menu item, enabled on/off for the "stop" item...
+	menu.items[0].submenu.items[2].checked = replay_dir_watchers.length > 0 ? true : false;
+	menu.items[0].submenu.items[3].enabled = replay_dir_watchers.length > 0 ? true : false;
+
 	set_pref("last_monitored_replay_dirs", dirs);
 }
 
@@ -168,6 +175,8 @@ function make_main_menu() {
 				},
 				{
 					label: "Monitor replay folder...",
+					type: "checkbox",
+					checked: false,								// Updated by monitor_dirs()
 					accelerator: "CommandOrControl+Shift+O",
 					click: () => {
 						monitor_dirs(electron.dialog.showOpenDialog({
@@ -177,6 +186,7 @@ function make_main_menu() {
 				},
 				{
 					label: "Stop monitoring",
+					enabled: false,								// Updated by monitor_dirs()
 					click: () => {
 						monitor_dirs(null);
 					}
@@ -510,6 +520,7 @@ function make_main_menu() {
 					}
 				},
 				{
+					label: "Dev tools",
 					role: "toggledevtools"
 				},
 			]
