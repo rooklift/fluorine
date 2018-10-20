@@ -35,4 +35,4 @@ Open a file from the menu, or via command line with `electron . -o filename.hlt`
 
 # Thanks
 
-Thanks to Snaar, Shummie, Ewirkerman, and Lidavidm for helpful discussions. *Fluorine* was developed during the beta phase of Halite 3 despite me not actually being in the beta, so I relied on them for information. Thanks to DomNomNom for the "monitor folder" feature.
+Thanks to Snaar, Shummie, Ewirkerman, and Lidavidm for helpful discussions. *Fluorine* was developed during the beta phase of Halite 3 despite me not actually being in the beta, so I relied on them for information. Thanks to DomNomNom for the "monitor folder" feature. Thanks to DanielVF for an OS X bugfix.
