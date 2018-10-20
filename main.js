@@ -83,6 +83,9 @@ ipcMain.on("renderer_ready", () => {
 			windows.send("renderer", "open", process.argv[1]);
 		}
 	}
+	else {
+		monitor_dirs(prefs.last_monitored_replay_dirs);
+	}
 
 });
 
@@ -139,6 +142,8 @@ function monitor_dirs(dirs) {
 			}
 		}
 	));
+
+	set_pref("last_monitored_replay_dirs", dirs);
 }
 
 // -------------------------------------------------------
