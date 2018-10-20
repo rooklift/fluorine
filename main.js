@@ -69,13 +69,16 @@ ipcMain.on("renderer_ready", () => {
 	// Load a file via command line with -o filename.
 
 	let filename = "";
+
 	for (let i = 0; i < process.argv.length - 1; i++) {
 		if (process.argv[i] === "-o") {
 			filename = process.argv[i + 1];
 		}
 	}
+
 	if (filename !== "") {
 		windows.send("renderer", "open", filename);
+		monitor_dirs(null);
 	}
 
 	// Or, if exactly 1 arg, assume it's a filename.
@@ -84,12 +87,13 @@ ipcMain.on("renderer_ready", () => {
 	else if (process.argv.length === 2 && path.basename(process.argv[0]) !== "electron" && path.basename(process.argv[0]) !== "electron.exe") {
 		if (process.argv[1] !== ".") {
 			windows.send("renderer", "open", process.argv[1]);
+			monitor_dirs(null);
 		}
 	}
+
 	else {
 		monitor_dirs(prefs.last_monitored_replay_dirs);
 	}
-
 });
 
 ipcMain.on("relay", (event, msg) => {
@@ -103,7 +107,6 @@ ipcMain.on("show_window", (event, window_token) => {
 ipcMain.on("hide_window", (event, window_token) => {
 	windows.hide(window_token);
 });
-
 
 // -------------------------------------------------------
 // Replay dir monitoring.
@@ -167,6 +170,7 @@ function make_main_menu() {
 						let files = electron.dialog.showOpenDialog();
 						if (files && files.length > 0) {
 							windows.send("renderer", "open", files[0]);
+							monitor_dirs(null);					// Stop monitoring if we were
 						}
 					}
 				},
