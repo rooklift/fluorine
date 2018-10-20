@@ -5,29 +5,29 @@ const ipcRenderer = require("electron").ipcRenderer;
 // Event to focus input in the actual box...
 
 ipcRenderer.on("focus_input", () => {
-    document.getElementById("turn").focus();
+	document.getElementById("turn").focus();
 });
 
 // Setup return key on input box...
 
 document.getElementById("turn").onkeydown = function(event) {
-    if (event.keyCode == 13) {
-        let input_turn = document.getElementById("turn");
-        let turn = parseInt(input_turn.value, 10);
+	if (event.keyCode == 13) {
+		let input_turn = document.getElementById("turn");
+		let turn = parseInt(input_turn.value, 10);
 
-        input_turn.value = "";
+		input_turn.value = "";
 
-        if (!Number.isNaN(turn)) {
-            ipcRenderer.send("relay", {
-                receiver: "renderer",
-                channel: "go_to_turn",
-                content: turn,
-            });
-        }
+		if (!Number.isNaN(turn)) {
+			ipcRenderer.send("relay", {
+				receiver: "renderer",
+				channel: "go_to_turn",
+				content: turn,
+			});
+		}
 
-        ipcRenderer.send("show_window", "renderer");    // Renderer to front.
-        ipcRenderer.send("hide_window", "turn");
-    }
+		ipcRenderer.send("show_window", "renderer");    // Renderer to front.
+		ipcRenderer.send("hide_window", "turn");
+	}
 };
 
 // Setup drag-and-drop...
@@ -36,12 +36,12 @@ window.ondragover = () => false;
 window.ondragleave = () => false;
 window.ondragend = () => false;
 window.ondrop = (event) => {
-    event.preventDefault();
-    ipcRenderer.send("relay", {
-        receiver: "renderer",
-        channel: "open",
-        content: event.dataTransfer.files[0].path,
-    });
-    ipcRenderer.send("stop_monitoring", null);
-    return false;
+	event.preventDefault();
+	ipcRenderer.send("relay", {
+		receiver: "renderer",
+		channel: "open",
+		content: event.dataTransfer.files[0].path,
+	});
+	ipcRenderer.send("stop_monitoring", null);
+	return false;
 };

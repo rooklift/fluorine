@@ -1,31 +1,31 @@
 body {
-    margin: 0;
-    border: 0;
-    padding: 0;
-    background-color: black;
-    color: white;
-    user-select: none;
-    cursor: default;
-    overflow: hidden;
+	margin: 0;
+	border: 0;
+	padding: 0;
+	background-color: black;
+	color: white;
+	user-select: none;
+	cursor: default;
+	overflow: hidden;
 }
 
 #canvas {
-    float: left;
-    margin-right: 1em;
+	float: left;
+	margin-right: 1em;
 }
 
 #infobox {
-    margin-top: 0;
-    white-space: nowrap;
-    overflow: hidden;       /* prevents top <p> margin sticking up; also somehow stops list items from falling left if they could */
+	margin-top: 0;
+	white-space: nowrap;
+	overflow: hidden;       /* prevents top <p> margin sticking up; also somehow stops list items from falling left if they could */
 }
 
 h2 {
-    margin: 0;
+	margin: 0;
 }
 
 ul {
-    padding: 0;             /* apparently this also removes the bullets */
-    margin-top: 0;
-    margin-bottom: 1em;
+	padding: 0;             /* apparently this also removes the bullets */
+	margin-top: 0;
+	margin-bottom: 1em;
 }

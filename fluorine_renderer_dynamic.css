@@ -4,7 +4,7 @@ rather than fluorine_renderer.html.
 */
 
 .collision {
-    color: red;
+	color: red;
 }
 
 /* Note: These are duplicated in fluorine_renderer.js (see `const colours`) */
@@ -19,13 +19,13 @@ rather than fluorine_renderer.html.
 
 /* Messages with a low priority. */
 .lowlight {
-    color: #aaa;
+	color: #aaa;
 }
 
 .white-text {
-    color: white;
+	color: white;
 }
 
 .warning-text {
-    color: orange;
+	color: orange;
 }
