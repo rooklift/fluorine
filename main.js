@@ -147,8 +147,11 @@ function monitor_dirs(dirs) {
 		dir,
 		{persistent: false},
 		(eventType, filename) => {
-			if (eventType == "change" && is_replay_file(filename)) {
-				windows.send("renderer", "open", path.join(dir, filename));
+			if (is_replay_file(filename)) {
+				windows.send("renderer", "log", `${eventType} - ${filename}`);					// FIXME - debugging, remove
+				if (eventType == "change") {
+					windows.send("renderer", "open", path.join(dir, filename));
+				}
 			}
 		}
 	));
