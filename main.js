@@ -6,7 +6,7 @@ const electron = require("electron");
 const fs = require("fs");
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
-const read_prefs = require("./modules/preferences").read_prefs
+const read_prefs = require("./modules/preferences").read_prefs;
 const save_prefs = require("./modules/preferences").save_prefs;
 const sort_by = require("./modules/utils").sort_by;
 const windows = require("./modules/windows");
@@ -40,7 +40,7 @@ electron.app.on("ready", () => {
 
 	main.once("ready-to-show", () => {
 		main.show();
-	})
+	});
 
 	windows.new("extra_stats", {
 		title: "Extra Stats", show: false, width: 400, height: 800, resizable: true, page: path.join(__dirname, "fluorine_info.html")
@@ -132,7 +132,7 @@ function monitor_dirs(dirs) {
 			return fs.readdirSync(dirs[0])
 				     .filter(is_replay_file)
 				     .map(filename => path.join(dir, filename));
-		}
+		};
 		const replay_paths = [].concat(...dirs.map(get_replays));
 		if (replay_paths.length) {
 			const replay_path = sort_by(replay_paths,
