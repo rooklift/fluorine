@@ -19,7 +19,11 @@ function get_prefs_file(app) {
 
 exports.save_prefs = (app, prefs) => {
     let filename = get_prefs_file(app);
-    fs.writeFileSync(filename, JSON.stringify(prefs));
+    try {
+        fs.writeFileSync(filename, JSON.stringify(prefs));
+    } catch (err) {
+        console.warn("Couldn't save preferences: ", err.message);
+    }
 }
 
 exports.read_prefs = (app) => {
@@ -29,8 +33,7 @@ exports.read_prefs = (app) => {
         let f = fs.readFileSync(filename, "utf8");
         return Object.assign(prefs, JSON.parse(f));
     } catch (err) {
-        // console.warn("Couldn't read preferences: ", err.message);        // Possibly breaking on Linux? Hmm...
+        console.warn("Couldn't read preferences: ", err.message);
         return prefs;
     }
-
 }
