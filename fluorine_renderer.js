@@ -1968,6 +1968,7 @@ window.ondrop = (event) => {
     event.preventDefault();
     renderer.open(event.dataTransfer.files[0].path);
     ipcRenderer.send("show_window", "renderer");
+    ipcRenderer.send("stop_monitoring", null);
     return false;
 };
 

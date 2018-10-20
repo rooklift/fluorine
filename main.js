@@ -108,6 +108,10 @@ ipcMain.on("hide_window", (event, window_token) => {
 	windows.hide(window_token);
 });
 
+ipcMain.on("stop_monitoring", () => {
+	monitor_dirs(null);
+});
+
 // -------------------------------------------------------
 // Replay dir monitoring.
 

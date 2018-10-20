@@ -21,5 +21,6 @@ window.ondrop = (event) => {
         channel: "open",
         content: event.dataTransfer.files[0].path,
     });
+    ipcRenderer.send("stop_monitoring", null);
     return false;
 };
