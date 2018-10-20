@@ -26,7 +26,6 @@ function set_pref(attrname, value) {
 	save_prefs(app, prefs);
 }
 
-
 // -------------------------------------------------------
 
 

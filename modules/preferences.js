@@ -1,8 +1,8 @@
 "use strict";
 
 const fs = require("fs");
+const make = require("./utils").make;
 const path = require("path");
-const {make, assign_without_overwrite} = require("./utils");
 
 const default_prefs = {
     integer_box_sizes: false,
@@ -16,7 +16,6 @@ const default_prefs = {
 function get_prefs_file(app) {
     return path.join(app.getPath("userData"), "prefs.json");
 }
-
 
 exports.save_prefs = (app, prefs) => {
     let filename = get_prefs_file(app);
