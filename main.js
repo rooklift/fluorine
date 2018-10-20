@@ -6,9 +6,10 @@ const electron = require("electron");
 const fs = require("fs");
 const ipcMain = require("electron").ipcMain;
 const path = require("path");
+const read_prefs = require("./modules/preferences").read_prefs
+const save_prefs = require("./modules/preferences").save_prefs;
+const sort_by = require("./modules/utils").sort_by;
 const windows = require("./modules/windows");
-const {save_prefs, read_prefs} = require("./modules/preferences");
-const {sort_by} = require("./modules/utils");
 
 let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
 	`Electron ${process.versions.electron} + Node ${process.versions.node} + Chrome ${process.versions.chrome} + V8 ${process.versions.v8}`;
@@ -17,6 +18,7 @@ let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 
 // Preferences.
 
 const prefs = read_prefs(app);
+
 function set_pref(attrname, value) {
 	if (!prefs.hasOwnProperty(attrname)) {
 		throw new Error("Tried to set a prefence attr that wasn't defined: ", attrname);
@@ -27,7 +29,6 @@ function set_pref(attrname, value) {
 }
 
 // -------------------------------------------------------
-
 
 electron.app.on("ready", () => {
 
