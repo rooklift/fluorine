@@ -127,6 +127,7 @@ function monitor_dirs(dirs) {
 	const is_replay_file = (filename) => filename.endsWith(".hlt");
 
 	// Open the most recent replay file.
+
 	if (dirs.length) {
 		const get_replays = (dir) => {
 			return fs.readdirSync(dirs[0])
@@ -143,7 +144,9 @@ function monitor_dirs(dirs) {
 	}
 
 	// Start the new watchers.
-	let last_filename = null;
+
+	let darwin_last_filename = null;
+
 	replay_dir_watchers = dirs.map(dir => fs.watch(
 		dir,
 		{persistent: false},
@@ -153,10 +156,10 @@ function monitor_dirs(dirs) {
 				if (process.platform == "darwin") {
 					// fs.watch on OS X sends all events as "rename". It's the second
 					// rename event that actually means the file is written.
-					if (eventType == "rename" && last_filename == filename) {
+					if (eventType == "rename" && darwin_last_filename == filename) {
 						windows.send("renderer", "open", path.join(dir, filename));
 					}
-					last_filename = filename;
+					darwin_last_filename = filename;
 				} else {
 					if (eventType == "change") {
 						windows.send("renderer", "open", path.join(dir, filename));
