@@ -22,7 +22,7 @@ exports.save_prefs = (app, prefs) => {
     try {
         fs.writeFileSync(filename, JSON.stringify(prefs));
     } catch (err) {
-        console.warn("Couldn't save preferences: ", err.message);
+        console.log("Couldn't save preferences: ", err.message);
     }
 }
 
@@ -33,7 +33,8 @@ exports.read_prefs = (app) => {
         let f = fs.readFileSync(filename, "utf8");
         return Object.assign(prefs, JSON.parse(f));
     } catch (err) {
-        console.warn("Couldn't read preferences: ", err.message);
+        console.log("Couldn't read preferences: ", err.message);
+        console.log("Continuing with default preferences...");
         return prefs;
     }
 }
