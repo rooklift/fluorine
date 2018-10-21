@@ -8,7 +8,6 @@ const ipcMain = require("electron").ipcMain;
 const path = require("path");
 const read_prefs = require("./modules/preferences").read_prefs;
 const save_prefs = require("./modules/preferences").save_prefs;
-const sort_by = require("./modules/utils").sort_by;
 const windows = require("./modules/windows");
 
 let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
@@ -117,57 +116,92 @@ ipcMain.on("stop_monitoring", () => {
 
 let replay_dir_watchers = [];
 
-function monitor_dirs(dirs) {
-	dirs = dirs || [];
+function is_replay_file(filename) {
+	return filename.endsWith(".hlt");
+}
 
-	for (const watcher of replay_dir_watchers) {
-		watcher.close();
-	}
+function get_replays(dir) {
+	return fs.readdirSync(dir).filter(is_replay_file).map(filename => path.join(dir, filename));
+}
 
-	const is_replay_file = (filename) => filename.endsWith(".hlt");
+function most_recent(replay_paths) {
 
-	// Open the most recent replay file.
+	// There's a race here if things change during the call, but meh.
 
-	if (dirs.length) {
-		const get_replays = (dir) => {
-			return fs.readdirSync(dirs[0])
-				     .filter(is_replay_file)
-				     .map(filename => path.join(dir, filename));
-		};
-		const replay_paths = [].concat(...dirs.map(get_replays));
-		if (replay_paths.length) {
-			const replay_path = sort_by(replay_paths,
-				filepath => -fs.statSync(filepath).mtime.getTime()
-			)[0];
-			windows.send("renderer", "open", replay_path);
+	let recent_file = null;
+	let recent_time = 0;
+
+	for (let filepath of replay_paths) {
+		let t = fs.statSync(filepath).mtime.getTime();
+		if (t > recent_time) {
+			recent_file = filepath;
+			recent_time = t;
 		}
 	}
 
-	// Start the new watchers.
+	return recent_file;
+}
 
-	let darwin_last_filename = null;
+function start_watcher(dir) {
 
-	replay_dir_watchers = dirs.map(dir => fs.watch(
-		dir,
-		{persistent: false},
-		(eventType, filename) => {
+	let darwin_last_filename = null;	// Variable specific to this watcher / folder.
+
+	try {
+		let watcher = fs.watch(dir, {persistent: false}, (eventType, filename) => {
 			if (is_replay_file(filename)) {
-				windows.send("renderer", "log", `${eventType} - ${filename}`);					// FIXME - debugging, remove
+				windows.send("renderer", "log", `${eventType} - ${filename}`);
 				if (process.platform == "darwin") {
 					// fs.watch on OS X sends all events as "rename". It's the second
 					// rename event that actually means the file is written.
 					if (eventType == "rename" && darwin_last_filename == filename) {
-						windows.send("renderer", "open", path.join(dir, filename));
+						windows.send("renderer", "open_silent_fail", path.join(dir, filename));
 					}
 					darwin_last_filename = filename;
 				} else {
 					if (eventType == "change") {
-						windows.send("renderer", "open", path.join(dir, filename));
+						windows.send("renderer", "open_silent_fail", path.join(dir, filename));
 					}
 				}
 			}
+		});
+		return watcher;
+	} catch (err) {
+		windows.send("renderer", "log", `monitor_dirs(): ${err.message}`);
+		return null;
+	}
+}
+
+function monitor_dirs(dirs) {
+
+	dirs = dirs || [];
+
+	for (let watcher of replay_dir_watchers) {
+		watcher.close();
+	}
+
+	// Open the most recent replay file.
+
+	try {
+		if (dirs.length) {
+			const replay_paths = [].concat(...dirs.map(get_replays));
+			if (replay_paths.length) {
+				windows.send("renderer", "open", most_recent(replay_paths));
+			}
 		}
-	));
+	} catch (err) {
+		windows.send("renderer", "log", `monitor_dirs() while opening recent: ${err.message}`);
+	}
+
+	// Start the new watchers.
+
+	replay_dir_watchers = [];
+
+	for (let dir of dirs) {
+		let watcher = start_watcher(dir);
+		if (watcher) {
+			replay_dir_watchers.push(watcher);
+		}
+	}
 
 	// Checkmark on/off for the "open" menu item, enabled on/off for the "stop" item...
 	menu.items[0].submenu.items[2].checked = replay_dir_watchers.length > 0 ? true : false;

@@ -91,7 +91,9 @@ function make_renderer() {
 
 	// --------------------------------------------------------------
 
-	renderer.open = (filename) => {
+	renderer.open = (filename, fail_silently) => {
+
+		// FIXME: loading zstd is done async so this test isn't sound...
 
 		if (renderer.filename === filename && (new Date()).getTime() - renderer.loadtime < 5000) {
 			console.log(`Ignoring request to open recently opened file: ${filename}`);
@@ -104,10 +106,12 @@ function make_renderer() {
 
 		if (!ok) {
 			if (filename.endsWith(".json") === false) {
-				renderer.open_zstd(filename);
+				renderer.open_zstd(filename, fail_silently);
 			} else {
 				console.log("Loading failed (simple JSON).");
-				alert("Couldn't open this file.");
+				if (!fail_silently) {
+					alert("Couldn't open this file.");
+				}
 			}
 		}
 	};
@@ -130,14 +134,17 @@ function make_renderer() {
 		return true;
 	};
 
-	renderer.open_zstd = (filename) => {
+	renderer.open_zstd = (filename, fail_silently) => {
 
 		if (zstd === undefined) {
-			alert("The zstd module is not loaded, so Fluorine can only load JSON replays.");
+			if (!fail_silently) {
+				alert("The zstd module is not loaded, so Fluorine can only load JSON replays.");
+			}
 			return;
 		}
 
-		let warned = false;
+		let warned = fail_silently ? true : false;
+
 		let all_chunks = [];
 		let loading_stream = new stream.Writable();
 
@@ -170,8 +177,8 @@ function make_renderer() {
 					game_object = JSON.parse(all_chunks.join(""));
 				} catch (new_err) {
 					console.log("Loading failed (c).");
+					console.log(new_err);
 					if (!warned) {
-						console.log(new_err);
 						alert("Couldn't open this file.");
 						warned = true;
 					}
@@ -1892,6 +1899,10 @@ let renderer = make_renderer();
 
 ipcRenderer.on("open", (event, filename) => {
 	renderer.open(filename);
+});
+
+ipcRenderer.on("open_silent_fail", (event, filename) => {
+	renderer.open(filename, true);
 });
 
 ipcRenderer.on("open_flog", (event, filename) => {
