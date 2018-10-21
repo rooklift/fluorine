@@ -150,15 +150,15 @@ function start_watcher(dir) {
 		let watcher = fs.watch(dir, {persistent: false}, (eventType, filename) => {
 			if (is_replay_file(filename)) {
 				windows.send("renderer", "log", `${eventType} - ${filename}`);
-				if (process.platform == "darwin") {
+				if (process.platform === "darwin") {
 					// fs.watch on OS X sends all events as "rename". It's the second
 					// rename event that actually means the file is written.
-					if (eventType == "rename" && darwin_last_filename == filename) {
+					if (eventType === "rename" && darwin_last_filename === filename) {
 						windows.send("renderer", "open_silent_fail", path.join(dir, filename));
 					}
 					darwin_last_filename = filename;
 				} else {
-					if (eventType == "change") {
+					if (eventType === "change") {
 						windows.send("renderer", "open_silent_fail", path.join(dir, filename));
 					}
 				}
