@@ -32,6 +32,7 @@ function make_renderer() {
 
 	renderer.game = null;
 	renderer.filename = "";
+	renderer.loadtime = 0;
 	renderer.turn = 0;
 	renderer.selection = null;
 	renderer.width = 0;
@@ -91,6 +92,11 @@ function make_renderer() {
 	// --------------------------------------------------------------
 
 	renderer.open = (filename) => {
+
+		if (renderer.filename === filename && (new Date()).getTime() - renderer.loadtime < 5000) {
+			console.log(`Ignoring request to open recently opened file: ${filename}`);
+			return;
+		}
 
 		console.log(`Trying to load ${filename}`);
 
@@ -240,6 +246,7 @@ function make_renderer() {
 		});
 
 		renderer.filename = filename;
+		renderer.loadtime = (new Date()).getTime();	// ms since epoch. Since this load seems successful, we won't load the same file within 5 seconds.
 		renderer.turn = 0;
 		renderer.selection = null;
 		renderer.width = renderer.game.production_map.width;
