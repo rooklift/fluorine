@@ -1,4 +1,4 @@
-# Fluorine
+# Fluorine 🐢
 
 ![Fluorine Screenshot](https://user-images.githubusercontent.com/16438795/47038324-18ac6780-d179-11e8-987d-3613e1095ba2.png)
 
