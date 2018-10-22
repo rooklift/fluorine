@@ -17,7 +17,7 @@ try {
 }
 
 const ranks = ["???", "1st", "2nd", "3rd", "4th"];
-const colours = ["#c5ec98", "#66cccc", "#ff9999", "#ffbe00"];
+const colours = ["#c5ec98", "#ff9999", "#ffbe00", "#66cccc"];
 const explosion_colour = "#ff0000";
 
 const flog_concat_string = " ";
@@ -195,14 +195,37 @@ function make_renderer() {
 			return;
 		}
 
-		let flog_raw;
+		let contents;		// The raw string in the file.
+		let flog_raw;		// The initial decoded JSON object.
 
 		try {
-			let contents = fs.readFileSync(filename);
-			flog_raw = JSON.parse(contents);
+			contents = fs.readFileSync(filename);
+			contents = contents.toString();
 		} catch (err) {
 			alert("Couldn't open this f-log.");
 			return;
+		}
+
+		try {
+			flog_raw = JSON.parse(contents);
+		} catch (err) {
+
+			// Handle incomplete f-logs.
+
+			contents = contents.trim();
+
+			if (contents[contents.length - 1] === ",") {
+				contents = contents.slice(0, contents.length - 1) + "]"
+			} else {
+				contents += "]"
+			}
+
+			try {
+				flog_raw = JSON.parse(contents);
+			} catch (err2) {
+				alert("Couldn't open this f-log.");
+				return;
+			}
 		}
 
 		renderer.flog = Object.create(null);
@@ -1856,13 +1879,11 @@ function make_renderer() {
 			return renderer.game.game_statistics.player_statistics[a].rank - renderer.game.game_statistics.player_statistics[b].rank;
 		});
 
-		let stats = renderer.game.game_statistics.player_statistics;
-
 		for (let pid of all_pids) {
 
 			let username = renderer.game.players[pid].name;
 
-			let hpd = stats[pid].halite_per_dropoff;
+			let hpd = renderer.game.game_statistics.player_statistics[pid].halite_per_dropoff;
 
 			let foo = [];
 

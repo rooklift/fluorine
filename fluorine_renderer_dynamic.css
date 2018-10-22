@@ -9,10 +9,9 @@ rather than fluorine_renderer.html.
 
 /* Note: These are duplicated in fluorine_renderer.js (see `const colours`) */
 .player-0-colour { color: #c5ec98; }
-.player-1-colour { color: #66cccc; }
-.player-2-colour { color: #ff9999; }
-.player-3-colour { color: #ffbe00; }
-
+.player-1-colour { color: #ff9999; }
+.player-2-colour { color: #ffbe00; }
+.player-3-colour { color: #66cccc; }
 
 .no-margin-bot { margin-bottom: 0; }
 .no-margin-top { margin-top: 0; }

@@ -594,10 +594,21 @@ function about_flogging() {
 
 An f-log is a JSON file with the following format:
 
-  [
-    {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
-    {"t": 12, "x": 8, "y": 15, "msg": "Hi again"}
-  ]
+    [
+        {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
+        {"t": 12, "x": 8, "y": 15, "msg": "Hi again"}
+    ]
+
+For convenience, Fluorine can parse an incomplete JSON array, such as:
+
+    [
+        {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
+        {"t": 12, "x": 8, "y": 15, "msg": "Hi again"},
+
+That is: without the closing "]" character, and with or without a \
+trailing comma after the final entry. You may find this the easiest \
+format to write. (Note though that if you do close the array with "]" \
+yourself, your JSON must be valid.)
 
 When an f-log is loaded, if the Fluorine crosshairs are on a point \
 with a message (i.e. at time t, coordinates x and y) then the given \
