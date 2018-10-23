@@ -1287,6 +1287,8 @@ function make_renderer() {
 
 		let moves_map = renderer.get_moves_map(renderer.prefs.triangles_show_next);
 
+		context.lineWidth = 1 * renderer.line_width_multiplier();
+
 		for (let pid = 0; pid < renderer.players(); pid++) {
 
 			let colour = colours[pid];
@@ -1465,7 +1467,7 @@ function make_renderer() {
 
 		context.setLineDash([5, 15]);
 
-		context.lineWidth = 1;
+		context.lineWidth = 1 * renderer.line_width_multiplier()
 		context.strokeStyle = "#cccccc";
 
 		context.beginPath();
@@ -1499,6 +1501,10 @@ function make_renderer() {
 	renderer.box_height = () => {
 		if (renderer.height <= 0) return 1;
 		return Math.max(1, canvas.height / renderer.height);
+	};
+
+	renderer.line_width_multiplier = () => {
+		return Math.max(1, canvas.width / 768);
 	};
 
 	// --------------------------------------------------------------
