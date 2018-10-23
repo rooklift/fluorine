@@ -10,6 +10,7 @@ const default_prefs = {
     triangles_show_next: true,
     grid_aesthetic: 1,
     last_monitored_replay_dirs: [],
+    last_flog_directory: null
     // Note: Don't make this a nested structure unless you're willing to make the code below more complex.
 };
 

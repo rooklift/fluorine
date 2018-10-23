@@ -255,8 +255,12 @@ function make_main_menu() {
 				{
 					label: "Open f-log...",
 					click: () => {
-						let files = electron.dialog.showOpenDialog();
+						let files = electron.dialog.showOpenDialog({
+							defaultPath: prefs.last_flog_directory,
+							properties: ["openFile"]
+						});
 						if (files && files.length > 0) {
+							set_pref('last_flog_directory', path.dirname(files[0]));
 							windows.send("renderer", "open_flog", files[0]);
 						}
 					}
