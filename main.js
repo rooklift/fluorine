@@ -603,29 +603,21 @@ function about_flogging() {
 An f-log is a JSON file with the following format:
 
     [
-        {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
-        {"t": 12, "x": 8, "y": 15, "msg": "Hi again"},
-        {"t": 15, "x": 8, "y": 15, "msg": "This point is red", "color": "red"},
-        {"t": 15, "x": 8, "y": 16, "msg": "This point is blue", "color": "#0000FF"},
-        {"t": 15, "x": 8, "y": 17, "msg": "This point is green", "color": "rgb(0,255,0)"},
-        {"t": 15, "x": 8, "y": 18, "color": "hsl(120,100%,50%)"}
+        {"t": 1, "x": 22, "y": 22, "msg": "Hello"},
+        {"t": 15, "x": 8, "y": 15, "msg": "Danger!", "color": "red"},
+        {"t": 15, "x": 9, "y": 16, "color": "#0000FF"}
     ]
 
-For convenience, Fluorine can parse an incomplete JSON array, such as:
-
-    [
-        {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
-        {"t": 12, "x": 8, "y": 15, "msg": "Hi again"},
-
-That is: without the closing "]" character, and with or without a \
-trailing comma after the final entry. You may find this the easiest \
-format to write. (Note though that if you do close the array with "]" \
-yourself, your JSON must be valid.)
+For convenience, Fluorine can parse an incomplete JSON array, meaning \
+one lacking its closing "]". Such an incomplete array can have a final \
+"," or not. You may find this format easier to write.
 
 When an f-log is loaded, if the Fluorine crosshairs are on a point \
 with a message (i.e. at time t, coordinates x and y) then the given \
 message will be displayed in the infobox. If the f-log has more than \
 one message for a given [t,x,y] then all of them will be shown.
+
+Colours in the f-log are always shown when available.
 
 For t, you may consider turns as starting at 0 or 1. There is a menu \
 item in the View menu for this. Make sure Fluorine is using the same \
