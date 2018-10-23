@@ -226,7 +226,7 @@ function make_main_menu() {
 							properties: ["openFile"]
 						});
 						if (files && files.length > 0) {
-							set_pref('last_replay_directory', path.dirname(files[0]));
+							set_pref("last_replay_directory", path.dirname(files[0]));
 							windows.send("renderer", "open", files[0]);
 							monitor_dirs(null);					// Stop monitoring if we were
 						}
@@ -264,7 +264,7 @@ function make_main_menu() {
 							properties: ["openFile"]
 						});
 						if (files && files.length > 0) {
-							set_pref('last_flog_directory', path.dirname(files[0]));
+							set_pref("last_flog_directory", path.dirname(files[0]));
 							windows.send("renderer", "open_flog", files[0]);
 						}
 					}
