@@ -229,15 +229,27 @@ function make_renderer() {
 		}
 
 		renderer.flog = Object.create(null);
+		renderer.flog_colors = Object.create(null);
 
 		for (let n = 0; n < flog_raw.length; n++) {
 			let key = `${flog_raw[n].t}-${flog_raw[n].x}-${flog_raw[n].y}`;
 			let old_msg = renderer.flog[key];
-			if (old_msg === undefined) {
-				renderer.flog[key] = flog_raw[n].msg;
-			} else {
-				renderer.flog[key] += flog_concat_string + flog_raw[n].msg;
+
+			let new_msg = flog_raw[n].msg;
+			let color = flog_raw[n].color;
+
+			if (new_msg !== undefined) {
+				if (old_msg === undefined) {
+					renderer.flog[key] = new_msg;
+				} else {
+					renderer.flog[key] += flog_concat_string + new_msg;
+				}
 			}
+
+			if (color !== undefined) {
+				renderer.flog_colors[key] = color;
+			}
+
 		}
 
 		renderer.draw();
@@ -283,6 +295,7 @@ function make_renderer() {
 		renderer.height = renderer.game.production_map.height;
 
 		renderer.flog = null;
+		renderer.flog_colors = null;
 
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
@@ -1188,31 +1201,44 @@ function make_renderer() {
 		let box_width = renderer.box_width();
 		let box_height = renderer.box_height();
 
+		let turn_fudge = renderer.prefs.turns_start_at_one ? 1 : 0;
+
 		for (let x = 0; x < renderer.width; x++) {
 
 			for (let y = 0; y < renderer.height; y++) {
 
-				let val;
+				let color;
 
-				switch (renderer.prefs.grid_aesthetic) {
-					case 0:
-						val = 0;
-						break;
-					case 1:
-						val = renderer.production_list[renderer.turn][x][y] / 4;
-						break;
-					case 2:
-						val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 2048);
-						break;
-					case 3:
-						val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 1024);
-						break;
+				if (renderer.flog_colors) {
+					let key = `${renderer.turn + turn_fudge}-${x}-${y}`;
+					color = renderer.flog_colors[key];
 				}
 
-				val = Math.floor(val);
-				val = Math.min(255, val);
+				if (color === undefined) {
+					let val;
 
-				context.fillStyle = `rgb(${val},${val},${val})`;
+					switch (renderer.prefs.grid_aesthetic) {
+						case 0:
+							val = 0;
+							break;
+						case 1:
+							val = renderer.production_list[renderer.turn][x][y] / 4;
+							break;
+						case 2:
+							val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 2048);
+							break;
+						case 3:
+							val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 1024);
+							break;
+					}
+
+					val = Math.floor(val);
+					val = Math.min(255, val);
+					color = `rgb(${val},${val},${val})`;
+				}
+
+				context.fillStyle = color;
+
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
 			}
