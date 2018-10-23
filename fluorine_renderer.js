@@ -220,9 +220,9 @@ function make_renderer() {
 			contents = contents.trim();
 
 			if (contents[contents.length - 1] === ",") {
-				contents = contents.slice(0, contents.length - 1) + "]"
+				contents = contents.slice(0, contents.length - 1) + "]";
 			} else {
-				contents += "]"
+				contents += "]";
 			}
 
 			try {
