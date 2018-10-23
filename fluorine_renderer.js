@@ -30,6 +30,9 @@ function make_renderer() {
 
 	let renderer = Object.create(null);
 
+	// Many of these declarations could be harmlessly omitted
+	// but they're for documentation as much as anything...
+
 	renderer.game = null;
 	renderer.filename = "";
 	renderer.loadtime = 0;
@@ -39,6 +42,7 @@ function make_renderer() {
 	renderer.height = 0;
 
 	renderer.flog = null;
+	renderer.flog_colours = null;
 
 	renderer.production_list = null;
 	renderer.dropoff_list = null;
@@ -190,6 +194,7 @@ function make_renderer() {
 	};
 
 	renderer.open_flog = (filename) => {
+
 		if (!renderer.game) {
 			alert("Open a game first.");
 			return;
@@ -229,14 +234,15 @@ function make_renderer() {
 		}
 
 		renderer.flog = Object.create(null);
-		renderer.flog_colors = Object.create(null);
+		renderer.flog_colours = Object.create(null);
 
 		for (let n = 0; n < flog_raw.length; n++) {
+
 			let key = `${flog_raw[n].t}-${flog_raw[n].x}-${flog_raw[n].y}`;
 			let old_msg = renderer.flog[key];
 
 			let new_msg = flog_raw[n].msg;
-			let color = flog_raw[n].color;
+			let colour = flog_raw[n].colour || flog_raw[n].color;
 
 			if (new_msg !== undefined) {
 				if (old_msg === undefined) {
@@ -246,10 +252,9 @@ function make_renderer() {
 				}
 			}
 
-			if (color !== undefined) {
-				renderer.flog_colors[key] = color;
+			if (colour !== undefined) {
+				renderer.flog_colours[key] = colour;
 			}
-
 		}
 
 		renderer.draw();
@@ -295,7 +300,7 @@ function make_renderer() {
 		renderer.height = renderer.game.production_map.height;
 
 		renderer.flog = null;
-		renderer.flog_colors = null;
+		renderer.flog_colours = null;
 
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
@@ -1207,14 +1212,14 @@ function make_renderer() {
 
 			for (let y = 0; y < renderer.height; y++) {
 
-				let color;
+				let colour;
 
-				if (renderer.flog_colors) {
+				if (renderer.flog_colours) {
 					let key = `${renderer.turn + turn_fudge}-${x}-${y}`;
-					color = renderer.flog_colors[key];
+					colour = renderer.flog_colours[key];
 				}
 
-				if (color === undefined) {
+				if (colour === undefined) {
 					let val;
 
 					switch (renderer.prefs.grid_aesthetic) {
@@ -1234,10 +1239,10 @@ function make_renderer() {
 
 					val = Math.floor(val);
 					val = Math.min(255, val);
-					color = `rgb(${val},${val},${val})`;
+					colour = `rgb(${val},${val},${val})`;
 				}
 
-				context.fillStyle = color;
+				context.fillStyle = colour;
 
 				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
