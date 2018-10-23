@@ -221,8 +221,12 @@ function make_main_menu() {
 					label: "Open...",
 					accelerator: "CommandOrControl+O",
 					click: () => {
-						let files = electron.dialog.showOpenDialog();
+						let files = electron.dialog.showOpenDialog({
+							defaultPath: prefs.last_replay_directory,
+							properties: ["openFile"]
+						});
 						if (files && files.length > 0) {
+							set_pref('last_replay_directory', path.dirname(files[0]));
 							windows.send("renderer", "open", files[0]);
 							monitor_dirs(null);					// Stop monitoring if we were
 						}
