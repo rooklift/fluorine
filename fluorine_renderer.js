@@ -1207,44 +1207,39 @@ function make_renderer() {
 
 			for (let y = 0; y < renderer.height; y++) {
 
-				let val;
-				let flog_color;
-
-				switch (renderer.prefs.grid_aesthetic) {
-					case 0:
-						val = 0;
-						break;
-					case 1:
-						val = renderer.production_list[renderer.turn][x][y] / 4;
-						break;
-					case 2:
-						val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 2048);
-						break;
-					case 3:
-						val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 1024);
-						break;
-				}
-
-				val = Math.floor(val);
-				val = Math.min(255, val);
-
-				let [i, j] = renderer.offset_adjust(x, y);
+				let color;
 
 				if (renderer.flog_colors) {
 					let key = `${renderer.turn + turn_fudge}-${x}-${y}`;
-					flog_color = renderer.flog_colors[key];
-					if (flog_color) {
-						context.fillStyle = flog_color;
-						context.fillRect(i * box_width, j * box_height, box_width, box_height);
-					}
+					color = renderer.flog_colors[key];
 				}
 
-				if (flog_color) {
-					let val_opacity = val / 255;
-					context.fillStyle = `rgba(255,255,255,${val_opacity})`;
-				} else {
-					context.fillStyle = `rgb(${val},${val},${val})`;
+				if (color === undefined) {
+					let val;
+
+					switch (renderer.prefs.grid_aesthetic) {
+						case 0:
+							val = 0;
+							break;
+						case 1:
+							val = renderer.production_list[renderer.turn][x][y] / 4;
+							break;
+						case 2:
+							val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 2048);
+							break;
+						case 3:
+							val = 255 * Math.sqrt(renderer.production_list[renderer.turn][x][y] / 1024);
+							break;
+					}
+
+					val = Math.floor(val);
+					val = Math.min(255, val);
+					color = `rgb(${val},${val},${val})`;
 				}
+
+				context.fillStyle = color;
+
+				let [i, j] = renderer.offset_adjust(x, y);
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
 			}
 		}
