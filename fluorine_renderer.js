@@ -229,15 +229,27 @@ function make_renderer() {
 		}
 
 		renderer.flog = Object.create(null);
+		renderer.flog_colors = Object.create(null);
 
 		for (let n = 0; n < flog_raw.length; n++) {
 			let key = `${flog_raw[n].t}-${flog_raw[n].x}-${flog_raw[n].y}`;
 			let old_msg = renderer.flog[key];
-			if (old_msg === undefined) {
-				renderer.flog[key] = flog_raw[n].msg;
-			} else {
-				renderer.flog[key] += flog_concat_string + flog_raw[n].msg;
+
+			let new_msg = flog_raw[n].msg;
+			let color = flog_raw[n].color;
+
+			if (new_msg !== undefined) {
+				if (old_msg === undefined) {
+					renderer.flog[key] = new_msg;
+				} else {
+					renderer.flog[key] += flog_concat_string + new_msg;
+				}
 			}
+
+			if (color !== undefined) {
+				renderer.flog_colors[key] = color;
+			}
+
 		}
 
 		renderer.draw();
@@ -283,6 +295,7 @@ function make_renderer() {
 		renderer.height = renderer.game.production_map.height;
 
 		renderer.flog = null;
+		renderer.flog_colors = null;
 
 		renderer.offset_x = 0;
 		renderer.offset_y = 0;
@@ -1188,11 +1201,14 @@ function make_renderer() {
 		let box_width = renderer.box_width();
 		let box_height = renderer.box_height();
 
+		let turn_fudge = renderer.prefs.turns_start_at_one ? 1 : 0;
+
 		for (let x = 0; x < renderer.width; x++) {
 
 			for (let y = 0; y < renderer.height; y++) {
 
 				let val;
+				let flog_color;
 
 				switch (renderer.prefs.grid_aesthetic) {
 					case 0:
@@ -1212,8 +1228,23 @@ function make_renderer() {
 				val = Math.floor(val);
 				val = Math.min(255, val);
 
-				context.fillStyle = `rgb(${val},${val},${val})`;
 				let [i, j] = renderer.offset_adjust(x, y);
+
+				if (renderer.flog_colors) {
+					let key = `${renderer.turn + turn_fudge}-${x}-${y}`;
+					flog_color = renderer.flog_colors[key];
+					if (flog_color) {
+						context.fillStyle = flog_color;
+						context.fillRect(i * box_width, j * box_height, box_width, box_height);
+					}
+				}
+
+				if (flog_color) {
+					let val_opacity = val / 255;
+					context.fillStyle = `rgba(255,255,255,${val_opacity})`;
+				} else {
+					context.fillStyle = `rgb(${val},${val},${val})`;
+				}
 				context.fillRect(i * box_width, j * box_height, box_width, box_height);
 			}
 		}
