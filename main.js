@@ -597,10 +597,10 @@ An f-log is a JSON file with the following format:
     [
         {"t": 4, "x": 8, "y": 16, "msg": "Hello"},
         {"t": 12, "x": 8, "y": 15, "msg": "Hi again"},
-		{"t": 15, "x": 8, "y": 15, "msg": "This point is red", "color": "red"},
-		{"t": 15, "x": 8, "y": 16, "msg": "This point is blue", "color": "#0000FF"},
-		{"t": 15, "x": 8, "y": 17, "msg": "This point is green", "color": "rgb(0,255,0)"},
-		{"t": 15, "x": 8, "y": 18, "color": "hsl(120,100%,50%)"}
+        {"t": 15, "x": 8, "y": 15, "msg": "This point is red", "color": "red"},
+        {"t": 15, "x": 8, "y": 16, "msg": "This point is blue", "color": "#0000FF"},
+        {"t": 15, "x": 8, "y": 17, "msg": "This point is green", "color": "rgb(0,255,0)"},
+        {"t": 15, "x": 8, "y": 18, "color": "hsl(120,100%,50%)"}
     ]
 
 For convenience, Fluorine can parse an incomplete JSON array, such as:
