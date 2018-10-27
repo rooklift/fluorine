@@ -21,6 +21,8 @@ npm install electron --save-dev --save-exact
 ./node_modules/.bin/electron .
 ```
 
+Finally, for those who use Docker, lpenz supplies a [Dockerfile](https://gist.github.com/lpenz/09776db42cf5bdb5d6a2553d53f8899e).
+
 # Building
 
 Once the dependencies are installed, it should be possible to build a standalone application with `npm run pack` but for Windows there's also a pre-built application in the *Releases* section of this repo.
