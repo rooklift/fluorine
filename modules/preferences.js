@@ -5,6 +5,10 @@ const make = require("./utils").make;
 const path = require("path");
 
 const default_prefs = {
+
+    // Note: Don't make this a nested structure unless you're
+    // willing to make the code below more complex.
+
     integer_box_sizes: false,
     turns_start_at_one: false,
     triangles_show_next: true,
@@ -12,8 +16,10 @@ const default_prefs = {
     last_monitored_replay_dirs: [],
     last_flog_directory: null,
     last_replay_directory: null
-    // Note: Don't make this a nested structure unless you're willing to make the code below more complex.
+
 };
+
+// Note: We need to be passed app because it may either be {app} or {remote.app}
 
 function get_prefs_file(app) {
     return path.join(app.getPath("userData"), "prefs.json");

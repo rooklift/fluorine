@@ -1,7 +1,7 @@
 "use strict";
 
 const alert = require("./modules/alert");
-const app = require('electron').remote.app;
+const app = require("electron").remote.app;
 const fs = require("fs");
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
