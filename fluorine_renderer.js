@@ -1194,8 +1194,8 @@ function make_renderer() {
 
 		renderer.draw_grid();
 		renderer.draw_structures();
-		renderer.draw_ships();
 		renderer.draw_collisions();
+		renderer.draw_ships();
 		renderer.draw_selection_crosshairs();
 
 		renderer.write_infobox();
