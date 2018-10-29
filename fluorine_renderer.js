@@ -506,7 +506,7 @@ function make_renderer() {
 
 						let dropoff = renderer.dropoff_list[z];
 
-						if (dropoff.turn <= n && dropoff.x === data.x && dropoff.y === data.y) {
+						if (dropoff.turn - 1 <= n && dropoff.x === data.x && dropoff.y === data.y) {
 							data.halite_losses[dropoff.pid] -= total_dropped;
 						}
 					}
