@@ -427,6 +427,7 @@ function make_renderer() {
 				if (event.type === "construct") {
 
 					// Note "turn" saved here (n + 1) is the turn in which the dropoff point is first shown.
+					// In retrospect this was a dubious choice. FIXME?
 
 					let d = {x: event.location.x, y: event.location.y, pid: event.owner_id, sid: event.id, turn: n + 1};
 
