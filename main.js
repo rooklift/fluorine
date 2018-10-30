@@ -242,6 +242,7 @@ function make_main_menu() {
 					accelerator: "CommandOrControl+Shift+O",
 					click: () => {
 						monitor_dirs(electron.dialog.showOpenDialog({
+							defaultPath: prefs.last_replay_directory,
 							properties: ["openDirectory", "multiSelections"],
 						}));
 					}
