@@ -18,6 +18,13 @@ document.getElementById("sid").onkeydown = function(event) {
 		input_sid.value = "";
 
 		if (!Number.isNaN(sid)) {
+
+			ipcRenderer.send("relay", {
+				receiver: "renderer",
+				channel: "stop_autoplay",
+				content: null,
+			});
+
 			ipcRenderer.send("relay", {
 				receiver: "renderer",
 				channel: "select_sid",

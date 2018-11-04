@@ -221,6 +221,7 @@ function make_main_menu() {
 					label: "Open...",
 					accelerator: "CommandOrControl+O",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let files = electron.dialog.showOpenDialog({
 							defaultPath: prefs.last_replay_directory,
 							properties: ["openFile"]
@@ -241,6 +242,7 @@ function make_main_menu() {
 					checked: false,								// Updated by monitor_dirs()
 					accelerator: "CommandOrControl+Shift+O",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						monitor_dirs(electron.dialog.showOpenDialog({
 							defaultPath: prefs.last_replay_directory,
 							properties: ["openDirectory", "multiSelections"],
@@ -260,6 +262,7 @@ function make_main_menu() {
 				{
 					label: "Open f-log...",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let files = electron.dialog.showOpenDialog({
 							defaultPath: prefs.last_flog_directory,
 							properties: ["openFile"]
@@ -273,6 +276,7 @@ function make_main_menu() {
 				{
 					label: "What is an f-log?",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						about_flogging();
 					}
 				},
@@ -283,6 +287,7 @@ function make_main_menu() {
 					label: "Save decompressed JSON",
 					accelerator: "CommandOrControl+S",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save", outfilename);
@@ -292,6 +297,7 @@ function make_main_menu() {
 				{
 					label: "Save current frame",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_frame", outfilename);
@@ -301,6 +307,7 @@ function make_main_menu() {
 				{
 					label: "Save current entities",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_entities", outfilename);
@@ -310,6 +317,7 @@ function make_main_menu() {
 				{
 					label: "Save upcoming moves",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_moves", outfilename);
@@ -319,6 +327,7 @@ function make_main_menu() {
 				{
 					label: "Save upcoming events",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						let outfilename = electron.dialog.showSaveDialog();
 						if (outfilename) {
 							windows.send("renderer", "save_events", outfilename);
@@ -341,6 +350,7 @@ function make_main_menu() {
 					label: "Forward",
 					accelerator: "Right",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "forward", 1);
 					}
 				},
@@ -348,6 +358,7 @@ function make_main_menu() {
 					label: "Back",
 					accelerator: "Left",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "forward", -1);
 					}
 				},
@@ -358,6 +369,7 @@ function make_main_menu() {
 					label: "Move to start",
 					accelerator: "Home",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "forward", -99999);
 					}
 				},
@@ -365,7 +377,15 @@ function make_main_menu() {
 					label: "Move to end",
 					accelerator: "End",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "forward", 99999);
+					}
+				},
+				{
+					label: "Autoplay",
+					accelerator: "Space",
+					click: () => {
+						windows.send("renderer", "toggle_autoplay", null);
 					}
 				},
 				{
@@ -375,6 +395,7 @@ function make_main_menu() {
 					label: "Go to turn...",
 					accelerator: "CommandOrControl+T",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.show("turn");
 						windows.send("turn", "focus_input", null);
 					}
@@ -386,6 +407,7 @@ function make_main_menu() {
 					label: "Previous collision",
 					accelerator: "C",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "previous_collision", null);
 					}
 				},
@@ -393,6 +415,7 @@ function make_main_menu() {
 					label: "Next collision",
 					accelerator: "V",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "next_collision", null);
 					}
 				},
@@ -403,6 +426,7 @@ function make_main_menu() {
 					label: "Selected ship's fate",
 					accelerator: "X",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.send("renderer", "ship_fate", null);
 					}
 				},
@@ -545,6 +569,7 @@ function make_main_menu() {
 					label: "Select ship by ID...",
 					accelerator: "CommandOrControl+F",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.show("selector");
 						windows.send("selector", "focus_input", null);
 					}
@@ -574,6 +599,7 @@ function make_main_menu() {
 				{
 					label: "Extra stats",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						windows.show("extra_stats");
 					}
 				},
@@ -583,6 +609,7 @@ function make_main_menu() {
 				{
 					label: "About Fluorine",
 					click: () => {
+						windows.send("renderer", "stop_autoplay", null);
 						alert(about_message);
 					}
 				},

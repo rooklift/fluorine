@@ -44,6 +44,8 @@ function make_renderer() {
 	renderer.flog = null;
 	renderer.flog_colours = null;
 
+	renderer.autoplay_iid = null;
+
 	renderer.production_list = null;
 	renderer.dropoff_list = null;
 	renderer.sid_pid_map = null;
@@ -96,6 +98,8 @@ function make_renderer() {
 	// --------------------------------------------------------------
 
 	renderer.open = (filename, fail_silently) => {
+
+		renderer.stop_autoplay();
 
 		// FIXME: loading zstd is done async so this test isn't sound...
 
@@ -830,6 +834,39 @@ function make_renderer() {
 	renderer.forward = (n) => {
 		if (!renderer.game) return;
 		renderer.go_to_turn(renderer.turn + n);
+	};
+
+	renderer.stop_autoplay = () => {
+		if (renderer.autoplay_iid !== null) {
+			clearInterval(renderer.autoplay_iid);
+		}
+		renderer.autoplay_iid = null;
+	};
+
+	renderer.toggle_autoplay = () => {
+
+		// Toggle off...
+
+		if (renderer.autoplay_iid !== null) {
+			clearInterval(renderer.autoplay_iid);
+			renderer.autoplay_iid = null;
+			return;
+		}
+
+		// Toggle on...
+
+		renderer.autoplay_iid = setInterval(() => {
+			if (!renderer.game) {
+				renderer.stop_autoplay();
+				return;
+			}
+			renderer.turn += 1;
+			if (renderer.turn >= renderer.game_length()) {
+				renderer.turn = renderer.game_length() - 1;
+				renderer.stop_autoplay();
+			}
+			renderer.draw();
+		}, 50);
 	};
 
 	renderer.right = (n) => {
@@ -1994,6 +2031,14 @@ ipcRenderer.on("forward", (event, n) => {
 
 ipcRenderer.on("go_to_turn", (event, n) => {
 	renderer.go_to_turn(n);
+});
+
+ipcRenderer.on("toggle_autoplay", () => {
+	renderer.toggle_autoplay();
+});
+
+ipcRenderer.on("stop_autoplay", () => {
+	renderer.stop_autoplay();
 });
 
 ipcRenderer.on("right", (event, n) => {

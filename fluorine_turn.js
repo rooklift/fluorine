@@ -18,6 +18,13 @@ document.getElementById("turn").onkeydown = function(event) {
 		input_turn.value = "";
 
 		if (!Number.isNaN(turn)) {
+
+			ipcRenderer.send("relay", {
+				receiver: "renderer",
+				channel: "stop_autoplay",
+				content: null,
+			});
+
 			ipcRenderer.send("relay", {
 				receiver: "renderer",
 				channel: "go_to_turn",
