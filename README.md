@@ -26,7 +26,7 @@ Finally, for those who use Docker, lpenz supplies a [Dockerfile](https://gist.gi
 
 # Building
 
-Once the dependencies are installed, it should be possible to build a standalone application with `npm run pack` but for Windows there's also a pre-built application in the *Releases* section of this repo.
+Once the dependencies are installed (`npm install`), it should be possible to build a standalone application with `npm run pack` but for Windows there's also a pre-built application in the *Releases* section of this repo.
 
 # Other dependencies
 
