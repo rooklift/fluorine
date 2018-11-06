@@ -6,7 +6,7 @@ This is a replay viewer for [Halite 3](https://halite.io/).
 
 # Installation
 
-If you have npm and [Electron](https://electron.atom.io/) installed globally, you can do:
+If you have npm and [Electron](https://electron.atom.io/) installed globally (`npm install electron -g`) you can enter the *Fluorine* directory and do:
 
 ```
 npm install
