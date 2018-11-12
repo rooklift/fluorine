@@ -884,6 +884,12 @@ function make_renderer() {
 		renderer.draw();
 	};
 
+	renderer.farside = () => {
+		renderer.offset_x = Math.floor(renderer.width / 2);
+		renderer.offset_y = Math.floor(renderer.height / 2);
+		renderer.draw();
+	};
+
 	renderer.next_collision = (reverse_flag) => {
 
 		if (!renderer.game) return;
@@ -2047,6 +2053,10 @@ ipcRenderer.on("right", (event, n) => {
 
 ipcRenderer.on("down", (event, n) => {
 	renderer.down(n);
+});
+
+ipcRenderer.on("farside", () => {
+	renderer.farside();
 });
 
 ipcRenderer.on("next_collision", () => {

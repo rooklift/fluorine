@@ -556,10 +556,10 @@ function make_main_menu() {
 					}
 				},
 				{
-					label: "Clear selection",
-					accelerator: "Escape",
+					label: "Farside camera",
+					accelerator: "F",
 					click: () => {
-						windows.send("renderer", "set", ["selection", null]);
+						windows.send("renderer", "farside", null);
 					}
 				},
 				{
@@ -572,6 +572,13 @@ function make_main_menu() {
 						windows.send("renderer", "stop_autoplay", null);
 						windows.show("selector");
 						windows.send("selector", "focus_input", null);
+					}
+				},
+				{
+					label: "Clear selection",
+					accelerator: "Escape",
+					click: () => {
+						windows.send("renderer", "set", ["selection", null]);
 					}
 				},
 				{
