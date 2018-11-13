@@ -820,11 +820,16 @@ function make_renderer() {
 
 	// --------------------------------------------------------------
 
-	renderer.go_to_turn = (n) => {
+	renderer.go_to_turn = (n, ipc_flag) => {
 
 		if (!renderer.game) return;
 
 		renderer.turn = n;
+
+		if (renderer.prefs.turns_start_at_one && ipc_flag) {
+			renderer.turn -= 1;
+		}
+
 		if (renderer.turn < 0) renderer.turn = 0;
 		if (renderer.turn >= renderer.game_length()) renderer.turn = renderer.game_length() - 1;
 
@@ -2036,7 +2041,7 @@ ipcRenderer.on("forward", (event, n) => {
 });
 
 ipcRenderer.on("go_to_turn", (event, n) => {
-	renderer.go_to_turn(n);
+	renderer.go_to_turn(n, true);
 });
 
 ipcRenderer.on("toggle_autoplay", () => {
