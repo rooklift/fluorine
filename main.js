@@ -65,32 +65,24 @@ electron.app.on("window-all-closed", () => {
 
 ipcMain.on("renderer_ready", () => {
 
-	// Load a file via command line with -o filename.
+	// Open a file via command line. Some awkwardness around the different ways Fluorine can be started.
 
 	let filename = "";
 
-	for (let i = 0; i < process.argv.length - 1; i++) {
-		if (process.argv[i] === "-o") {
-			filename = process.argv[i + 1];
+	if (path.basename(process.argv[0]) === "electron" || path.basename(process.argv[0]) === "electron.exe") {
+		if (process.argv.length > 2) {
+			filename = process.argv[process.argv.length - 1];
+		}
+	} else {
+		if (process.argv.length > 1) {
+			filename = process.argv[process.argv.length - 1];
 		}
 	}
 
 	if (filename !== "") {
 		windows.send("renderer", "open", filename);
 		monitor_dirs(null);
-	}
-
-	// Or, if exactly 1 arg, assume it's a filename.
-	// Only good for standalone release.
-
-	else if (process.argv.length === 2 && path.basename(process.argv[0]) !== "electron" && path.basename(process.argv[0]) !== "electron.exe") {
-		if (process.argv[1] !== ".") {
-			windows.send("renderer", "open", process.argv[1]);
-			monitor_dirs(null);
-		}
-	}
-
-	else {
+	} else {
 		monitor_dirs(prefs.last_monitored_replay_dirs);
 	}
 });
