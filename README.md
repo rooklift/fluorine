@@ -34,7 +34,7 @@ Once the dependencies are installed (`npm install`), it should be possible to bu
 
 # Usage
 
-Open a file from the menu, or via command line with `electron . -o filename.hlt`. Drag-and-dropping a file onto the window may also work. Once a file is opened, navigate with left and right arrow keys.
+Open a file from the menu, or via command line with `electron . filename.hlt`. Drag-and-dropping a file onto the window may also work. Once a file is opened, navigate with left and right arrow keys.
 
 # Thanks
 
