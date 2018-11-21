@@ -1669,7 +1669,7 @@ function make_renderer() {
 		let some_moves = renderer.current_frame().moves[pid];
 
 		if (some_moves === undefined) {
-			return lookups.o;
+			return "(none)";
 		}
 
 		for (let n = 0; n < some_moves.length; n++) {
@@ -1704,7 +1704,7 @@ function make_renderer() {
 			}
 		}
 
-		return lookups.o;
+		return "(none)";
 	};
 
 	renderer.ship_count = (pid) => {
