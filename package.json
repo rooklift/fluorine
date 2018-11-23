@@ -9,7 +9,7 @@
 	},
 	"main": "main.js",
 	"dependencies": {
-		"node-zstandard": "1.2.5"
+		"node-zstandard": "1.2.4"
 	},
 	"scripts": {
 		"pack": "electron-builder --dir"
