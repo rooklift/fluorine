@@ -1,7 +1,7 @@
 # Fluorine 🐢
 "I got it yesterday, and it's already changed my life." &mdash; [teccles](https://halite.io/user/?user_id=2807)
 
-![Fluorine Screenshot](https://user-images.githubusercontent.com/16438795/47038324-18ac6780-d179-11e8-987d-3613e1095ba2.png)
+![Fluorine Screenshot](https://user-images.githubusercontent.com/16438795/48973423-e1ae5900-f036-11e8-9546-58f19a3c493d.png)
 
 This is a replay viewer for [Halite 3](https://halite.io/).
 
