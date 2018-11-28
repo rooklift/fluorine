@@ -172,7 +172,7 @@ function monitor_dirs(dirs) {
 	}
 
 	// Open the most recent replay file.
-	// But this seems too slow.
+	// But this seems too slow as it stands. Probably something can be optimised somewhere...
 
 //	try {
 //		if (dirs.length) {
