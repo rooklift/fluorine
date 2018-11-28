@@ -172,17 +172,18 @@ function monitor_dirs(dirs) {
 	}
 
 	// Open the most recent replay file.
+	// But this seems too slow.
 
-	try {
-		if (dirs.length) {
-			const replay_paths = [].concat(...dirs.map(get_replays));
-			if (replay_paths.length) {
-				windows.send("renderer", "open", most_recent(replay_paths));
-			}
-		}
-	} catch (err) {
-		windows.send("renderer", "log", `monitor_dirs() while opening recent: ${err.message}`);
-	}
+//	try {
+//		if (dirs.length) {
+//			const replay_paths = [].concat(...dirs.map(get_replays));
+//			if (replay_paths.length) {
+//				windows.send("renderer", "open", most_recent(replay_paths));
+//			}
+//		}
+//	} catch (err) {
+//		windows.send("renderer", "log", `monitor_dirs() while opening recent: ${err.message}`);
+//	}
 
 	// Start the new watchers.
 
