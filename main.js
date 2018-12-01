@@ -145,7 +145,7 @@ function start_watcher(dir) {
 
 	try {
 		let watcher = fs.watch(dir, {persistent: false}, (eventType, filename) => {
-			if (is_replay_file(filename)) {
+			if (filename.endsWith(".hlt")) {
 				windows.send("renderer", "log", `${eventType} - ${filename}`);
 				if (process.platform === "darwin") {
 					// fs.watch on OS X sends all events as "rename". It's the second
