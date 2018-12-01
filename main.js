@@ -108,22 +108,27 @@ ipcMain.on("stop_monitoring", () => {
 
 let replay_dir_watchers = [];
 
-function is_replay_file(filename) {
-	return filename.endsWith(".hlt");
+function get_replays(dirs) {
+	let replays = [];
+	for (let dir of dirs) {
+		let filenames = fs.readdirSync(dir);
+		for (let f of filenames) {
+			if (f.endsWith(".hlt")) {
+				replays.push(path.join(dir, f));
+			}
+		}
+	}
+	return replays;
 }
 
-function get_replays(dir) {
-	return fs.readdirSync(dir).filter(is_replay_file).map(filename => path.join(dir, filename));
-}
-
-function most_recent(replay_paths) {
+function most_recent(filepaths) {
 
 	// There's a race here if things change during the call, but meh.
 
 	let recent_file = null;
 	let recent_time = 0;
 
-	for (let filepath of replay_paths) {
+	for (let filepath of filepaths) {
 		let t = fs.statSync(filepath).mtime.getTime();
 		if (t > recent_time) {
 			recent_file = filepath;
@@ -172,18 +177,18 @@ function monitor_dirs(dirs) {
 	}
 
 	// Open the most recent replay file.
-	// But this seems too slow as it stands. Probably something can be optimised somewhere...
+	// This might be rather slow for large directories?
 
-//	try {
-//		if (dirs.length) {
-//			const replay_paths = [].concat(...dirs.map(get_replays));
-//			if (replay_paths.length) {
-//				windows.send("renderer", "open", most_recent(replay_paths));
-//			}
-//		}
-//	} catch (err) {
-//		windows.send("renderer", "log", `monitor_dirs() while opening recent: ${err.message}`);
-//	}
+	try {
+		if (dirs.length) {
+			let replay_paths = get_replays(dirs);
+			if (replay_paths.length) {
+				windows.send("renderer", "open", most_recent(replay_paths));
+			}
+		}
+	} catch (err) {
+		windows.send("renderer", "log", `monitor_dirs() while opening recent: ${err.message}`);
+	}
 
 	// Start the new watchers.
 
