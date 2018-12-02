@@ -1699,7 +1699,7 @@ function make_renderer() {
 
 				return lookups[move.direction];
 
-			} else if (move.type === "c") {
+			} else if (move.type === "c" && move.id === sid) {
 				return "construct";
 			}
 		}
