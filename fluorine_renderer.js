@@ -483,18 +483,21 @@ function make_renderer() {
 
 						let burned_en_route = 0;
 
-						if (final_state.x !== data.x || final_state.y !== data.y) {     // The ship moved before colliding.
-							let ground = renderer.production_list[n][final_state.x][final_state.y];     // Ship's source before moving.
-							if (final_state.is_inspired) {
-								burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.INSPIRED_MOVE_COST_RATIO);
-							} else {
-								burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.MOVE_COST_RATIO);
+						if (final_state !== undefined) {		// If undefined, it's a ship that crashed as it was created. Applies to Halite 1.1.6 onwards.
+
+							if (final_state.x !== data.x || final_state.y !== data.y) {     				// The ship moved before colliding.
+								let ground = renderer.production_list[n][final_state.x][final_state.y];     // Ship's source before moving.
+								if (final_state.is_inspired) {
+									burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.INSPIRED_MOVE_COST_RATIO);
+								} else {
+									burned_en_route = Math.floor(ground / renderer.game.GAME_CONSTANTS.MOVE_COST_RATIO);
+								}
 							}
+
+							data.halite_losses[pid] += final_state.energy - burned_en_route;
+
+							total_dropped += final_state.energy - burned_en_route;
 						}
-
-						data.halite_losses[pid] += final_state.energy - burned_en_route;
-
-						total_dropped += final_state.energy - burned_en_route;
 					}
 
 					// Adjustment for collisions over a factory...

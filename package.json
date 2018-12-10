@@ -1,7 +1,7 @@
 {
 	"name": "Fluorine",
 	"description": "Replay viewer for Halite 3",
-	"version": "1.2.5",
+	"version": "1.2.6",
 	"author": "Fohristiwhirl",
 	"repository": {
 		"type": "git",
