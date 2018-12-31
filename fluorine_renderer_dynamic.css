@@ -12,6 +12,18 @@ rather than fluorine_renderer.html.
 .player-1-colour { color: #ff9999; }
 .player-2-colour { color: #ffbe00; }
 .player-3-colour { color: #66cccc; }
+.player-4-colour { color: #bf00ff; }
+.player-5-colour { color: #007fff; }
+.player-6-colour { color: #f6ff60; }
+.player-7-colour { color: #f3b5ff; }
+.player-8-colour { color: #31c110; }
+.player-9-colour { color: #ff8465; }
+.player-10-colour { color: #007256; }
+.player-11-colour { color: #ff0000; }
+.player-12-colour { color: #344983; }
+.player-13-colour { color: #92152e; }
+.player-14-colour { color: #00ffbf; }
+.player-15-colour { color: #b07504; }
 
 .no-margin-bot { margin-bottom: 0; }
 .no-margin-top { margin-top: 0; }

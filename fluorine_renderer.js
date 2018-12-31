@@ -16,8 +16,8 @@ try {
 	alert("Couldn't load zstd module. This can usually be fixed by running \"npm install\" but until then, Fluorine can still open JSON replays.");
 }
 
-const ranks = ["???", "1st", "2nd", "3rd", "4th"];
-const colours = ["#c5ec98", "#ff9999", "#ffbe00", "#66cccc"];
+const ranks = ["???", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th", "15th", "16th"];
+const colours = ["#c5ec98", "#ff9999", "#ffbe00", "#66cccc", "#bf00ff", "#007fff", "#f6ff60", "#f3b5ff", "#31c110", "#ff8465", "#007256", "#ff0000", "#344983", "#92152e", "#00ffbf", "#b07504"];
 const explosion_colour = "#ff0000";
 
 const flog_concat_string = " ";
