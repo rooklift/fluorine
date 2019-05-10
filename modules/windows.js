@@ -29,7 +29,10 @@ exports.new = (token, params = {}) => {		// token is an internal name for us to 
 		backgroundColor: "#000000",
 		useContentSize: true,
 		resizable: params.resizable,
-		webPreferences: { zoomFactor: zoom_factor }
+		webPreferences: {
+			zoomFactor: zoom_factor,
+			nodeIntegration: true
+		}
 	});
 
 	win.loadURL(url.format({
