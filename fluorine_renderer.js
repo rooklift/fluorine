@@ -1,7 +1,6 @@
 "use strict";
 
 const alert = require("./modules/alert");
-const app = require("electron").remote.app;
 const fs = require("fs");
 const ipcRenderer = require("electron").ipcRenderer;
 const path = require("path");
@@ -63,7 +62,7 @@ function make_renderer() {
 	renderer.offset_x = 0;
 	renderer.offset_y = 0;
 
-	renderer.prefs = read_prefs(app);
+	renderer.prefs = read_prefs();
 
 	// --------------------------------------------------------------
 

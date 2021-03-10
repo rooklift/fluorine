@@ -31,15 +31,15 @@ exports.new = (token, params = {}) => {		// token is an internal name for us to 
 		resizable: params.resizable,
 		webPreferences: {
 			zoomFactor: zoom_factor,
-			nodeIntegration: true
+			nodeIntegration: true,
+			contextIsolation: false,
 		}
 	});
 
-	win.loadURL(url.format({
-		protocol: "file:",
-		pathname: params.page,
-		slashes: true
-	}));
+	let query = {};
+	query.user_data_path = electron.app.getPath("userData");
+
+	win.loadFile(params.page, {query: query});
 
 	// win.setMenu(null);			// I'm sure there was a reason for this but I forget, and it seems to cause Linux issues.
 

@@ -10,13 +10,16 @@ const read_prefs = require("./modules/preferences").read_prefs;
 const save_prefs = require("./modules/preferences").save_prefs;
 const windows = require("./modules/windows");
 
+const save_dialog = electron.dialog.showSaveDialogSync || electron.dialog.showSaveDialog;
+const open_dialog = electron.dialog.showOpenDialogSync || electron.dialog.showOpenDialog;
+
 let about_message = `Fluorine ${app.getVersion()} is a replay viewer for Halite 3\n--\n` +
 	`Electron ${process.versions.electron} + Node ${process.versions.node} + Chrome ${process.versions.chrome} + V8 ${process.versions.v8}`;
 
 // -------------------------------------------------------
 // Preferences.
 
-const prefs = read_prefs(app);
+const prefs = read_prefs();
 
 function set_pref(attrname, value) {
 	if (!prefs.hasOwnProperty(attrname)) {
@@ -24,7 +27,7 @@ function set_pref(attrname, value) {
 	}
 	prefs[attrname] = value;
 	windows.send("renderer", "prefs_changed", prefs);
-	save_prefs(app, prefs);
+	save_prefs(prefs);
 }
 
 // -------------------------------------------------------
@@ -62,6 +65,10 @@ electron.app.on("window-all-closed", () => {
 });
 
 // -------------------------------------------------------
+
+ipcMain.on("alert", (event, msg) => {
+	alert(msg);
+});
 
 ipcMain.on("renderer_ready", () => {
 
@@ -220,8 +227,8 @@ function make_main_menu() {
 					accelerator: "CommandOrControl+O",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let files = electron.dialog.showOpenDialog({
-							defaultPath: prefs.last_replay_directory,
+						let files = open_dialog({
+							defaultPath: prefs.last_replay_directory || "",
 							properties: ["openFile"]
 						});
 						if (files && files.length > 0) {
@@ -241,8 +248,8 @@ function make_main_menu() {
 					accelerator: "CommandOrControl+Shift+O",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						monitor_dirs(electron.dialog.showOpenDialog({
-							defaultPath: prefs.last_replay_directory,
+						monitor_dirs(open_dialog({
+							defaultPath: prefs.last_replay_directory || "",
 							properties: ["openDirectory", "multiSelections"],
 						}));
 					}
@@ -261,8 +268,8 @@ function make_main_menu() {
 					label: "Open f-log...",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let files = electron.dialog.showOpenDialog({
-							defaultPath: prefs.last_flog_directory,
+						let files = open_dialog({
+							defaultPath: prefs.last_flog_directory || "",
 							properties: ["openFile"]
 						});
 						if (files && files.length > 0) {
@@ -286,7 +293,7 @@ function make_main_menu() {
 					accelerator: "CommandOrControl+S",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let outfilename = electron.dialog.showSaveDialog();
+						let outfilename = save_dialog();
 						if (outfilename) {
 							windows.send("renderer", "save", outfilename);
 						}
@@ -296,7 +303,7 @@ function make_main_menu() {
 					label: "Save current frame",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let outfilename = electron.dialog.showSaveDialog();
+						let outfilename = save_dialog();
 						if (outfilename) {
 							windows.send("renderer", "save_frame", outfilename);
 						}
@@ -306,7 +313,7 @@ function make_main_menu() {
 					label: "Save current entities",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let outfilename = electron.dialog.showSaveDialog();
+						let outfilename = save_dialog();
 						if (outfilename) {
 							windows.send("renderer", "save_entities", outfilename);
 						}
@@ -316,7 +323,7 @@ function make_main_menu() {
 					label: "Save upcoming moves",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let outfilename = electron.dialog.showSaveDialog();
+						let outfilename = save_dialog();
 						if (outfilename) {
 							windows.send("renderer", "save_moves", outfilename);
 						}
@@ -326,7 +333,7 @@ function make_main_menu() {
 					label: "Save upcoming events",
 					click: () => {
 						windows.send("renderer", "stop_autoplay", null);
-						let outfilename = electron.dialog.showSaveDialog();
+						let outfilename = save_dialog();
 						if (outfilename) {
 							windows.send("renderer", "save_events", outfilename);
 						}

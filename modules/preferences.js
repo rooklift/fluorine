@@ -1,8 +1,10 @@
 "use strict";
 
+const electron = require("electron");
 const fs = require("fs");
 const make = require("./utils").make;
 const path = require("path");
+const querystring = require("querystring");
 
 const default_prefs = {
 
@@ -19,14 +21,14 @@ const default_prefs = {
 
 };
 
-// Note: We need to be passed app because it may either be {app} or {remote.app}
-
-function get_prefs_file(app) {
-    return path.join(app.getPath("userData"), "prefs.json");
+function get_prefs_file() {
+    return electron.app ?
+        path.join(electron.app.getPath("userData"), "prefs.json") :                                 // in Main process
+        path.join(querystring.parse(global.location.search)["?user_data_path"], "prefs.json");      // in Renderer process
 }
 
-exports.save_prefs = (app, prefs) => {
-    let filename = get_prefs_file(app);
+exports.save_prefs = (prefs) => {
+    let filename = get_prefs_file();
     try {
         fs.writeFileSync(filename, JSON.stringify(prefs));
     } catch (err) {
@@ -34,9 +36,9 @@ exports.save_prefs = (app, prefs) => {
     }
 }
 
-exports.read_prefs = (app) => {
+exports.read_prefs = () => {
     const prefs = make({}, default_prefs);
-    let filename = get_prefs_file(app);
+    let filename = get_prefs_file();
     try {
         let f = fs.readFileSync(filename, "utf8");
         return Object.assign(prefs, JSON.parse(f));

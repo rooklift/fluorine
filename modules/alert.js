@@ -1,6 +1,7 @@
 "use strict";
 
 const electron = require("electron");
+const ipcRenderer = require("electron").ipcRenderer;
 
 function object_to_string(o) {
 	let msg = JSON.stringify(o);
@@ -16,11 +17,7 @@ function alert_main(msg) {
 }
 
 function alert_renderer(msg) {
-	electron.remote.dialog.showMessageBox({
-		message: msg.toString(),
-		title: "Alert",
-		buttons: ["OK"]
-	}, () => {});
+	ipcRenderer.send("alert", msg.toString());
 }
 
 module.exports = (msg) => {
