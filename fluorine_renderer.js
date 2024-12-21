@@ -7,6 +7,9 @@ const path = require("path");
 const read_prefs = require("./modules/preferences").read_prefs;
 const stream = require("stream");
 
+let webUtils = require("electron").webUtils;			// Needed from Electron v32 since can't access .path:
+const get_path_for_file = (webUtils && webUtils.getPathForFile) ? webUtils.getPathForFile : file => file.path;
+
 let zstd;
 
 try {
@@ -2105,7 +2108,7 @@ window.ondragleave = () => false;
 window.ondragend = () => false;
 window.ondrop = (event) => {
 	event.preventDefault();
-	renderer.open(event.dataTransfer.files[0].path);
+	renderer.open(get_path_for_file(event.dataTransfer.files[0]));
 	ipcRenderer.send("show_window", "renderer");
 	ipcRenderer.send("stop_monitoring", null);
 	return false;

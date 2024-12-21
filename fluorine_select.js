@@ -2,6 +2,9 @@
 
 const ipcRenderer = require("electron").ipcRenderer;
 
+let webUtils = require("electron").webUtils;			// Needed from Electron v32 since can't access .path:
+const get_path_for_file = (webUtils && webUtils.getPathForFile) ? webUtils.getPathForFile : file => file.path;
+
 // Event to focus input in the actual box...
 
 ipcRenderer.on("focus_input", () => {
@@ -47,7 +50,7 @@ window.ondrop = (event) => {
 	ipcRenderer.send("relay", {
 		receiver: "renderer",
 		channel: "open",
-		content: event.dataTransfer.files[0].path,
+		content: get_path_for_file(event.dataTransfer.files[0]),
 	});
 	ipcRenderer.send("stop_monitoring", null);
 	return false;
